@@ -65,17 +65,44 @@ pll PLL(
     .c2         (clock_6)       //  6,0 Mhz
 );
 
+// --------------------------------------------------------------------------
+wire [11:0] font_addr; wire [7:0] font_data;
+wire [11:0] char_addr; wire [7:0] char_data;
+wire [10:0] cursor = 0;
+
 vga VGA
 (
     // Опорная частота
     .CLOCK (clock_25),
-
     // Выходные данные
-    .VGA_R  (vga_red[4:1]),
-    .VGA_G  (vga_green[5:2]),
-    .VGA_B  (vga_blue[4:1]),
+    .VGA_R  (vga_red),
+    .VGA_G  (vga_green),
+    .VGA_B  (vga_blue),
     .VGA_HS (vga_hs),
-    .VGA_VS (vga_vs)
+    .VGA_VS (vga_vs),
+    // Знакогенератор
+    .FONT_ADDR  (font_addr),
+    .FONT_DATA  (font_data),
+    .CHAR_ADDR  (char_addr),
+    .CHAR_DATA  (char_data),
+    // Управление
+    .CURSOR     (cursor)
+);
+
+// #B8000:$B8FFF Видеопамять
+videoram VideoMemory
+(
+    .clock   (clk),
+    .addr_rd (char_addr),
+    .q       (char_data),
+);
+
+// #C0000:$C0FFF Знакогенератор
+videofont FontGenerator
+(
+    .clock   (clk),
+    .addr_rd (font_addr),
+    .q       (font_data),
 );
 
 endmodule
