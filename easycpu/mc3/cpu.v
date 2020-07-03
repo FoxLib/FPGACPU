@@ -29,6 +29,7 @@ reg         zf       = 1'b0;        // Zero Flag
 // ---------------------------------------------------------------------
 wire [7:0]  opcode   = tstate? mopcode : I_DATA; // Текущий опкод
 wire [15:0] regin    = r[ opcode[3:0] ];
+wire [ 1:0] cond     = {zf, cf};
 wire [16:0] alu_add  = acc + regin;
 wire [16:0] alu_sub  = acc - regin;
 wire [15:0] alu_and  = acc & regin;
@@ -143,6 +144,33 @@ always @(posedge CLOCK) begin
         8'b1001_xxxx: begin acc <= alu_and[15:0]; zf = ~|alu_and[15:0]; ip <= ip + 1; tstate <= 0; end
         8'b1010_xxxx: begin acc <= alu_xor[15:0]; zf = ~|alu_xor[15:0]; ip <= ip + 1; tstate <= 0; end
         8'b1011_xxxx: begin acc <= alu_ora[15:0]; zf = ~|alu_ora[15:0]; ip <= ip + 1; tstate <= 0; end
+
+        // 80 BRA *
+        8'b1000_0000: case (tstate)
+
+            0: begin ip <= ip + 1; end
+            1: begin ip <= ip + 1 + {{8{I_DATA[7]}}, I_DATA}; tstate <= 0; end
+
+        endcase
+
+        // 81 JMP **
+        8'b1000_0001: case (tstate)
+
+            0: begin ip <= ip + 1; end
+            1: begin ip <= ip + 1; address[7:0] <= I_DATA; end
+            2: begin ip <= {I_DATA, address[7:0]}; tstate <= 0; end
+
+        endcase
+
+        // 82-85 JMP <cond>
+        8'b1000_001x, 8'b1000_010x:
+        case (tstate)
+
+            0: if (cond[ opcode[1] ] != opcode[0]) begin tstate <= 0; ip <= ip + 3; end else ip <= ip + 1;
+            1: begin ip <= ip + 1; address[7:0] <= I_DATA; end
+            2: begin ip <= {I_DATA, address[7:0]}; tstate <= 0; end
+
+        endcase
 
         // Cx INC Rn | Dx DEC Rn
         8'b1100_xxxx: begin r[opcode[3:0]] <= regin + 1; zf <= regin == 16'hFFFF; ip <= ip + 1; tstate <= 0; end
