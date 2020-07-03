@@ -150,6 +150,8 @@ void CPU::debug() {
             case 0xB0: sprintf(ts, "ORA     r%d", lo); break;
             case 0xC0: sprintf(ts, "INC     r%d", lo); break;
             case 0xD0: sprintf(ts, "DEC     r%d", lo); break;
+            case 0xE0: sprintf(ts, "PUSH    r%d", lo); break;
+            case 0xF0: sprintf(ts, "POP     r%d", lo); break;
         }
 
         cursor &= 0xFFFF;
@@ -306,6 +308,21 @@ int CPU::step() {
         // INC|DEC r
         case 0xC0: regs[lo]++; zf = !regs[lo]; break;
         case 0xD0: regs[lo]--; zf = !regs[lo]; break;
+
+        // PUSH Rn
+        case 0xE0:
+
+            regs[15] -= 2;
+            write(regs[15],   regs[lo] & 255);
+            write(regs[15]+1, regs[lo] >> 8);
+            break;
+
+        // POP Rn
+        case 0xF0:
+
+            regs[15] += 2;
+            regs[lo] = mem[ (word)(regs[15]-2) ] + mem[ (word)(regs[15]-1) ]*256;
+            break;
     }
 
     return 0;

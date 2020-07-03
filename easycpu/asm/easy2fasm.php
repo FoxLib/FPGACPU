@@ -32,14 +32,11 @@ foreach ($rows as $id => $row) {
 
         $sfile = preg_replace("~\.asm~i", '.s', $c[1]);
         $row   = str_replace($c[0], 'include "'.$sfile.'"', $row);
-    }
-    else if (preg_match('~ldi\s+r(\d+),(.+)~i', $row, $c)) {
+    } else if (preg_match('~ldi\s+r(\d+),(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_LDI '.$c[1].','.$c[2], $row);
     } else if (preg_match('~(lda|sta)\s+\[r(\d+)\]~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_MEM '.$c[2], $row);
-    } else if (preg_match('~(lda|sta)\s+r(\d+)~i', $row, $c)) {
-        $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_REG '.$c[2], $row);
-    } else if (preg_match('~(add|sub|and|xor|ora|inc|dec)\s+r(\d+)~i', $row, $c)) {
+    } else if (preg_match('~(add|sub|and|xor|ora|inc|dec|lda|sta|push|pop)\s+r(\d+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_REG '.$c[2], $row);
     } else if (preg_match('~jmp\s+(nc|c|nz|z),(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_JMP_'.strtoupper($c[1]).' '.$c[2], $row);
@@ -102,6 +99,8 @@ macro INS_XOR_REG _r { db 0xA0 + _r }
 macro INS_ORA_REG _r { db 0xB0 + _r }
 macro INS_INC_REG _r { db 0xC0 + _r }
 macro INS_DEC_REG _r { db 0xD0 + _r }
+macro INS_PUSH_REG _r { db 0xE0 + _r }
+macro INS_POP_REG _r  { db 0xF0 + _r }
 macro INS_SHR        { db 0x12 }
 macro INS_SWAP       { db 0x14 }
 macro INS_RET        { db 0x16 }

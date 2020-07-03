@@ -10,34 +10,33 @@ module cpu
 // ---------------------------------------------------------------------
 assign  O_ADDR = alt ? address : ip; // Указатель в память | текущий ip
 // ---------------------------------------------------------------------
-initial O_WREN = 1'b0;
-initial O_DATA = 8'h00;
-initial r[ 2]  = 16'h0001;
-initial r[15]  = 16'h0000;
+initial O_WREN      = 1'b0;
+initial O_DATA      = 8'h00;
+initial r[ 2]       = 16'h1521;
+initial r[15]       = 16'h0000;
 // ---------------------------------------------------------------------
-reg         alt      = 0;           // 0-IP, 1-Address
-reg [15:0]  ip       = 16'h0000;
-reg [15:0]  address  = 16'h0000;
-reg [ 7:0]  mopcode  = 8'h00;       // Сохраненный опкод
-reg [ 2:0]  tstate   = 3'h0;        // Состояние исполнения инструкции
-reg [15:0]  tmp      = 16'h0000;
+reg         alt     = 0;           // 0-IP, 1-Address
+reg [15:0]  ip      = 16'h0000;
+reg [15:0]  address = 16'h0000;
+reg [ 7:0]  mopcode = 8'h00;       // Сохраненный опкод
+reg [ 2:0]  tstate  = 3'h0;        // Состояние исполнения инструкции
+reg [15:0]  tmp     = 16'h0000;
 // ---------------------------------------------------------------------
-reg [15:0]  r[16];                  // 16 регистров процессора 256 bit
-reg [15:0]  acc      = 16'h0002;    // Аккумулятор
-reg         cf       = 1'b0;        // Carry Flag
-reg         zf       = 1'b0;        // Zero Flag
+reg [15:0]  r[16];                 // 16 регистров процессора 256 bit
+reg [15:0]  acc     = 16'h0002;    // Аккумулятор
+reg         cf      = 1'b0;        // Carry Flag
+reg         zf      = 1'b0;        // Zero Flag
 // ---------------------------------------------------------------------
-wire [7:0]  opcode   = tstate? mopcode : I_DATA; // Текущий опкод
-wire [15:0] regin    = r[ opcode[3:0] ];
-wire [ 1:0] cond     = {zf, cf};
-wire [16:0] alu_add  = acc + regin;
-wire [16:0] alu_sub  = acc - regin;
-wire [15:0] alu_and  = acc & regin;
-wire [15:0] alu_xor  = acc ^ regin;
-wire [15:0] alu_ora  = acc | regin;
+wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
+wire [15:0] regin   = r[ opcode[3:0] ];
+wire [ 1:0] cond    = {zf, cf};
+wire [16:0] alu_add = acc + regin;
+wire [16:0] alu_sub = acc - regin;
+wire [15:0] alu_and = acc & regin;
+wire [15:0] alu_xor = acc ^ regin;
+wire [15:0] alu_ora = acc | regin;
 // ---------------------------------------------------------------------
-
-wire [15:0] __r = r[15];
+wire [15:0] __r = r[3];
 
 always @(posedge CLOCK) begin
 
@@ -175,6 +174,24 @@ always @(posedge CLOCK) begin
         // Cx INC Rn | Dx DEC Rn
         8'b1100_xxxx: begin r[opcode[3:0]] <= regin + 1; zf <= regin == 16'hFFFF; ip <= ip + 1; tstate <= 0; end
         8'b1101_xxxx: begin r[opcode[3:0]] <= regin - 1; zf <= regin == 16'h0001; ip <= ip + 1; tstate <= 0; end
+
+        // Ex PUSH Rn
+        8'b1110_xxxx: case (tstate)
+
+            0: begin ip <= ip + 1; alt <= 1; address <= r[15] - 2; O_DATA <= regin[7:0]; O_WREN <= 1; r[15] <= r[15] - 2; end
+            1: begin address <= address + 1; O_DATA <= regin[15:8]; end
+            2: begin tstate <= 0; O_WREN <= 0; alt <= 0; end
+
+        endcase
+
+        // Fx POP Rn
+        8'b1111_xxxx: case (tstate)
+
+            0: begin ip <= ip + 1; address <= r[15]; r[15] <= r[15] + 2; alt <= 1; end
+            1: begin tmp[7:0] <= I_DATA; address <= address + 1; end
+            2: begin r[opcode[3:0]] <= {I_DATA, tmp[7:0]}; tstate <= 0; alt <= 0; end
+
+        endcase
 
     endcase
 
