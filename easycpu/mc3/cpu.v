@@ -12,20 +12,18 @@ assign  O_ADDR = alt ? address : ip; // Указатель в память | т�
 // ---------------------------------------------------------------------
 initial O_WREN      = 1'b0;
 initial O_DATA      = 8'h00;
-initial r[ 2]       = 16'h1521;
-initial r[15]       = 16'h0000;
 // ---------------------------------------------------------------------
-reg         alt     = 0;           // 0-IP, 1-Address
-reg [15:0]  ip      = 16'h0000;
-reg [15:0]  address = 16'h0000;
-reg [ 7:0]  mopcode = 8'h00;       // Сохраненный опкод
-reg [ 2:0]  tstate  = 3'h0;        // Состояние исполнения инструкции
-reg [15:0]  tmp     = 16'h0000;
+reg         alt     = 0;            // 0-IP, 1-Address
+reg [15:0]  address = 16'h0000;     // Указатель адреса
+reg [ 7:0]  mopcode = 8'h00;        // Сохраненный опкод
+reg [ 2:0]  tstate  = 3'h0;         // Состояние исполнения инструкции
+reg [15:0]  tmp     = 16'h0000;     // Временный регистр
 // ---------------------------------------------------------------------
-reg [15:0]  r[16];                 // 16 регистров процессора 256 bit
-reg [15:0]  acc     = 16'h0002;    // Аккумулятор
-reg         cf      = 1'b0;        // Carry Flag
-reg         zf      = 1'b0;        // Zero Flag
+reg [15:0]  acc     = 16'h0002;     // Аккумулятор
+reg         cf      = 1'b0;         // Carry Flag
+reg         zf      = 1'b0;         // Zero Flag
+reg [15:0]  r[16];                  // 16 регистров процессора 256 bit
+reg [15:0]  ip      = 16'h0000;     // Счетчик инструкции
 // ---------------------------------------------------------------------
 wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
 wire [15:0] regin   = r[ opcode[3:0] ];
@@ -36,7 +34,6 @@ wire [15:0] alu_and = acc & regin;
 wire [15:0] alu_xor = acc ^ regin;
 wire [15:0] alu_ora = acc | regin;
 // ---------------------------------------------------------------------
-wire [15:0] __r = r[3];
 
 always @(posedge CLOCK) begin
 
@@ -48,9 +45,9 @@ always @(posedge CLOCK) begin
         // 0x LDI Rn, **
         8'b0000_xxxx: case (tstate)
 
-            0: begin tstate <= 1; ip <= ip + 1; end
-            1: begin tstate <= 2; ip <= ip + 1; tmp[7:0] <= I_DATA; end
-            2: begin r[ opcode[3:0] ] <= {I_DATA, tmp[7:0]}; ip <= ip + 1; tstate <= 0; end
+            0: begin ip <= ip + 1; end
+            1: begin ip <= ip + 1; tmp[7:0] <= I_DATA; end
+            2: begin ip <= ip + 1; r[ opcode[3:0] ] <= {I_DATA, tmp[7:0]}; tstate <= 0; end
 
         endcase
 
@@ -61,7 +58,7 @@ always @(posedge CLOCK) begin
             1: begin ip <= ip + 1; address[ 7:0] <= I_DATA; end
             2: begin ip <= ip + 1; address[15:8] <= I_DATA; alt <= 1; end
             3: begin acc[ 7:0] <= I_DATA; address <= address + 1; end
-            4: begin tstate <= 0; acc[15:8] <= I_DATA; alt <= 0; end
+            4: begin acc[15:8] <= I_DATA; alt <= 0; tstate <= 0;  end
 
         endcase
 
@@ -72,7 +69,7 @@ always @(posedge CLOCK) begin
             1: begin ip <= ip + 1; address[ 7:0] <= I_DATA; end
             2: begin ip <= ip + 1; address[15:8] <= I_DATA; alt <= 1; O_DATA <= acc[7:0]; O_WREN <= 1'b1; end
             3: begin O_DATA <= acc[15:8]; address <= address + 1; end
-            4: begin tstate <= 0; alt <= 0; O_WREN <= 1'b0; end
+            4: begin alt <= 0; O_WREN <= 1'b0; tstate <= 0; end
 
         endcase
 
@@ -118,8 +115,8 @@ always @(posedge CLOCK) begin
         // 2x LDA [Rn] Загрузка 16-битных данных по адресу Rn
         8'b0010_xxxx: case (tstate)
 
-            0: begin address <= regin; alt <= 1'b1; ip <= ip + 1; end
-            1: begin address <= address + 1'b1; acc[7:0] <= I_DATA; end
+            0: begin ip <= ip + 1; address <= regin; alt <= 1'b1; end
+            1: begin acc[ 7:0] <= I_DATA; address <= address + 1'b1; end
             2: begin acc[15:8] <= I_DATA; alt <= 0; tstate <= 0; end
 
         endcase
