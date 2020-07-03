@@ -73,11 +73,13 @@ pll PLL(
 wire [11:0] font_addr; wire [7:0] font_data;
 wire [11:0] char_addr; wire [7:0] char_data;
 wire [10:0] cursor = 0;
+wire [7:0]  qw_videoram;
+wire [7:0]  qw_videofont;
 
 vga VGA
 (
     // Опорная частота
-    .CLOCK (clock_25),
+    .CLOCK  (clock_25),
     // Выходные данные
     .VGA_R  (vga_red),
     .VGA_G  (vga_green),
@@ -94,25 +96,37 @@ vga VGA
 );
 
 // #B8000:$B8FFF Видеопамять
+// ---------------------------------------------------------------------
 videoram VideoMemory
 (
     .clock   (clk),
     .addr_rd (char_addr),
     .q       (char_data),
+    .addr_wr (o_addr[11:0]),
+    .data_wr (o_data),
+    .qw      (qw_videoram),
+    .wren    (o_wren & wren_videoram),
 );
 
 // #C0000:$C0FFF Знакогенератор
+// ---------------------------------------------------------------------
 videofont FontGenerator
 (
     .clock   (clk),
     .addr_rd (font_addr),
     .q       (font_data),
+    .addr_wr (o_addr[11:0]),
+    .data_wr (o_data),
+    .qw      (qw_videofont),
+    .wren    (o_wren & wren_videofont),
 );
-wire [7:0] ps2data;
 
 // ---------------------------------------------------------------------
 // Контроллер клавиатуры
 // ---------------------------------------------------------------------
+
+wire [7:0] ps2data;
+
 ps2keyboard keyb
 (
     .CLOCK_50           (clock_50),    // Тактовый генератор на 50 Мгц
@@ -130,5 +144,46 @@ always @(posedge clock_50) begin
 
 end
 */
+
+// ---------------------------------------------------------------------
+// Контроллер памяти
+// ---------------------------------------------------------------------
+reg         wren_videoram;
+reg         wren_videofont;
+reg [7:0]   i_data;
+
+always @* begin
+
+    i_data = 0;
+    wren_videoram  = 0;
+    wren_videofont = 0;
+
+    // Выборка памяти
+    casex (o_addr)
+
+        16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
+        16'b1110_xxxx_xxxx_xxxx: begin i_data = qw_videofont; wren_videofont = 1'b1; end
+
+    endcase
+
+end
+
+// ---------------------------------------------------------------------
+// Микропроцессор
+// ---------------------------------------------------------------------
+
+wire [15:0] o_addr;
+wire [ 7:0] o_data;
+wire        o_wren;
+
+cpu EasyCPU
+(
+    .CLOCK      (locked & clock_25),
+    .I_DATA     (i_data),
+    .O_ADDR     (o_addr),
+    .O_DATA     (o_data),
+    .O_WREN     (o_wren),
+);
+
 
 endmodule
