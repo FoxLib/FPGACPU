@@ -1,4 +1,22 @@
 
+cls:    ; Очистка экрана
+        ldi     r0, 0
+        ldi     r1, $f000
+        ldi     r2, 2000
+@@:     lda     $1700
+        sta     [r1]
+        inc     r1
+        swap
+        sta     [r1]
+        inc     r1
+        dec     r2
+        jmp nz, @b
+
+        ; Пропись текста
+        ldi     r1, $f000 + 2*(80 + 2)
+        ldi     r2, mesg
+        call    print
+
         ; Отслеживание нажатия клавиши десу падла
         ldi     r1, $FFA0
         ldi     r2, $FFA1
@@ -13,38 +31,6 @@
         inc     r4
         inc     r4
         bra     @b
-
-cls:    ; Очистка экрана
-        ldi     r0, 0
-        ldi     r1, $f000
-        ldi     r2, 2000
-@@:     lda     $1700
-        sta     [r1]
-        inc     r1
-        swap
-        sta     [r1]
-        inc     r1
-        dec     r2
-        jmp nz, @b
-
-@@:     ldi     r1, $FFA0
-        ldi     r2, $F000
-        lda     [r1]
-        sta     [r2]
-        inc     r2
-        inc     r2
-        inc     r1
-        lda     [r1]
-        sta     [r2]
-        bra     @b
-
-
-
-        ; Пропись текста
-        ldi     r1, $f000 + 2*(80 + 2)
-        ldi     r2, mesg
-        call    print
-@@:     bra     @b
 
 ; Печать строки (r2) на экране (r1)
 ; ----------------------------------------------------------------------

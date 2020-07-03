@@ -6,4 +6,4 @@
 @@:     bra     @b
 
         include "print.asm"
-mesg    db "NotStonks",0
+mesg    db "NotStonks:Русския Симбалы Тожэ Паддэржывайутся",0
