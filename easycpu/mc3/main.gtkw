@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Jul  3 13:24:10 2020
+[*] Fri Jul  3 16:13:59 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/easycpu/mc3/main.vcd"
-[dumpfile_mtime] "Fri Jul  3 13:22:18 2020"
-[dumpfile_size] 72024
+[dumpfile_mtime] "Fri Jul  3 16:13:36 2020"
+[dumpfile_size] 82681
 [savefile] "/disk/fox/dev/fpgacpu/easycpu/mc3/main.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 75 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 105 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
 [sst_width] 243
 [signals_width] 187
@@ -25,12 +25,12 @@ main.clk25
 @22
 [color] 3
 main.EasyCPU.O_ADDR[15:0]
-@23
 main.EasyCPU.I_DATA[7:0]
-@22
 main.EasyCPU.O_DATA[7:0]
 @28
 main.EasyCPU.O_WREN
+@29
+main.EasyCPU.alt
 @1000200
 -IOMEM
 @22
@@ -40,11 +40,13 @@ main.EasyCPU.opcode[7:0]
 [color] 7
 main.EasyCPU.tstate[2:0]
 @22
-main.EasyCPU.tmp[7:0]
 main.EasyCPU.__r[15:0]
 main.EasyCPU.acc[15:0]
 @28
 main.EasyCPU.cf
 main.EasyCPU.zf
+@22
+main.EasyCPU.tmp[15:0]
+main.EasyCPU.ip[15:0]
 [pattern_trace] 1
 [pattern_trace] 0

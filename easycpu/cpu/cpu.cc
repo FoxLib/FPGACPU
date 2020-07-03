@@ -222,8 +222,8 @@ int CPU::step() {
                 // LDA [**] word
                 case 0: tmp = fetch_word(); acc = mem[tmp] + 256*mem[tmp + 1]; break;
 
-                // STA [**] byte
-                case 1: write(fetch_word(), acc); break;
+                // STA [**] word
+                case 1: tmp = fetch_word(); write(tmp, acc); write(tmp+1, acc>>8); break;
 
                 // SHR Сдвиг вправо
                 case 2: cf = acc & 1; acc = acc >> 1; zf = !acc; break;
