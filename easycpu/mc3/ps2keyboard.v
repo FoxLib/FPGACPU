@@ -7,8 +7,9 @@
  * www.eecg.toronto.edu/~jayar/ece241_08F/AudioVideoCores/ps2/ps2.html       *
  *****************************************************************************/
 
-module ps2keyboard #(parameter INITIALIZE_MOUSE = 0) (
-
+// https://www.chipverify.com/verilog/verilog-parameters
+module ps2keyboard #(parameter INITIALIZE_MOUSE = 0)
+(
     // Inputs
     CLOCK_50,
     reset,
