@@ -155,14 +155,14 @@ ps2keyboard #(.INITIALIZE_MOUSE(0)) keyb
 // Контроллер мыши
 // ---------------------------------------------------------------------
 
-reg  [7:0] msdata;
-reg  [7:0] mscnt;
 wire [7:0] ps2mouse;
 wire       ps2hitms;
-reg  [7:0] ps2ms_command;
-reg  [2:0] ps2ms_send_cmd;
 wire       ps2ms_cws;
 wire       ps2ms_ect;
+reg  [7:0] msdata;
+reg  [7:0] mscnt;
+reg  [7:0] ps2ms_command;
+reg  [2:0] ps2ms_send_cmd;
 reg  [3:0] ps2ms_cws_hits;
 reg  [3:0] ps2ms_ect_hits;
 
