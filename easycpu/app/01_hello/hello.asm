@@ -26,10 +26,8 @@ cls:    ; Очистка экрана
 @@:     lda     [r2]
         xor     r3              ; Проверка изменений
         jmp z,  @b
-        lda     [r2]
-        sta     r3              ; mov r3, [r2]
-        lda     [r1]
-        sta     [r4]            ; mov [r4], [r1]
+        mov     r3, [r2]
+        mov     [r4], [r1]
         sta     [r5]
         inc     r4
         inc     r4

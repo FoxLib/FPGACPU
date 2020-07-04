@@ -4,6 +4,8 @@
 #define word    unsigned short
 #define dword   unsigned int
 
+static const char* cond[4] = {"NC", "C", "NZ", "Z"};
+
 class CPU {
 
 protected:
@@ -31,6 +33,7 @@ public:
     int     step();
     byte    fetch_byte();
     word    fetch_word();
+    int     fetch_signed();
     void    write(word addr, byte data);
     void    update_char(int addr);
 };

@@ -1,0 +1,9 @@
+
+>   Ассемблер основан на FASM
+
+    Поддерживаемые инструкции: easycpu.txt
+    Дополнительные инструкции:
+
+        mov a, b        | lda b, sta a
+        shl a           | lda a, add a, sta a
+        shr a           | lda a, shr, sta a

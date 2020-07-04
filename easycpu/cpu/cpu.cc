@@ -9,10 +9,12 @@ CPU::CPU() {
     for (int id = 0x0000; id <= 0xFFFF; id++) mem[id] = 0;
     for (int id = 0xF001; id <  0xFFA0; id += 2) mem[id] = 0x07;
 
-
     ip = 0;
     up = 0;
     ds = 0;
+
+    regs[15] = 0xE000;
+
     screen_update();
 }
 
@@ -130,18 +132,29 @@ void CPU::debug() {
 
                 switch (lo) {
 
+                    // BRA *
                     case 0x00:
 
-                        tmp = mem[cursor++];
-                        if (tmp & 0x80) tmp -= 256;
+                        tmp = mem[cursor++]; if (tmp & 0x80) tmp -= 256;
                         sprintf(ts, "BRA     $%04X", cursor + tmp);
                         break;
 
+                    // JMP **
                     case 0x01: sprintf(ts, "JMP     $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
                     case 0x02: sprintf(ts, "JMP NC, $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
                     case 0x03: sprintf(ts, "JMP C,  $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
                     case 0x04: sprintf(ts, "JMP NZ, $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
                     case 0x05: sprintf(ts, "JMP Z,  $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
+
+                    // BRA <cond>, *
+                    case 0x0A:
+                    case 0x0B:
+                    case 0x0C:
+                    case 0x0D:
+
+                        tmp = mem[cursor++]; if (tmp & 0x80) tmp -= 256;
+                        sprintf(ts, "BRA %s, $%04X", cond[lo-0x0A], cursor + tmp);
+                        break;
                 }
                 break;
 
@@ -194,6 +207,12 @@ word CPU::fetch_word() {
     byte l = fetch_byte();
     byte h = fetch_byte();
     return 256*h + l;
+}
+
+int CPU::fetch_signed() {
+
+    byte b = fetch_byte();
+    return b & 0x80 ? b - 256 : b;
 }
 
 void CPU::write(word addr, byte data) {
@@ -293,6 +312,12 @@ int CPU::step() {
                 case 3: tmp = fetch_word(); if ( cf) ip = tmp; break;
                 case 4: tmp = fetch_word(); if (!zf) ip = tmp; break;
                 case 5: tmp = fetch_word(); if ( zf) ip = tmp; break;
+
+                // BRA <cond>, *
+                case 10: tmp = fetch_signed(); if (!cf) ip += tmp; break;
+                case 11: tmp = fetch_signed(); if ( cf) ip += tmp; break;
+                case 12: tmp = fetch_signed(); if (!zf) ip += tmp; break;
+                case 13: tmp = fetch_signed(); if ( zf) ip += tmp; break;
             }
             break;
 

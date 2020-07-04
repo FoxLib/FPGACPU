@@ -11,8 +11,9 @@ if ($filename && $filename[0] == '-') {
 $dir = __DIR__;
 
 // Загрузка файла
-$rows = load_stream($filename);
-foreach ($rows as $id => $row) {
+$rows = [];
+$list = load_stream($filename);
+foreach ($list as $row) {
 
     // Компиляция include
     if (preg_match('~include\s"(.+)"~i', $row, $c)) {
@@ -20,6 +21,44 @@ foreach ($rows as $id => $row) {
         $sfile = preg_replace("~\.asm~i", '.s', $c[1]);
         $comm  = "php $dir/easy2fasm.php -".$c[1]." > ".$sfile;
         `$comm`;
+    }
+}
+
+// Замена инструкции
+foreach ($list as $row) {
+
+    // MOV a, b
+    if (preg_match('~mov\s(.+),(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    LDA " . trim($c[2]);
+        $rows[] = "    STA " . trim($c[1]);
+    }
+    // SHL a
+    elseif (preg_match('~shl\s(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    LDA " . trim($c[1]);
+        $rows[] = "    ADD " . trim($c[1]);
+        $rows[] = "    STA " . trim($c[1]);
+    }
+    // SHR a
+    elseif (preg_match('~shr\s(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    LDA " . trim($c[1]);
+        $rows[] = "    SHR";
+        $rows[] = "    STA " . trim($c[1]);
+    }
+    else if (preg_match('~(add|and|xor|ora)\s(.+),(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    LDA " . trim($c[3]);
+        $rows[] = "  ".$c[1]." ".$c[2];
+        $rows[] = "    STA " . trim($c[2]);
+    }
+    else {
+        $rows[] = $row;
     }
 }
 
@@ -32,23 +71,35 @@ foreach ($rows as $id => $row) {
 
         $sfile = preg_replace("~\.asm~i", '.s', $c[1]);
         $row   = str_replace($c[0], 'include "'.$sfile.'"', $row);
-    } else if (preg_match('~ldi\s+r(\d+),(.+)~i', $row, $c)) {
+    }
+    else if (preg_match('~ldi\s+r(\d+),(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_LDI '.$c[1].','.$c[2], $row);
-    } else if (preg_match('~(lda|sta)\s+\[r(\d+)\]~i', $row, $c)) {
+    }
+    else if (preg_match('~(lda|sta)\s+\[r(\d+)\]~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_MEM '.$c[2], $row);
-    } else if (preg_match('~(add|sub|and|xor|ora|inc|dec|lda|sta|push|pop)\s+r(\d+)~i', $row, $c)) {
+    }
+    else if (preg_match('~(add|sub|and|xor|ora|inc|dec|lda|sta|push|pop)\s+r(\d+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_REG '.$c[2], $row);
-    } else if (preg_match('~jmp\s+(nc|c|nz|z),(.+)~i', $row, $c)) {
+    }
+    else if (preg_match('~jmp\s+(nc|c|nz|z),(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_JMP_'.strtoupper($c[1]).' '.$c[2], $row);
-    } else if (preg_match('~(jmp|call)\s+(.+)~i', $row, $c)) {
+    }
+    else if (preg_match('~(jmp|call)\s+(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).' '.$c[2], $row);
-    } else if (preg_match('~bra\s+(.+)~i', $row, $c)) {
+    }
+    else if (preg_match('~bra\s+(nc|c|nz|z),(.+)~i', $row, $c)) {
+        $row = str_replace($c[0], 'INS_BRA_'.strtoupper($c[1]).' '.$c[2], $row);
+    }
+    else if (preg_match('~bra\s+(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_BRA '.$c[1], $row);
-    } else if (preg_match('~(lda|sta)\s+\[(.+)\]~i', $row, $c)) {
+    }
+    else if (preg_match('~(lda|sta)\s+\[(.+)\]~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_'.strtoupper($c[1]).'_IMMEM '.$c[2], $row);
-    } else if (preg_match('~lda\s+(.+)~i', $row, $c)) {
+    }
+    else if (preg_match('~lda\s+(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_LDA_I16 '.$c[1], $row);
-    } else if (preg_match($pat = '~\b(shr|swap|ret|brk)\b~i', $row)) {
+    }
+    else if (preg_match($pat = '~\b(shr|swap|ret|brk)\b~i', $row)) {
         $row = preg_replace_callback($pat, function($e) { return 'INS_' . strtoupper($e[1]); }, $row);
     }
 
@@ -88,6 +139,10 @@ macro INS_JMP_NC _a  { db 0x82\ndw _a }
 macro INS_JMP_C _a   { db 0x83\ndw _a }
 macro INS_JMP_NZ _a  { db 0x84\ndw _a }
 macro INS_JMP_Z _a   { db 0x85\ndw _a }
+macro INS_BRA_NC _a  { db 0x8A\ndb (_a - 1) - $ }
+macro INS_BRA_C _a   { db 0x8B\ndb (_a - 1) - $ }
+macro INS_BRA_NZ _a  { db 0x8C\ndb (_a - 1) - $ }
+macro INS_BRA_Z _a   { db 0x8D\ndb (_a - 1) - $ }
 macro INS_LDA_MEM _r { db 0x20 + _r }
 macro INS_STA_MEM _r { db 0x30 + _r }
 macro INS_LDA_REG _r { db 0x40 + _r }
