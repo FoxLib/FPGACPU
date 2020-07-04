@@ -20,6 +20,7 @@ cls:    ; Очистка экрана
         ; Отслеживание нажатия клавиши десу падла
         ldi     r1, $FFA0
         ldi     r2, $FFA1
+        ldi     r5, $FFA2
         ldi     r3, 0           ; been
         ldi     r4, $F000
 @@:     lda     [r2]
@@ -29,6 +30,7 @@ cls:    ; Очистка экрана
         sta     r3              ; mov r3, [r2]
         lda     [r1]
         sta     [r4]            ; mov [r4], [r1]
+        sta     [r5]
         inc     r4
         inc     r4
         bra     @b

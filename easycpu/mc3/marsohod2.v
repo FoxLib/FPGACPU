@@ -8,7 +8,7 @@ module marsohod2(
     input   wire        clk,
 
     // LED      4
-    output  wire [3:0]  led,
+    output  reg [3:0]   led,
 
     // KEYS     2
     input   wire [1:0]  keys,
@@ -177,6 +177,19 @@ always @* begin
         16'b0xxx_xxxx_xxxx_xxxx: begin i_data = qw_prgram;    wren_prgram    = 1'b1; end
         16'b1110_xxxx_xxxx_xxxx: begin i_data = qw_videofont; wren_videofont = 1'b1; end
         16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
+
+    endcase
+
+end
+
+// Маппинг портов, расположенных в памяти $FFA0..$FFFF
+always @(posedge clk) begin
+
+    if (o_wren)
+    case (o_addr)
+
+        // Управление светодиодами
+        16'hFFA2: led[3:0] <= o_data[3:0];
 
     endcase
 
