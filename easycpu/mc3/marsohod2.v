@@ -52,7 +52,7 @@ module marsohod2(
 
     // PS/2     keyb / mouse
     inout   wire [1:0]  ps2_keyb,   // ps2_keyb[0] = DAT,   ps2_mouse[0] = DAT
-    inout   wire [1:0]  ps2_mouse   // ps2_keyb[1] = CLK,   ps2_mouse[0] = CLK
+    inout   wire [1:0]  ps2_mouse   // ps2_keyb[1] = CLK,   ps2_mouse[1] = CLK
 );
 // --------------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ pll PLL(
 // ---------------------------------------------------------------------
 wire [11:0] font_addr; wire [7:0] font_data;
 wire [11:0] char_addr; wire [7:0] char_data;
-wire [10:0] cursor = 0;
+reg  [10:0] cursor = 0;
 wire [7:0]  qw_videoram;
 wire [7:0]  qw_videofont;
 wire [7:0]  qw_prgram;
@@ -140,19 +140,57 @@ prgram ProgramMemory
 reg  [7:0] keybxt;
 reg  [7:0] keybcnt;
 wire [7:0] ps2data;
+wire       ps2hit;
 
-ps2keyboard keyb
+ps2keyboard #(.INITIALIZE_MOUSE(0)) keyb
 (
-    .CLOCK_50           (clock_50),    // Тактовый генератор на 50 Мгц
-    .PS2_CLK            (ps2_keyb[1]), // Таймингс PS/2
-    .PS2_DAT            (ps2_keyb[0]), // Данные с PS/2
-    .received_data      (ps2data),     // Принятые данные
-    .received_data_en   (ps2hit),      // Нажата клавиша
+    .CLOCK_50          (clock_50 & locked), // Тактовый генератор на 50 Мгц
+    .PS2_CLK           (ps2_keyb[1]),       // Тайминг  PS/2 1 
+    .PS2_DAT           (ps2_keyb[0]),       // Данные с PS/2 0 
+    .received_data     (ps2data),           // Принятые данные
+    .received_data_en  (ps2hit),            // Нажата клавиша
+);
+
+// ---------------------------------------------------------------------
+// Контроллер мыши
+// ---------------------------------------------------------------------
+
+reg  [7:0] msdata;
+reg  [7:0] mscnt;
+wire [7:0] ps2mouse;
+wire       ps2hitms;
+reg  [7:0] ps2ms_command;
+reg  [2:0] ps2ms_send_cmd;
+wire       ps2ms_cws;
+wire       ps2ms_ect;
+reg  [3:0] ps2ms_cws_hits;
+reg  [3:0] ps2ms_ect_hits;
+
+ps2keyboard #(.INITIALIZE_MOUSE(1)) mouse
+(
+    .CLOCK_50           (clock_50 & locked),// Тактовый генератор на 50 Мгц
+    // Данные
+    .PS2_CLK            (ps2_mouse[1]),     // Тайминг  PS/2
+    .PS2_DAT            (ps2_mouse[0]),     // Данные с PS/2
+    .received_data      (ps2mouse),         // Принятые данные
+    .received_data_en   (ps2hitms),         // Нажата клавиша
+    // Команды
+    .the_command        (ps2ms_command),
+    .send_command       (ps2ms_send_cmd[2]),
+    .command_was_sent   (ps2ms_cws),
+    .error_communication_timed_out (ps2ms_ect),
 );
 
 // Прием символа (пример)
-always @(posedge clock_50)
-if (ps2hit) begin keybxt <= ps2data; keybcnt <= keybcnt + 1; end
+always @(posedge clock_50) begin
+
+    if (ps2hit)   begin keybxt <= ps2data;  keybcnt <= keybcnt + 1; end
+    if (ps2hitms) begin msdata <= ps2mouse; mscnt   <= mscnt   + 1; end 
+    
+    if (ps2ms_cws) ps2ms_cws_hits <= ps2ms_cws_hits + 1;
+    if (ps2ms_ect) ps2ms_ect_hits <= ps2ms_ect_hits + 1;
+
+end
 
 // ---------------------------------------------------------------------
 // Контроллер памяти
@@ -172,8 +210,15 @@ always @* begin
     // Выборка памяти
     casex (o_addr)
 
+        // I/O Map
         16'hFFA0: i_data = keybxt[7:0]; // Нажатая клавиша AT
-        16'hFFA1: i_data = keybcnt;     // Счетчик нажатых клавиш
+        16'hFFA1: i_data = keybcnt;     // Счетчик полученных байт от клавиатуры
+        16'hFFA2: i_data = msdata[7:0]; // Данные от мыши
+        16'hFFA3: i_data = mscnt;       // Счетчик полученных байт от мыши
+        16'hFFA7: i_data = {ps2ms_ect_hits, ps2ms_cws_hits}; // Счетчик статусов команд
+        16'hFFA8: i_data = keys[1:0] ^ 2'b11; // Клавиши
+
+        // Общая память
         16'b0xxx_xxxx_xxxx_xxxx: begin i_data = qw_prgram;    wren_prgram    = 1'b1; end
         16'b1110_xxxx_xxxx_xxxx: begin i_data = qw_videofont; wren_videofont = 1'b1; end
         16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
@@ -189,9 +234,21 @@ always @(posedge clk) begin
     case (o_addr)
 
         // Управление светодиодами
-        16'hFFA2: led[3:0] <= o_data[3:0];
+        16'hFFA4: led[3:0] <= o_data[3:0];
+        
+        // Команда для мыши
+        16'hFFA5: ps2ms_command     <= o_data;
+        16'hFFA6: ps2ms_send_cmd[0] <= o_data[0];
 
     endcase
+
+end
+
+// Обнаружение отсылки команды к мыши
+always @(negedge clock_50) begin
+
+    ps2ms_send_cmd[2] <= ps2ms_command[1:0] == 2'b01;
+    ps2ms_send_cmd[1] <= ps2ms_send_cmd[0];
 
 end
 

@@ -65,7 +65,7 @@ generate
         assign command_was_sent     = init_done ? command_was_sent_w : 0;
         assign error_communication_timed_out = init_done ? error_communication_timed_out_w : 1;
 
-        reg init_done;
+        reg init_done = 0;
 
         always @(posedge CLOCK_50)
 
@@ -291,7 +291,7 @@ Altera_UP_PS2_Command_Out PS2_Command_Out (
 
     // Bidirectionals
     .PS2_CLK            (PS2_CLK),
-     .PS2_DAT           (PS2_DAT),
+    .PS2_DAT            (PS2_DAT),
 
     // Outputs
     .command_was_sent               (command_was_sent_w),
