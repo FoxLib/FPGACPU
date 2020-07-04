@@ -26,7 +26,7 @@ foreach ($rows as $id => $row) {
 // Выполнение преобразования
 foreach ($rows as $id => $row) {
 
-    $row = iconv("utf8", "cp866", $row);
+    // $row = iconv("utf8", "cp866", $row); // сделать вручную
 
     if (preg_match('~include\s"(.+)"~i', $row, $c)) {
 
@@ -65,7 +65,7 @@ echo (empty($no_macro) ?  macroasm()."\n" : '') . join("\n", $rows);
 function load_stream($filename) {
 
     $rows = [];
-    $fp = @ fopen($f = $filename ?: "php://stdin", "r");
+    $fp = @fopen($f = $filename ?: "php://stdin", "r");
     while ($fp && !feof($fp)) {
         $row = rtrim(fgets($fp));
         if (ltrim($row)) $rows[] = $row;
