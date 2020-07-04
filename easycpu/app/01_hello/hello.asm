@@ -18,24 +18,15 @@ cls:    ; Очистка экрана
         ldi     r1, $f000 + 2*(80 + 2)
         ldi     r2, mesg
         call    print
-        
-        ;
+
 ;; -------------------------------        
-@@:     ldi     r1, $1
-        lda     [$FFA8]
-        and     r1
-        bra  z, @b
-        
-        lda     $01F4
-        sta     [$FFA5]
         ldi     r1, $F000
-        ldi     r3, $00FF
-     
-@@:     lda     [$FFA3]
+        ldi     r3, $00FF    
+@@:     lda     [$FFA3]         ; Mouse Counter
         and     r3
         xor     r2
         bra z,  @b
-        lda     [$FFA2]
+        lda     [$FFA2]         ; Mouse Data
         sta     [r1]
         inc     r1
         inc     r1
