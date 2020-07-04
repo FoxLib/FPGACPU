@@ -137,6 +137,8 @@ prgram ProgramMemory
 // Контроллер клавиатуры
 // ---------------------------------------------------------------------
 
+reg  [7:0] keybxt;
+reg  [7:0] keybcnt;
 wire [7:0] ps2data;
 
 ps2keyboard keyb
@@ -149,13 +151,8 @@ ps2keyboard keyb
 );
 
 // Прием символа (пример)
-/*
-always @(posedge clock_50) begin
-
-    if (ps2hit) led[3:0] <= ps2data[3:0];
-
-end
-*/
+always @(posedge clock_50)
+if (ps2hit) begin keybxt <= ps2data; keybcnt <= keybcnt + 1; end
 
 // ---------------------------------------------------------------------
 // Контроллер памяти
@@ -175,9 +172,11 @@ always @* begin
     // Выборка памяти
     casex (o_addr)
 
+        16'hFFA0: i_data = keybxt[7:0]; // Нажатая клавиша AT
+        16'hFFA1: i_data = keybcnt;     // Счетчик нажатых клавиш
         16'b0xxx_xxxx_xxxx_xxxx: begin i_data = qw_prgram;    wren_prgram    = 1'b1; end
-        16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
         16'b1110_xxxx_xxxx_xxxx: begin i_data = qw_videofont; wren_videofont = 1'b1; end
+        16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
 
     endcase
 
