@@ -27,7 +27,7 @@ reg [15:0]  ip      = 16'h0000;     // Счетчик инструкции
 // ---------------------------------------------------------------------
 wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
 wire [15:0] regin   = r[ opcode[3:0] ];
-wire [ 1:0] cond    = {zf, cf};
+wire [ 1:0] cond    = {cf, zf};
 wire [16:0] alu_add = acc + regin;
 wire [16:0] alu_sub = acc - regin;
 wire [15:0] alu_and = acc & regin;
