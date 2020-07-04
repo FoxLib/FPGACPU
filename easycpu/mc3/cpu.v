@@ -67,9 +67,9 @@ always @(posedge CLOCK) begin
 
             0: begin ip <= ip + 1; end
             1: begin ip <= ip + 1; address[ 7:0] <= I_DATA; end
-            2: begin ip <= ip + 1; address[15:8] <= I_DATA; alt <= 1; O_DATA <= acc[7:0]; O_WREN <= 1'b1; end
+            2: begin O_DATA <= acc[7:0];  address[15:8] <= I_DATA; ip <= ip + 1; alt <= 1; O_WREN <= 1'b1; end
             3: begin O_DATA <= acc[15:8]; address <= address + 1; end
-            4: begin alt <= 0; O_WREN <= 1'b0; tstate <= 0; end
+            4: begin O_WREN <= 1'b0; alt <= 0; tstate <= 0; end
 
         endcase
 
@@ -80,7 +80,7 @@ always @(posedge CLOCK) begin
         8'b0001_0011: case (tstate)
 
             0: begin ip <= ip + 1; end
-            1: begin ip <= ip + 1; acc[7:0]  <= I_DATA; end
+            1: begin ip <= ip + 1; acc[ 7:0] <= I_DATA; end
             2: begin ip <= ip + 1; acc[15:8] <= I_DATA; tstate <= 0; end
 
         endcase
@@ -109,8 +109,8 @@ always @(posedge CLOCK) begin
 
         endcase
 
-        // 17 BRK ==> Полная остановка процессора
-        8'b0001_0111: begin tstate <= 0; end
+        // 17 NOP
+        8'b0001_0111: begin ip <= ip + 1; tstate <= 0; end
 
         // 2x LDA [Rn] Загрузка 16-битных данных по адресу Rn
         8'b0010_xxxx: case (tstate)

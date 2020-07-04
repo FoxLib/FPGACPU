@@ -75,6 +75,7 @@ wire [11:0] char_addr; wire [7:0] char_data;
 wire [10:0] cursor = 0;
 wire [7:0]  qw_videoram;
 wire [7:0]  qw_videofont;
+wire [7:0]  qw_prgram;
 
 vga VGA
 (
@@ -95,7 +96,7 @@ vga VGA
     .CURSOR     (cursor)
 );
 
-// #B8000:$B8FFF Видеопамять
+// #F000:$FFFF Видеопамять
 // ---------------------------------------------------------------------
 videoram VideoMemory
 (
@@ -108,7 +109,7 @@ videoram VideoMemory
     .wren    (o_wren & wren_videoram),
 );
 
-// #C0000:$C0FFF Знакогенератор
+// #E000:$EFFF Знакогенератор
 // ---------------------------------------------------------------------
 videofont FontGenerator
 (
@@ -119,6 +120,17 @@ videofont FontGenerator
     .data_wr (o_data),
     .qw      (qw_videofont),
     .wren    (o_wren & wren_videofont),
+);
+
+// #0000:$7FFF Память программ
+// ---------------------------------------------------------------------
+prgram ProgramMemory
+(
+    .clock   (clk),
+    .addr_wr (o_addr[14:0]),
+    .data_wr (o_data),
+    .qw      (qw_prgram),
+    .wren    (o_wren & wren_prgram),
 );
 
 // ---------------------------------------------------------------------
@@ -148,19 +160,22 @@ end
 // ---------------------------------------------------------------------
 // Контроллер памяти
 // ---------------------------------------------------------------------
+
+reg [7:0]   i_data;
+reg         wren_prgram;
 reg         wren_videoram;
 reg         wren_videofont;
-reg [7:0]   i_data;
 
 always @* begin
 
-    i_data = 0;
-    wren_videoram  = 0;
-    wren_videofont = 0;
+    i_data          = 0;
+    wren_videoram   = 0;
+    wren_videofont  = 0;
 
     // Выборка памяти
     casex (o_addr)
 
+        16'b0xxx_xxxx_xxxx_xxxx: begin i_data = qw_prgram;    wren_prgram    = 1'b1; end
         16'b1111_xxxx_xxxx_xxxx: begin i_data = qw_videoram;  wren_videoram  = 1'b1; end
         16'b1110_xxxx_xxxx_xxxx: begin i_data = qw_videofont; wren_videofont = 1'b1; end
 
@@ -184,6 +199,5 @@ cpu EasyCPU
     .O_DATA     (o_data),
     .O_WREN     (o_wren),
 );
-
 
 endmodule
