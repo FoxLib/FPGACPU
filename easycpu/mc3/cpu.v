@@ -74,7 +74,6 @@ always @(posedge CLOCK) begin
 
         irq_keyb    <= IRQ_KEYB;
         irq_call    <= 1;
-        tmp         <= ip;
 
     end
     // Обработка прерывания от мыши
