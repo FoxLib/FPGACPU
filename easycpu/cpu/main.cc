@@ -19,16 +19,13 @@ int main(int argc, char* argv[]) {
 
     while (int evt = mainloop()) {
 
-        if (evt & KEYDOWN) { cpu.sendkey(kbcode(), 1); }
-        if (evt & KEYUP)   { cpu.sendkey(kbcode(), 0); }
-
         // Машина остановлена - отладка
         if (stop) {
 
             if (evt & KEYDOWN) {
 
                 /* F7 Выполнить шаг */
-                if (kbcode() == 65) {
+                if (kbcode() == 0x83) {
 
                     if (debubber_on) {
                         cpu.debugstep();
@@ -39,7 +36,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 /* F4 Обмен экрана */
-                else if (kbcode() == 62) {
+                else if (kbcode() == 0x0C) {
 
                     if (debubber_on) {
                         debubber_on = 0;
@@ -49,19 +46,23 @@ int main(int argc, char* argv[]) {
                         cpu.debug();
                     }
                 }
-                /* F9 Запуск|Останов */
-                else if (kbcode() == 67) {
 
-                    debubber_on = 0;
-                    cpu.screen_update();
-                    stop = 0;
-                }
+            }
+            /* F9 Запуск|Останов */
+            else if ((evt & KEYUP) && kbcode() == 0x01) {
 
-                //printf("%d|", kbcode());
+                debubber_on = 0;
+                cpu.screen_update();
+                stop = 0;
             }
         }
         // Выполниить несколько инструкции [скорость 50 КГц]
         else {
+
+            if (evt & KEYDOWN) { cpu.sendkey(kbcode(), 1); }
+            if (evt & KEYUP)   { cpu.sendkey(kbcode(), 0); }
+
+            cpu.send_irq();
 
             for (int i = 0; i < CPU_FREQUENCY_KHZ*(1000/50); i++) {
                 if (cpu.step()) {
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
             }
 
             // Остановка исполнения
-            if ((evt & KEYDOWN) && (kbcode() == 67) && debubber_on == 0) {
+            if ((evt & KEYUP) && (kbcode() == 0x01) && debubber_on == 0) {
 
                 stop = debubber_on = 1;
                 cpu.setdsip(); cpu.debug();

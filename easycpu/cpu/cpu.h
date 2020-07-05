@@ -4,8 +4,6 @@
 #define word    unsigned short
 #define dword   unsigned int
 
-static const char* cond[4] = {"NC", "C", "NZ", "Z"};
-
 class CPU {
 
 protected:
@@ -16,6 +14,10 @@ protected:
     word    acc;
     word    regs[16];
     byte    cf, zf, intf;
+
+    // Keyboard
+    int     keyb_code_in;
+    byte    keyb_cntr;
 
     // Отладка
     word    up, ds;
@@ -30,6 +32,7 @@ public:
     void    debugstep();
     void    setdsip();
     void    sendkey(int xt, int press);
+    void    send_irq();
     int     step();
     byte    fetch_byte();
     word    fetch_word();

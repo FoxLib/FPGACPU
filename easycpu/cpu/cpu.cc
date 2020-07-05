@@ -3,6 +3,8 @@
 #include <string.h>
 #include "cpu.h"
 
+static const char* cond[4] = {"NC", "C", "NZ", "Z"};
+
 CPU::CPU() {
 
     // Инициализаровать экран
@@ -18,6 +20,7 @@ CPU::CPU() {
     intf = 0;
 
     regs[15] = 0xE000;
+    keyb_cntr = 0;
 
     screen_update();
 }
@@ -193,11 +196,44 @@ void CPU::debug() {
     if (match == 0) { ds = ip; up = ip; debug(); }
 }
 
-// Отправка ключей для того, чтобы определить, что клавиша нажата или отпущена
+// Имитация приходящих данных
 void CPU::sendkey(int xt, int press) {
 
-    mem[0xFFA0] = xt;
-    mem[0xFFA1] = press;
+    if (press) {
+        keyb_code_in = xt;
+    } else if ((xt & 0xFF) == 0xE0) {
+        keyb_code_in = ((xt & 0xFF00) << 8) | 0xF0E0;
+    } else {
+        keyb_code_in = (xt << 8) | 0xF0;
+    }
+}
+
+// Отсылка IRQ
+void CPU::send_irq() {
+
+    int irq_id = 0;
+
+    if (intf) {
+
+        if (int kn = (keyb_code_in & 0xFF)) {
+
+            mem[0xFFA0] = kn;
+            mem[0xFFA1] = (++keyb_cntr) & 0xFF;
+
+            keyb_code_in >>= 8;
+            irq_id = 1;
+        }
+    }
+
+    // Есть вызов прерывания?
+    if (irq_id) {
+
+        regs[15] -= 2;
+        write(regs[15],   ip & 0xFF);
+        write(regs[15]+1, ip >> 8);
+        ip   = 2*irq_id;
+        intf = 0;
+    }
 }
 
 // Выполнить шаг и обновить отладчик

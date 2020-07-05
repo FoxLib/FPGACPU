@@ -1,4 +1,17 @@
 
+        bra     reset
+        bra     irq_keyb
+        bra     $-1
+        bra     $-1
+
+irq_keyb:
+
+        lda     [$FFA0]
+        reti
+
+; ----------------------------------------------------------------------
+reset:  sti
+        bra     $-1
         ldi     r15, 0
 
 cls:    ; Очистка экрана
@@ -19,9 +32,9 @@ cls:    ; Очистка экрана
         ldi     r2, mesg
         call    print
 
-;; -------------------------------        
+;; -------------------------------
         ldi     r1, $F000
-        ldi     r3, $00FF    
+        ldi     r3, $00FF
 @@:     lda     [$FFA3]         ; Mouse Counter
         and     r3
         xor     r2

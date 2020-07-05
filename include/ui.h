@@ -18,6 +18,7 @@ void    color(int fr, int bg);
 void    pout(int col, int row, const char* s);
 int     get_key(SDL_Event event);
 int     kbcode();
+int     kbpressed();
 
 // 8x8
 static const unsigned char biosfont8x8[256][8] = {
