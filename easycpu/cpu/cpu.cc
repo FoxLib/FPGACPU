@@ -13,6 +13,10 @@ CPU::CPU() {
     up = 0;
     ds = 0;
 
+    cf = 0;
+    zf = 0;
+    intf = 0;
+
     regs[15] = 0xE000;
 
     screen_update();
@@ -85,6 +89,7 @@ void CPU::debug() {
     sprintf(ts, "ACC: %04X", acc); pout(2, 18, ts);
     sprintf(ts, " CF: %d",  cf); pout(2, 19, ts);
     sprintf(ts, " ZF: %d",  zf); pout(2, 20, ts);
+    sprintf(ts, " IF: %d",  intf); pout(2, 21, ts);
 
     // Отладчик
     word cursor = up;
@@ -119,6 +124,9 @@ void CPU::debug() {
                     case 0x05: sprintf(ts, "CALL    $%04X", mem[cursor] + 256*mem[cursor+1]); cursor += 2; break;
                     case 0x06: sprintf(ts, "RET"); break;
                     case 0x07: sprintf(ts, "BRK"); break;
+                    case 0x08: sprintf(ts, "RETI"); break;
+                    case 0x09: sprintf(ts, "CLI"); break;
+                    case 0x0A: sprintf(ts, "STI"); break;
                 }
                 break;
 
@@ -267,14 +275,19 @@ int CPU::step() {
 
                 // RET: READWORD, SP+=2
                 case 6:
+                case 8: // RETI
 
                     ip = mem[ regs[15] ] + mem[ regs[15]+1 ]*256;
                     regs[15] += 2;
+                    if (lo) intf = 1;
                     break;
 
                 // BRK Остановка процессора
                 case 7:
                     return 1;
+
+                case 9:  intf = 0; break;
+                case 10: intf = 1; break;
             }
             break;
 

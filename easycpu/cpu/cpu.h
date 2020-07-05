@@ -15,7 +15,7 @@ protected:
     word    opcode;
     word    acc;
     word    regs[16];
-    byte    cf, zf;
+    byte    cf, zf, intf;
 
     // Отладка
     word    up, ds;

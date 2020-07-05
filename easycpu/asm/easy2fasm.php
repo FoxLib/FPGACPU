@@ -57,6 +57,11 @@ foreach ($list as $row) {
         $rows[] = "  ".$c[1]." ".$c[2];
         $rows[] = "    STA " . trim($c[2]);
     }
+    else if (preg_match('~(push|pop)\s(.+)~i', $row, $c)) {
+        foreach (preg_split("~\s+~", trim($c[2])) as $m) {
+            $rows[] = "    ".$c[1]." " . $m;
+        }
+    }
     else {
         $rows[] = $row;
     }
@@ -99,7 +104,7 @@ foreach ($rows as $id => $row) {
     else if (preg_match('~lda\s+(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_LDA_I16 '.$c[1], $row);
     }
-    else if (preg_match($pat = '~\b(shr|swap|ret|brk)\b~i', $row)) {
+    else if (preg_match($pat = '~\b(shr|swap|ret|brk|cli|sti|reti)\b~i', $row)) {
         $row = preg_replace_callback($pat, function($e) { return 'INS_' . strtoupper($e[1]); }, $row);
     }
 
@@ -159,5 +164,8 @@ macro INS_POP_REG _r  { db 0xF0 + _r }
 macro INS_SHR        { db 0x12 }
 macro INS_SWAP       { db 0x14 }
 macro INS_RET        { db 0x16 }
-macro INS_BRK        { db 0x17 }";
+macro INS_BRK        { db 0x17 }
+macro INS_RETI       { db 0x18 }
+macro INS_CLI        { db 0x19 }
+macro INS_STI        { db 0x1A }";
 }

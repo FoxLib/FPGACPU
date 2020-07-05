@@ -1,18 +1,29 @@
+// ПРЕРЫВАНИЯ ----------------------------------------------------------
+// 0 RESET      BRA start
+// 2 KEYB       BRA keyb_irq
+// 4 MOUSE      BRA mouse_irq
+// 6 TIMER      BRA timer_irq
+// ---------------------------------------------------------------------
 module cpu
 (
+    // Общие интерфейсы
     input  wire         CLOCK,      // Типичная частота 25 Мгц
     input  wire [ 7:0]  I_DATA,     // =memory[O_ADDR]
     output wire [15:0]  O_ADDR,     // Запрос в память
     output reg  [ 7:0]  O_DATA,     // Данные на запись
-    output reg          O_WREN      // Разрешение записи
+    output reg          O_WREN,     // Разрешение записи
+    // Триггеры прерываний
+    input  wire         IRQ_KEYB,   // При изменении значения
+    input  wire         IRQ_MOUSE,  // ... запрос на
+    input  wire         IRQ_TIMER   // ... вызов прерывания
 );
 
 // ---------------------------------------------------------------------
-assign  O_ADDR = alt ? address : ip; // Указатель в память | текущий ip
+assign      O_ADDR  = alt ? address : ip; // Указатель в память | текущий ip
 // ---------------------------------------------------------------------
-initial O_WREN      = 1'b0;
-initial O_DATA      = 8'h00;
-initial r[15]       = 16'hE000;     // Вершина стека по умолчанию
+initial     O_WREN  = 1'b0;
+initial     O_DATA  = 8'h00;
+initial     r[15]   = 16'hE000;     // Вершина стека по умолчанию
 // ---------------------------------------------------------------------
 reg         alt     = 0;            // 0-IP, 1-Address
 reg [15:0]  address = 16'h0000;     // Указатель адреса
@@ -24,6 +35,7 @@ reg [15:0]  ip      = 16'h0000;     // Счетчик инструкции
 reg [15:0]  acc     = 16'h0002;     // Аккумулятор
 reg         cf      = 1'b0;         // Carry Flag
 reg         zf      = 1'b0;         // Zero Flag
+reg         intf    = 1'b0;         // Interrupt Flag
 reg [15:0]  r[16];                  // 16 регистров процессора 256 bit
 // ---------------------------------------------------------------------
 wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
@@ -35,13 +47,55 @@ wire [15:0] alu_and = acc & regin;
 wire [15:0] alu_xor = acc ^ regin;
 wire [15:0] alu_ora = acc | regin;
 // ---------------------------------------------------------------------
+reg       irq_keyb  = 0;
+reg       irq_mouse = 0;
+reg       irq_timer = 0;
+reg [1:0] irq_call  = 0;
+// ---------------------------------------------------------------------
 
 always @(posedge CLOCK) begin
 
     tstate <= tstate + 1;
 
+    // Вызов прерывания
+    // -----------------------------------------------------------------
+    if (irq_call) begin
+
+        case (tstate)
+
+            1: begin address <= r[15] - 2;   O_DATA <= ip[7:0];  O_WREN <= 1; alt <= 1; end
+            2: begin address <= address + 1; O_DATA <= ip[15:8]; r[15]  <= r[15] - 2; end
+            3: begin tstate  <= 0; intf <= 1'b0; O_WREN <= 0; ip <= {irq_call, 1'b0}; irq_call <= 0; end
+
+        endcase
+
+    end
+    // Обработка прерывания от клавиатуры
+    else if (intf && tstate == 0 && IRQ_KEYB  != irq_keyb) begin
+
+        irq_keyb    <= IRQ_KEYB;
+        irq_call    <= 1;
+        tmp         <= ip;
+
+    end
+    // Обработка прерывания от мыши
+    else if (intf && tstate == 0 && IRQ_MOUSE != irq_mouse) begin
+
+        irq_mouse   <= IRQ_MOUSE;
+        irq_call    <= 2;
+
+    end
+    // Обработка прерывания от таймера
+    else if (intf && tstate == 0 && IRQ_TIMER != irq_timer) begin
+
+        irq_timer   <= IRQ_TIMER;
+        irq_call    <= 3;
+
+    end
+
     // Исполнение инструкции
-    casex (opcode)
+    // -----------------------------------------------------------------
+    else casex (opcode)
 
         // 0x LDI Rn, **
         8'b0000_xxxx: case (tstate)
@@ -101,17 +155,24 @@ always @(posedge CLOCK) begin
 
         endcase
 
-        // 16 RET
-        8'b0001_0110: case (tstate)
+        // 16 RET  Возврат
+        // 18 RETI Возврат и установка I=1
+        8'b0001_0110,
+        8'b0001_1000:
+        case (tstate)
 
             0: begin address <= r[15]; r[15] <= r[15] + 2; alt <= 1; end
             1: begin ip[ 7:0] <= I_DATA; address <= address + 1; end
-            2: begin ip[15:8] <= I_DATA; tstate <= 0; alt <= 0; end
+            2: begin ip[15:8] <= I_DATA; tstate <= 0; alt <= 0; if (opcode[3]) intf <= 1'b1; end
 
         endcase
 
         // 17 NOP
         8'b0001_0111: begin ip <= ip + 1; tstate <= 0; end
+
+        // 19|1A CLI|STI
+        8'b0001_1001,
+        8'b0001_1010: begin ip <= ip + 1; tstate <= 0; intf <= opcode[1]; end
 
         // 2x LDA [Rn] Загрузка 16-битных данных по адресу Rn
         8'b0010_xxxx: case (tstate)
