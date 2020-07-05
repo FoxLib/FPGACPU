@@ -35,7 +35,7 @@ reg [15:0]  ip      = 16'h0000;     // Счетчик инструкции
 reg [15:0]  acc     = 16'h0002;     // Аккумулятор
 reg         cf      = 1'b0;         // Carry Flag
 reg         zf      = 1'b0;         // Zero Flag
-reg         intf    = 1'b0;         // Interrupt Flag
+reg         intf    = 1'b1;         // Interrupt Flag
 reg [15:0]  r[16];                  // 16 регистров процессора 256 bit
 // ---------------------------------------------------------------------
 wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
@@ -64,7 +64,7 @@ always @(posedge CLOCK) begin
 
             1: begin address <= r[15] - 2;   O_DATA <= ip[ 7:0]; O_WREN <= 1; alt <= 1; end
             2: begin address <= address + 1; O_DATA <= ip[15:8]; r[15]  <= r[15] - 2; end
-            3: begin tstate  <= 0; intf <= 1'b0; O_WREN <= 0; ip <= {irq_call, 1'b0}; irq_call <= 0; end
+            3: begin tstate  <= 0; intf <= 1'b0; O_WREN <= 0; ip <= {irq_call, 1'b0}; irq_call <= 0; alt <= 0; end
 
         endcase
 

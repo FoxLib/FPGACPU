@@ -10,6 +10,10 @@ initial begin clk = 1; clk25 = 0; #2000 $finish; end
 initial begin $dumpfile("main.vcd"); $dumpvars(0, main); end
 // ---------------------------------------------------------------------
 
+reg irq_test = 0;
+initial #11.5 irq_test = 1;
+// ---------------------------------------------------------------------
+
 reg [7:0] memory[65536];
 initial $readmemh("program.hex", memory, 16'h0000);
 
@@ -20,6 +24,7 @@ begin
     if (o_wren) memory[o_addr] <= o_data;
 end
 
+// ---------------------------------------------------------------------
 // Процессор
 // ---------------------------------------------------------------------
 
@@ -34,7 +39,9 @@ cpu EasyCPU
     .I_DATA (i_data),
     .O_ADDR (o_addr),
     .O_DATA (o_data),
-    .O_WREN (o_wren)
+    .O_WREN (o_wren),
+    // ---
+    .IRQ_KEYB (irq_test)
 );
 
 endmodule
