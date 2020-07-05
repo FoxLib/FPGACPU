@@ -58,12 +58,11 @@ always @(posedge CLOCK) begin
     tstate <= tstate + 1;
 
     // Вызов прерывания
-    // -----------------------------------------------------------------
     if (irq_call) begin
 
         case (tstate)
 
-            1: begin address <= r[15] - 2;   O_DATA <= ip[7:0];  O_WREN <= 1; alt <= 1; end
+            1: begin address <= r[15] - 2;   O_DATA <= ip[ 7:0]; O_WREN <= 1; alt <= 1; end
             2: begin address <= address + 1; O_DATA <= ip[15:8]; r[15]  <= r[15] - 2; end
             3: begin tstate  <= 0; intf <= 1'b0; O_WREN <= 0; ip <= {irq_call, 1'b0}; irq_call <= 0; end
 
@@ -94,7 +93,6 @@ always @(posedge CLOCK) begin
     end
 
     // Исполнение инструкции
-    // -----------------------------------------------------------------
     else casex (opcode)
 
         // 0x LDI Rn, **
@@ -106,7 +104,7 @@ always @(posedge CLOCK) begin
 
         endcase
 
-        // 10 LDA [**]
+        // 10 LDA Word [**]
         8'b0001_0000: case (tstate)
 
             0: begin ip <= ip + 1; end
@@ -117,7 +115,7 @@ always @(posedge CLOCK) begin
 
         endcase
 
-        // 11 STA [**]
+        // 11 STA Word [**]
         8'b0001_0001: case (tstate)
 
             0: begin ip <= ip + 1; end
@@ -170,11 +168,14 @@ always @(posedge CLOCK) begin
         // 17 NOP
         8'b0001_0111: begin ip <= ip + 1; tstate <= 0; end
 
-        // 19|1A CLI|STI
+        // 19|1A CLI, STI
         8'b0001_1001,
         8'b0001_1010: begin ip <= ip + 1; tstate <= 0; intf <= opcode[1]; end
 
-        // 2x LDA [Rn] Загрузка 16-битных данных по адресу Rn
+        // 1B CLH Очистка 15:8
+        8'b0001_1011: begin ip <= ip + 1; tstate <= 0; acc[15:8] <= 0; end
+
+        // 2x LDA Word [Rn] Загрузка 16-битных данных по адресу Rn
         8'b0010_xxxx: case (tstate)
 
             0: begin ip <= ip + 1; address <= regin; alt <= 1'b1; end
@@ -183,7 +184,7 @@ always @(posedge CLOCK) begin
 
         endcase
 
-        // 3x STA [Rn] Выгрузка младших 8 бит по адресу Rn
+        // 3x STA Byte [Rn] Выгрузка младших 8 бит по адресу Rn
         8'b0011_xxxx: case (tstate)
 
             0: begin address <= regin; alt <= 1'b1; O_WREN <= 1; O_DATA <= acc[7:0]; ip <= ip + 1; end

@@ -127,6 +127,7 @@ void CPU::debug() {
                     case 0x08: sprintf(ts, "RETI"); break;
                     case 0x09: sprintf(ts, "CLI"); break;
                     case 0x0A: sprintf(ts, "STI"); break;
+                    case 0x0B: sprintf(ts, "CLH"); break;
                 }
                 break;
 
@@ -288,6 +289,7 @@ int CPU::step() {
 
                 case 9:  intf = 0; break;
                 case 10: intf = 1; break;
+                case 11: acc  &= 0x00FF; break;
             }
             break;
 
