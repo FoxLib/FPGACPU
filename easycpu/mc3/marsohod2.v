@@ -236,7 +236,7 @@ always @(posedge clk) begin
         // Управление светодиодами
         16'hFFA4: led[3:0] <= o_data[3:0];
         
-        // Команда для мыши
+        // Команда для мыши срабатывает на позитивном фронте бита FFA6[0]
         16'hFFA5: ps2ms_command     <= o_data;
         16'hFFA6: ps2ms_send_cmd[0] <= o_data[0];
 
