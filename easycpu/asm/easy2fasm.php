@@ -8,12 +8,25 @@ if ($filename && $filename[0] == '-') {
     $no_macro = true;
 }
 
-$dir = __DIR__;
-
 // Загрузка файла
+$dir  = __DIR__;
 $rows = [];
+$map  = [];
 $list = load_stream($filename);
-foreach ($list as $row) {
+
+// Просмотр предварительно заданных define
+if ($argc > 2) {
+    foreach (array_slice($argv, 2) as $item) {
+        list($a, $b) = explode('=', $item, 2);
+        $map[$a] = trim($b);
+    }
+}
+
+foreach ($list as $id => $row) {
+
+    // Замена части строк predefined-значениями
+    $row = preg_replace_callback('~\$\{(\w+)\}~i', function($e) use ($map) { return $map[$e[1]]; }, $row);
+    $list[$id] = $row;
 
     // Компиляция include
     if (preg_match('~include\s"(.+)"~i', $row, $c)) {
@@ -22,10 +35,20 @@ foreach ($list as $row) {
         $comm  = "php $dir/easy2fasm.php -".$c[1]." > ".$sfile;
         `$comm`;
     }
+    // Значение для подстановки
+    else if (preg_match('~\$(\w+)\s*=\s*(.+)~i', $row, $c)) {
+
+        $map[$c[1]] = trim($c[2]);
+        $list[$id] = "";
+    }
 }
 
 // Замена инструкции
 foreach ($list as $row) {
+
+    $src = $row;
+
+    $row = preg_replace('~;.*$~', '', $row);
 
     // MOV a, b
     if (preg_match('~mov\s(.+),(.+)~i', $row, $c)) {
@@ -62,8 +85,12 @@ foreach ($list as $row) {
             $rows[] = "    ".$c[1]." " . $m;
         }
     }
+    else if (preg_match('~\bstop\b~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '   BRA $-1', $row);
+    }
     else {
-        $rows[] = $row;
+        $rows[] = $src;
     }
 }
 

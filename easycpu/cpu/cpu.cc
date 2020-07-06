@@ -316,7 +316,7 @@ int CPU::step() {
 
                     ip = mem[ regs[15] ] + mem[ regs[15]+1 ]*256;
                     regs[15] += 2;
-                    if (lo) intf = 1;
+                    if (lo == 8) intf = 1;
                     break;
 
                 // BRK Остановка процессора
