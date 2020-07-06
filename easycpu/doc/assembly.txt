@@ -7,3 +7,6 @@
         mov a, b        | lda b, sta a
         shl a           | lda a, add a, sta a
         shr a           | lda a, shr, sta a
+        stop            | bra $-1
+        push r1 .. rn
+        pop  r1 .. rn

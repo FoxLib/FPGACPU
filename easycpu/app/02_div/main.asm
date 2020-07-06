@@ -2,7 +2,6 @@
         ldi     r2, 10
         ldi     r5, $f008
 @@:     call    divmod      ; Деление числа r1 на r2
-        ;divmod(r1, r5)
         add     r3, '0'
         sta     [r5]
         dec     r5

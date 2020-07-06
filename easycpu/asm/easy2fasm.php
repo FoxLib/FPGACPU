@@ -85,9 +85,65 @@ foreach ($list as $row) {
             $rows[] = "    ".$c[1]." " . $m;
         }
     }
+    // Бесконечный цикл
     else if (preg_match('~\bstop\b~i', $row, $c)) {
 
         $rows[] = str_replace($c[0], '   BRA $-1', $row);
+    }
+    // Вызов процедуры
+    else if (preg_match('~\b(\w+)\b\s*\((.*)\)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $param  = trim($c[2]) ? array_reverse(explode(',', trim($c[2]))) : [];
+
+        // С-стиль передачи в процедуры
+        foreach ($param as $item) $rows[] = "    PUSH " . $item;
+        $rows[] = "    CALL " . $c[1];
+
+        if ($param) {
+            $rows[] = "    LDA " . (count($param) * 2);
+            $rows[] = "    ADD r15";
+            $rows[] = "    STA r15";
+        }
+    }
+    // Простой условный оператор на 1 операнда
+    else if (preg_match('~if\s+(.+):(.+)~', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        if (preg_match('~(.+)(<=|=|>=|<>)(.+)~', $c[1], $m)) {
+
+            $rows[] = "    LDA " . $m[1];
+            $rows[] = "    SUB " . $m[3];
+
+            switch (trim($m[2])) {
+
+                case '<=':
+                    $rows[] = "   JMP Z,  " . $c[2];
+                    $rows[] = "   JMP C,  " . $c[2];
+                    break;
+
+                case '=':
+                    $rows[] = "   JMP Z,  " . $c[2];
+                    break;
+
+                case '<>':
+                    $rows[] = "   JMP NZ, " . $c[2];
+                    break;
+
+                case '>=':
+                    $rows[] = "   JMP Z,  " . $c[2];
+                    $rows[] = "   JMP NC, " . $c[2];
+                    break;
+            }
+
+        }
+    }
+    // Альтернативная операция присваивания
+    else if (preg_match('~(r\d+|\[.+?\])\s*=(.+)~', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    LDA " . trim($c[2]);
+        $rows[] = "    STA " . trim($c[1]);
     }
     else {
         $rows[] = $src;
