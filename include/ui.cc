@@ -168,6 +168,7 @@ int get_key(SDL_Event event) {
         /* la */ case 0x40: xt = 0x11; break; // Left Alt
         /* en */ case 0x24: xt = 0x5A; break; // Enter
         /* es */ case 0x09: xt = 0x76; break; // Escape
+        /* es */ case 0x08: xt = 0x76; break; // Escape
 
         /* F1  */ case 67: xt = 0x05; break;
         /* F2  */ case 68: xt = 0x06; break;
@@ -197,7 +198,6 @@ int get_key(SDL_Event event) {
         /* Del  */ case 0x77: xt = 0x71E0; break;
         /* Ins  */ case 0x76: xt = 0x70E0; break;
         /* NLock*/ case 0x4D: xt = 0x0077; break;
-        /* Esc  */ case 0x08: xt = 0x0076; break;
 
         default: return -k;
     }

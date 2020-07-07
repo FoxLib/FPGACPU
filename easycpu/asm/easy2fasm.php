@@ -145,6 +145,39 @@ foreach ($list as $row) {
         $rows[] = "    LDA " . trim($c[2]);
         $rows[] = "    STA " . trim($c[1]);
     }
+    // Установка векторов прерываний
+    // ivt [vec0],[vec1],[vec2],[vec3]
+    else if (preg_match('~\bivt\s+(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+
+        $c = trim($c[1]);
+        $c = $c ? array_map('trim', explode(',', $c)) : [];
+        for ($i = 0; $i < 4; $i++) {
+            $m = isset($c[$i]) ? $c[$i] : '';
+            if ($i == 0) {
+                $rows[] = (in_array($m, ['', '*'])) ?  "    BRA 8" : "    BRA $m";
+            } else {
+                $rows[] = "    BRA " . ($m ?: "$-1");
+            }
+        }
+    }
+    // Процедура входа в IRQ
+    else if (preg_match('~\birqenter\b~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    push r0";
+        $rows[] = "    sta  r0";
+        $rows[] = "    push r0";
+    }
+    // Процедура выхода из IRQ
+    else if (preg_match('~\birqleave\b~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    pop  r0";
+        $rows[] = "    lda  r0";
+        $rows[] = "    pop  r0";
+    }
     else {
         $rows[] = $src;
     }

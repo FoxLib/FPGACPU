@@ -3,7 +3,6 @@
         r2 = mesg
         if r1 <> r2: norm
         print  (r1, r2)
-
         lda     $1234
         clh
         sti
