@@ -177,8 +177,8 @@ always @(posedge CLOCK) begin
         // 1E PUSHF
         8'b0001_1110: case (tstate)
 
-            0: begin O_DATA <= {zf, cf}; address <= r[15] - 2; alt <= 1; O_WREN <= 1; ip <= ip + 1; end
-            1: begin O_DATA <= 0;        address <= address + 1; end
+            0: begin O_DATA <= {intf, zf, cf}; address <= r[15] - 2; alt <= 1;  ip <= ip + 1; end
+            1: begin O_DATA <= 0; O_WREN <= 1; address <= address + 1; end
             2: begin tstate <= 0; O_WREN <= 0; alt <= 0; r[15] <= r[15] - 2; end
 
         endcase
@@ -187,7 +187,7 @@ always @(posedge CLOCK) begin
         8'b0001_1111: case (tstate)
 
             0: begin address <= r[15]; r[15] <= r[15] + 2; alt <= 1; ip <= ip + 1; end
-            1: begin {zf, cf} <= I_DATA[1:0]; tstate <= 0; alt <= 0; end
+            1: begin {intf, zf, cf} <= I_DATA[2:0]; tstate <= 0; alt <= 0; end
 
         endcase
 

@@ -83,16 +83,26 @@ void CPU::debug() {
         pchar(j, i, ' ', 15, 1);
 
     color(11, bg);
-    for (int i = 0; i < 16; i++) {
+    for (int i = 0; i < 15; i++) {
         sprintf(ts, "r%02d: %04X", i, regs[i]);
         pout(2, 1 + i, ts);
     }
 
+    sprintf(ts, " SP: %04X", regs[15]); pout(2, 16, ts);
     sprintf(ts, " IP: %04X", ip); pout(2, 17, ts);
     sprintf(ts, "ACC: %04X", acc); pout(2, 18, ts);
     sprintf(ts, " CF: %d",  cf); pout(2, 19, ts);
     sprintf(ts, " ZF: %d",  zf); pout(2, 20, ts);
     sprintf(ts, " IF: %d",  intf); pout(2, 21, ts);
+
+    // Состояние стека
+    for (int i = -6; i < 10; i++) {
+
+        color(i == 0 ? 10 : 11, bg);
+        sprintf(ts, "%04X %s %04X", regs[15] - 2*i, i == 0 ? ">" : " ", mem[regs[15] - i*2] + 256*mem[regs[15] - i*2 + 1]);
+        pout(50, 7 + i, ts);
+
+    }
 
     // Отладчик
     word cursor = up;
@@ -102,7 +112,7 @@ void CPU::debug() {
     for (int i = 0; i < 23; i++) {
 
         bg = 1;
-        if (ds == cursor) { bg = 3; match = 1; color(15, bg); pout(15, 1 + i, "                              "); }
+        if (ds == cursor) { bg = 3; match = 1; color(15, bg); pout(15, 1 + i, "                                  "); }
 
         // Адрес десу
         color(14, bg); sprintf(ts, "%04X", cursor); pout(16, 1 + i, ts);
@@ -337,7 +347,7 @@ int CPU::step() {
                 case 14:
 
                     regs[15] -= 2;
-                    tmp = cf | (zf<<1);
+                    tmp = cf | (zf<<1) | (intf<<2);
                     write(regs[15],   tmp);
                     write(regs[15]+1, 0);
                     break;
@@ -345,9 +355,10 @@ int CPU::step() {
                 // POPF
                 case 15:
 
-                    tmp = mem[ regs[15] ];
-                    cf  = tmp & 1;
-                    zf  = (tmp & 2) >> 1;
+                    tmp  = mem[ regs[15] ];
+                    cf   = tmp & 1;
+                    zf   = (tmp & 2) >> 1;
+                    intf = (tmp & 4) >> 2;
                     regs[15] += 2;
                     break;
             }
