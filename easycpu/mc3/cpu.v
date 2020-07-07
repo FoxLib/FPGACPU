@@ -34,8 +34,8 @@ reg [15:0]  tmp     = 16'h0000;     // Временный регистр
 reg [15:0]  ip      = 16'h0000;     // Счетчик инструкции
 reg [15:0]  acc     = 16'h0002;     // Аккумулятор
 reg         cf      = 1'b0;         // Carry Flag
-reg         zf      = 1'b0;         // Zero Flag
-reg         intf    = 1'b1;         // Interrupt Flag
+reg         zf      = 1'b1;         // Zero Flag
+reg         intf    = 1'b0;         // Interrupt Flag
 reg [15:0]  r[16];                  // 16 регистров процессора 256 bit
 // ---------------------------------------------------------------------
 wire [7:0]  opcode  = tstate? mopcode : I_DATA; // Текущий опкод
@@ -173,6 +173,23 @@ always @(posedge CLOCK) begin
 
         // 1B CLH Очистка 15:8
         8'b0001_1011: begin ip <= ip + 1; tstate <= 0; acc[15:8] <= 0; end
+
+        // 1E PUSHF
+        8'b0001_1110: case (tstate)
+
+            0: begin O_DATA <= {zf, cf}; address <= r[15] - 2; alt <= 1; O_WREN <= 1; ip <= ip + 1; end
+            1: begin O_DATA <= 0;        address <= address + 1; end
+            2: begin tstate <= 0; O_WREN <= 0; alt <= 0; r[15] <= r[15] - 2; end
+
+        endcase
+
+        // 1F POPF
+        8'b0001_1111: case (tstate)
+
+            0: begin address <= r[15]; r[15] <= r[15] + 2; alt <= 1; ip <= ip + 1; end
+            1: begin {zf, cf} <= I_DATA[1:0]; tstate <= 0; alt <= 0; end
+
+        endcase
 
         // 2x LDA Word [Rn] Загрузка 16-битных данных по адресу Rn
         8'b0010_xxxx: case (tstate)

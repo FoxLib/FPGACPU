@@ -10,3 +10,6 @@
         stop            | bra $-1
         push r1 .. rn
         pop  r1 .. rn
+        ivt i0,i1,i2,i3 | Назначение векторов прерываний
+        irqenter        | сохранение в стек данных flags, acc, r0
+        irqleave        | извлечение из стека r0, flags, acc

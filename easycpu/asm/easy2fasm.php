@@ -166,6 +166,7 @@ foreach ($list as $row) {
     else if (preg_match('~\birqenter\b~i', $row, $c)) {
 
         $rows[] = str_replace($c[0], '', $row);
+        $rows[] = "    pushf";
         $rows[] = "    push r0";
         $rows[] = "    sta  r0";
         $rows[] = "    push r0";
@@ -177,6 +178,7 @@ foreach ($list as $row) {
         $rows[] = "    pop  r0";
         $rows[] = "    lda  r0";
         $rows[] = "    pop  r0";
+        $rows[] = "    popf";
     }
     else {
         $rows[] = $src;
@@ -220,7 +222,7 @@ foreach ($rows as $id => $row) {
     else if (preg_match('~lda\s+(.+)~i', $row, $c)) {
         $row = str_replace($c[0], 'INS_LDA_I16 '.$c[1], $row);
     }
-    else if (preg_match($pat = '~\b(shr|swap|ret|brk|cli|sti|reti|clh)\b~i', $row)) {
+    else if (preg_match($pat = '~\b(shr|swap|pushf|popf|ret|brk|cli|sti|reti|clh)\b~i', $row)) {
         $row = preg_replace_callback($pat, function($e) { return 'INS_' . strtoupper($e[1]); }, $row);
     }
 
@@ -285,5 +287,7 @@ macro INS_RETI       { db 0x18 }
 macro INS_CLI        { db 0x19 }
 macro INS_STI        { db 0x1A }
 macro INS_CLH        { db 0x1B }
+macro INS_PUSHF      { db 0x1E }
+macro INS_POPF       { db 0x1F }
 ";
 }

@@ -2,8 +2,7 @@
         ivt     reset, _irqkbd
 ; ----------------------------------------------------------------------
 _irqkbd:
-
-        brk
+brk
         irqenter
         keyboardirq()
         irqleave

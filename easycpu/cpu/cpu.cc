@@ -131,6 +131,10 @@ void CPU::debug() {
                     case 0x09: sprintf(ts, "CLI"); break;
                     case 0x0A: sprintf(ts, "STI"); break;
                     case 0x0B: sprintf(ts, "CLH"); break;
+                    // C
+                    // D
+                    case 0x0E: sprintf(ts, "PUSHF"); break;
+                    case 0x0F: sprintf(ts, "POPF"); break;
                 }
                 break;
 
@@ -326,6 +330,26 @@ int CPU::step() {
                 case 9:  intf = 0; break;
                 case 10: intf = 1; break;
                 case 11: acc  &= 0x00FF; break;
+                // 12
+                // 13
+
+                // PUSHF
+                case 14:
+
+                    regs[15] -= 2;
+                    tmp = cf | (zf<<1);
+                    write(regs[15],   tmp);
+                    write(regs[15]+1, 0);
+                    break;
+
+                // POPF
+                case 15:
+
+                    tmp = mem[ regs[15] ];
+                    cf  = tmp & 1;
+                    zf  = (tmp & 2) >> 1;
+                    regs[15] += 2;
+                    break;
             }
             break;
 
