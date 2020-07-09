@@ -9,3 +9,5 @@ bios.bin: bios.asm
 boot.bin:
 	fasm boot.asm
 	dd conv=notrunc if=boot.bin of=disk.img bs=512 count=1
+clean:
+	rm -rf bx_*.ini *.bin disk disk.img

@@ -5,7 +5,7 @@
         org     0xc000
         macro   brk { xchg bx, bx }
 
-include "inc/equ.asm"
+        include "inc/equ.asm"
 
 bios_entry:
 
