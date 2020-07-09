@@ -4,9 +4,9 @@ module vga
     input   wire        CLOCK,
 
     // Выходные данные
-    output  reg  [3:0]  VGA_R,      // 4 бит на красный
-    output  reg  [3:0]  VGA_G,      // 4 бит на зеленый
-    output  reg  [3:0]  VGA_B,      // 4 бит на синий
+    output  reg  [4:0]  VGA_R,      // 4 бит на красный
+    output  reg  [5:0]  VGA_G,      // 4 бит на зеленый
+    output  reg  [4:0]  VGA_B,      // 4 бит на синий
     output  wire        VGA_HS,     // горизонтальная развертка
     output  wire        VGA_VS      // вертикальная развертка
 );
@@ -49,9 +49,9 @@ always @(posedge CLOCK) begin
     if (x >= hz_back && x < hz_visible + hz_back &&
         y >= vt_back && y < vt_visible + vt_back)
     begin
-         {VGA_R, VGA_G, VGA_B} <= X[3:0] == 0 || Y[3:0] == 0 ? 12'hFFF : {X[4]^Y[4], 3'h0, X[5]^Y[5], 3'h0, X[6]^Y[6], 3'h0};
+         {VGA_R, VGA_G, VGA_B} <= {X[4:0], Y[5:0], X[4:0] ^ Y[4:0]};
     end
-    else {VGA_R, VGA_G, VGA_B} <= 12'b0;
+    else {VGA_R, VGA_G, VGA_B} <= 16'h0000;
 
 end
 
