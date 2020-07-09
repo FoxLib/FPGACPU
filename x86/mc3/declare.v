@@ -24,9 +24,9 @@ initial begin
     s[seg_ds] = 16'h0000;
 
     r[reg_ax] = 16'h1234; r[reg_sp] = 16'hEFAE;
-    r[reg_bx] = 16'h2233; r[reg_bp] = 16'hBABA;
+    r[reg_cx] = 16'h2233; r[reg_bp] = 16'hBABA;
     r[reg_dx] = 16'h6677; r[reg_si] = 16'hBEBE;
-    r[reg_cx] = 16'h4455; r[reg_di] = 16'hCACA;
+    r[reg_bx] = 16'h4455; r[reg_di] = 16'hCACA;
 
 end
 
@@ -60,4 +60,6 @@ wire [2:0]  data53  =   data[5:3];
 wire [2:0]  data20  =   data[2:0];
 wire [15:0] rdata43 = r[data[4:3]];
 wire [15:0] rdata10 = r[data[1:0]];
+// ---------------------------------------------------------------------
+assign      address = swi ? {seg, 4'h0} + eff : {s[seg_cs], 4'h0} + ip;
 // ---------------------------------------------------------------------

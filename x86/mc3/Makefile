@@ -3,7 +3,7 @@ all: program.hex
 	vvp main.qqq >> /dev/null
 program.hex: program.asm
 	fasm program.asm
-	hexdump -e '/1 "%02X" "\n"' program.bin > program.hex
+	php hex.php program.bin > program.hex
 	rm program.bin
 wave:
 	gtkwave main.vcd
