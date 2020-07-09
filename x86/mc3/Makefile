@@ -1,5 +1,5 @@
 all: program.hex
-	iverilog -g2005-sv -DICARUS=1 -o main.qqq icarus.v core.v
+	iverilog -g2005-sv -DICARUS=1 -o main.qqq icarus.v core.v alu.v
 	vvp main.qqq >> /dev/null
 program.hex: program.asm
 	fasm program.asm
