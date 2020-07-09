@@ -159,8 +159,11 @@ foreach ($list as $row) {
             $m = isset($c[$i]) ? $c[$i] : '';
             if ($i == 0) {
                 $rows[] = (in_array($m, ['', '*'])) ?  "    BRA 8" : "    BRA $m";
+            } else if ($m) {                
+                $rows[] = "    BRA $m";
             } else {
-                $rows[] = "    BRA " . ($m ?: "$-1");
+                $rows[] = "    RETI";
+                $rows[] = "    BRK";
             }
         }
     }

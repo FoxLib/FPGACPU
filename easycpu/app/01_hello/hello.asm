@@ -3,19 +3,13 @@
 ; ----------------------------------------------------------------------
 _irqkbd:
 
-        lda     [$F000]
-        sta     r0
-        inc     r0
-        lda     r0
-        sta     [$F000]
-        
-        ;irqenter
-        ;keyboardirq()
-        ;irqleave
+        irqenter
+        keyboardirq()
+        irqleave
         reti
 
 ; ----------------------------------------------------------------------
-reset:  ;cli
+reset:  cli
         ldi     r15, $8000
         lda     $1700
         cls()
@@ -24,7 +18,8 @@ reset:  ;cli
         ldi     r0, mesg
         ldi     r1, $f000 + 2*(80 + 2)
         print()
-
+       
+        ;sti
 @@:     inputkbd()
         sta     [r1]
         inc     r1
