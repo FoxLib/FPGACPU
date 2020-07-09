@@ -137,10 +137,11 @@ prgram ProgramMemory
 // Контроллер клавиатуры
 // ---------------------------------------------------------------------
 
-reg  [7:0] keybxt;
-reg  [7:0] keybcnt;
 wire [7:0] ps2data;
 wire       ps2hit;
+reg  [7:0] keybxt;
+reg  [7:0] keybcnt;
+reg        irq_keyb;
 
 ps2keyboard #(.INITIALIZE_MOUSE(0)) keyb
 (
@@ -165,6 +166,7 @@ reg  [7:0] ps2ms_command;
 reg  [2:0] ps2ms_send_cmd;
 reg  [3:0] ps2ms_cws_hits;
 reg  [3:0] ps2ms_ect_hits;
+reg        irq_mouse;
 
 ps2keyboard #(.INITIALIZE_MOUSE(1)) mouse
 (
@@ -184,8 +186,8 @@ ps2keyboard #(.INITIALIZE_MOUSE(1)) mouse
 // Прием символа (пример)
 always @(posedge clock_50) begin
 
-    if (ps2hit)   begin keybxt <= ps2data;  keybcnt <= keybcnt + 1; end
-    if (ps2hitms) begin msdata <= ps2mouse; mscnt   <= mscnt   + 1; end 
+    if (ps2hit)   begin keybxt <= ps2data;  keybcnt <= keybcnt + 1; irq_keyb  <= ~irq_keyb; end
+    if (ps2hitms) begin msdata <= ps2mouse; mscnt   <= mscnt   + 1; irq_mouse <= ~irq_mouse; end 
     
     if (ps2ms_cws) ps2ms_cws_hits <= ps2ms_cws_hits + 1;
     if (ps2ms_ect) ps2ms_ect_hits <= ps2ms_ect_hits + 1;
@@ -256,17 +258,23 @@ end
 // Микропроцессор
 // ---------------------------------------------------------------------
 
+reg         unlock = 1'b0;
 wire [15:0] o_addr;
 wire [ 7:0] o_data;
 wire        o_wren;
 
+// Плановая разблокировка процессора
+always @(posedge clock_25) if (locked) unlock <= 1'b1;
+
 cpu EasyCPU
 (
-    .CLOCK      (locked & clock_25),
+    .CLOCK      (clock_25 & unlock),
     .I_DATA     (i_data),
     .O_ADDR     (o_addr),
     .O_DATA     (o_data),
     .O_WREN     (o_wren),
+    .IRQ_KEYB   (irq_keyb),
+    .IRQ_MOUSE  (irq_mouse),
 );
 
 endmodule
