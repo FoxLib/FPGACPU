@@ -1,6 +1,10 @@
-all:
+all: program.hex
 	iverilog -g2005-sv -DICARUS=1 -o main.qqq icarus.v core.v
 	vvp main.qqq >> /dev/null
+program.hex: program.asm
+	fasm program.asm
+	hexdump -e '/1 "%02X" "\n"' program.bin > program.hex
+	rm program.bin
 wave:
 	gtkwave main.vcd
 gtkw:

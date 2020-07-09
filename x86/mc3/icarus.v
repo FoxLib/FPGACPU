@@ -13,13 +13,15 @@ initial begin $dumpfile("main.vcd"); $dumpvars(0, main); end
 // ---------------------------------------------------------------------
 // Мини-контроллер памяти
 // ---------------------------------------------------------------------
+initial begin $readmemh("program.hex", allmem, 20'h08000); end
+// ---------------------------------------------------------------------
 
+reg  [ 7:0] allmem[1048576];
 wire [19:0] address;
 reg  [ 7:0] data;
 wire [ 7:0] out;
 wire        wren;
 
-reg  [ 7:0] allmem[1048576];
 
 always @(posedge clk) begin
 
@@ -34,7 +36,7 @@ core IntelCore
 (
     .clock      (clk25),
     .address    (address),
-    .data       (out),
+    .data       (data),
     .out        (out),
     .wren       (wren)
 );
