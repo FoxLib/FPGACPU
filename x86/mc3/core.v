@@ -13,58 +13,10 @@ module core
     output  reg         wren            // Разрешение на запись
 );
 
-// ---------------------------------------------------------------------
-localparam
-    sub_opcode  = 0,
-    sub_modrm   = 1,
-    sub_exec    = 2;
-
-localparam
-    seg_es = 0, reg_ax = 0, reg_sp = 4,
-    seg_cs = 1, reg_cx = 1, reg_bp = 5,
-    seg_ss = 2, reg_dx = 2, reg_si = 6,
-    seg_ds = 3, reg_bx = 3, reg_di = 7;
-
-// ---------------------------------------------------------------------
-initial begin
-    out  = 8'h00;
-    wren = 1'b0;
-    s[seg_cs] = 16'h0000;
-end
-
-// ---------------------------------------------------------------------
 assign address = swi ? {seg, 4'h0} + eff : {s[seg_cs], 4'h0} + ip;
 
 // ---------------------------------------------------------------------
-reg [ 2:0]  sub     = 0;    // Текущая исполняемая процедура
-reg [ 2:0]  fn      = 0;    // Субфункция
-reg [ 7:0]  opcode  = 0;
-reg         swi     = 1'b0; // =1 Используется эффективный [seg:eff]
-reg         override = 1'b0;
-reg        _override = 1'b0;
-reg [ 1:0]  rep = 0;        // Бит 1: Есть ли REP: префикс
-reg [ 1:0] _rep = 0;        // Бит 0: 0=RepNZ, 1=RepZ
-reg [ 3:0]  alu = 16'h0;    // Номер АЛУ-операции
-reg [15:0]  op1 = 16'h0;    // Левый операнд
-reg [15:0]  op2 = 16'h0;    // Правый операнд
-reg         bit16 = 0;      // Используются 16-битные операнды
-reg         dir   = 0;      // 0=r/m,reg | 1=reg,r/m
-reg [ 7:0]  modrm = 8'h00;  // Сохраненный байт ModRM
-
-// Эффективный адрес
-reg [15:0]  seg = 0;
-reg [15:0] _seg = 16'h0000;
-reg [15:0]  eff = 0;
-// ---------------------------------------------------------------------
-reg [15:0]  r[8];               // Регистры общего назначения
-reg [15:0]  s[4];               // Сегменты es: cs: ss: es:
-reg [15:0]  ip    = 16'h8000;   // "PostBios" загрузка
-reg [11:0]  flags = 12'b0000_0000_0000;
-// ---------------------------------------------------------------------
-wire [2:0]  data53  =   data[5:3];
-wire [2:0]  data20  =   data[2:0];
-wire [15:0] rdata43 = r[data[4:3]];
-wire [15:0] rdata10 = r[data[1:0]];
+`include "declare.v"
 // ---------------------------------------------------------------------
 
 always @(posedge clock)
@@ -100,8 +52,8 @@ begin
                     casex (data)
 
                         // Инструкции ADD|ADC|SUB|SBB|AND|XOR|OR|CMP <modrm>|Acc,i8/16
-                        8'b00_xxx_0xx: begin sub <= sub_modrm; alu <= data53; bit16 <= opcode[0]; dir <= data[1]; end
-                        8'b00_xxx_10x: begin sub <= sub_exec;  alu <= data53; bit16 <= opcode[0]; end
+                        8'b00_xxx_0xx: begin sub <= sub_modrm; alu <= data53; bit16 <= data[0]; dir <= data[1]; end
+                        8'b00_xxx_10x: begin sub <= sub_exec;  alu <= data53; bit16 <= data[0]; end
 
                     endcase
 
@@ -124,15 +76,22 @@ begin
 
                 // Чтение регистров в операнды
                 if (bit16) begin
+
                     op1 <= dir ? r[data53] : r[data20]; // r/m | reg
                     op2 <= dir ? r[data20] : r[data53]; // reg | r/m
+
                 end else begin
+
                     if (dir) begin
+
                         op1 <= data[5] ? rdata43[15:8] : rdata43[7:0]; // reg
                         op2 <= data[2] ? rdata10[15:8] : rdata10[7:0]; // r/m
+
                     end else begin
+
                         op1 <= data[2] ? rdata10[15:8] : rdata10[7:0]; // r/m
                         op2 <= data[5] ? rdata43[15:8] : rdata43[7:0]; // reg
+
                     end
                 end
 
@@ -162,6 +121,18 @@ begin
 
                 endcase
 
+                // Если ранее был override, то в seg уже будет значение сегментного регистра
+                if (override == 1'b0)
+                casex (data)
+
+                    8'b0x_xxx_01x, // bp+si | bp+di
+                    8'b10_xxx_01x,
+                    8'b01_xxx_110, // bp
+                    8'b10_xxx_110:  seg <= s[seg_ss];
+                    default:        seg <= s[seg_ds];
+
+                endcase
+
             end
 
             // Считывание 16 bit disp
@@ -175,14 +146,20 @@ begin
             4: begin
 
                 if (dir) op2 <= data; else op1 <= data;
-                if (bit16) fn <= 5; else begin fn <= 0; sub <= sub_exec; end
+                if (bit16)
+                     begin fn <= 5; eff <= eff + 1; end
+                else begin fn <= 0; sub <= sub_exec; end
 
             end
+
             // Дочитать старший байт
             5: begin
 
                 if (dir) op2[15:8] <= data; else op1[15:8] <= data;
-                fn <= 0; sub <= sub_exec;
+
+                fn  <= 0;
+                eff <= eff - 1;
+                sub <= sub_exec;
 
             end
 

@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Thu Jul  9 14:08:27 2020
+[*] Thu Jul  9 17:04:57 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/x86/mc3/main.vcd"
-[dumpfile_mtime] "Thu Jul  9 14:06:16 2020"
-[dumpfile_size] 82730
+[dumpfile_mtime] "Thu Jul  9 17:04:31 2020"
+[dumpfile_size] 44283
 [savefile] "/disk/fox/dev/fpgacpu/x86/mc3/main.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-5.000000 165 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
 [sst_width] 243
 [signals_width] 194
@@ -24,13 +24,39 @@ main.IntelCore.clock
 -mem
 @22
 main.IntelCore.address[19:0]
-@23
-main.IntelCore.data[7:0]
+@28
+main.IntelCore.swi
 @22
+main.IntelCore.data[7:0]
 main.IntelCore.out[7:0]
 @28
 main.IntelCore.wren
+@22
+main.IntelCore.seg[15:0]
+main.IntelCore.eff[15:0]
 @1000200
 -mem
+@800200
+-state
+@22
+[color] 7
+main.IntelCore.opcode[7:0]
+@28
+[color] 7
+main.IntelCore.sub[2:0]
+[color] 7
+main.IntelCore.fn[2:0]
+@29
+main.IntelCore.bit16
+@1000200
+-state
+@800200
+-alu
+@22
+main.IntelCore.alu[3:0]
+main.IntelCore.op1[15:0]
+main.IntelCore.op2[15:0]
+@1000200
+-alu
 [pattern_trace] 1
 [pattern_trace] 0

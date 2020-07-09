@@ -14,6 +14,7 @@ initial begin $dumpfile("main.vcd"); $dumpvars(0, main); end
 // Мини-контроллер памяти
 // ---------------------------------------------------------------------
 initial begin $readmemh("program.hex", allmem, 20'h08000); end
+initial begin $readmemh("tstdata.hex", allmem, 20'h00000); end
 // ---------------------------------------------------------------------
 
 reg  [ 7:0] allmem[1048576];
@@ -22,7 +23,6 @@ reg  [ 7:0] data;
 wire [ 7:0] out;
 wire        wren;
 
-
 always @(posedge clk) begin
 
     data <= allmem[address];
@@ -30,6 +30,8 @@ always @(posedge clk) begin
 
 end
 
+// ---------------------------------------------------------------------
+// Тестирование процессора
 // ---------------------------------------------------------------------
 
 core IntelCore
