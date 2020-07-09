@@ -13,7 +13,7 @@
         mov     ds, ax
         mov     es, ax
         mov     ss, ax
-        mov     sp, 7BFEh
+        mov     sp, 7C00h
         mov     ah, 42h
         mov     si, DAP_sector  ; BIOS DAP https://en.wikipedia.org/wiki/INT_13H
         int     13h

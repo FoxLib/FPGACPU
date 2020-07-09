@@ -31,11 +31,11 @@ O:      dd 0
         call    PRNCHR
         jmp     @b
 
-include "inc/init.asm"
-include "inc/print.asm"
-include "inc/const.asm"
-include "inc/keyb.asm"
-include "inc/numeric.asm"
+        include "inc/init.asm"
+        include "inc/print.asm"
+        include "inc/const.asm"
+        include "inc/keyb.asm"
+        include "inc/numeric.asm"
 
 ; ----------------------------------------------------------------------
         db      (0xFFF0 - $) dup 0x00       ; Unused
