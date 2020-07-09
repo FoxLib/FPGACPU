@@ -69,12 +69,12 @@ always @(posedge clk) begin
     if (cpu_latency) begin
 
         // kbd_reset <= ps2_port_init; /* Случай для экстренной перезагрузки */
-	    clk25 <= div[1];
+        clk25 <= div[1];
 
     /* Для того, чтобы успел первый опкод скачаться успешно */
-	end else if (div == 2'b11) begin
+    end else if (div == 2'b11) begin
 
-	    cpu_latency <= 1'b1;
+        cpu_latency <= 1'b1;
         kbd_reset   <= 1'b0;
 
     /* Инициализация PS/2 keyboard */
@@ -129,8 +129,6 @@ comram COMMONRAM( /* 16Kb */
 reg         kbd_reset = 1'b0;
 reg [7:0]   ps2_command = 1'b0;
 reg         ps2_command_send = 1'b0;
-wire        ps2_command_was_sent;
-wire        ps2_error_communication_timed_out;
 wire [7:0]  ps2_data;
 wire        ps2_data_clk;
 
@@ -138,24 +136,17 @@ always @(posedge div[0]) if (ps2_data_clk) led[3:1] <= ps2_data[2:0];
 
 PS2_Controller Keyboard(
 
-	/* Вход */
+    /* Вход */
     .CLOCK_50       (div[0]),
-	.reset          (kbd_reset),
-	.the_command    (ps2_command),
-	.send_command   (ps2_command_send),
+    .reset          (kbd_reset),
 
-	/* Ввод-вывод */
-	.PS2_CLK(ps2_keyb[1]),
- 	.PS2_DAT(ps2_keyb[0]),
-
-	/* Статус команды */
-	.command_was_sent  (ps2_command_was_sent),
-	.error_communication_timed_out (ps2_error_communication_timed_out),
+    /* Ввод-вывод */
+    .PS2_CLK        (ps2_keyb[1]),
+    .PS2_DAT        (ps2_keyb[0]),
 
     /* Выход полученных */
-	.received_data      (ps2_data),
-	.received_data_en   (ps2_data_clk)
-
+    .received_data      (ps2_data),
+    .received_data_en   (ps2_data_clk)
 );
 
 wire [15:0] port_addr;
@@ -179,7 +170,7 @@ port_controller PortCTRL(
     /* PS/2 интерфейс */
     .ps2_data     (ps2_data),       /* Принятые данные */
     .ps2_data_clk (ps2_data_clk),   /* Строб принятых данных */
-    
+
     /* VGA */
     .cursor      (cursor)       /* Позиция курсора VGA */
 
@@ -202,12 +193,12 @@ wire [10:0] cursor;
 
 vga VGA_ADAPTER(
 
-	.clk	(clk),
-	.red 	(vga_red),
-	.green	(vga_green),
-	.blue	(vga_blue),
-	.hs		(vga_hs),
-	.vs		(vga_vs),
+    .clk    (clk),
+    .red    (vga_red),
+    .green  (vga_green),
+    .blue   (vga_blue),
+    .hs     (vga_hs),
+    .vs     (vga_vs),
 
     // Источник знакогенератора
     .adapter_font (adapter_font),
@@ -216,7 +207,7 @@ vga VGA_ADAPTER(
     // Сканирование символов
     .font_char_addr (font_char_addr),
     .font_char_data (font_char_data),
-    
+
     .cursor (cursor)
 
 );
@@ -325,10 +316,10 @@ reg         rom_bank_wr;
 
 serial SERIAL(
 
-	.clk12    (locked & clock_12),  // Частота 12.0 Mhz
-	.rx       (ftdi_rx),            // Входящие данные
-	.rx_byte  (rx_byte),            // Исходящий байт (8 bit)
-	.rx_ready (rx_ready)            // Строб готовности
+    .clk12    (locked & clock_12),  // Частота 12.0 Mhz
+    .rx       (ftdi_rx),            // Входящие данные
+    .rx_byte  (rx_byte),            // Исходящий байт (8 bit)
+    .rx_ready (rx_ready)            // Строб готовности
 
 );
 

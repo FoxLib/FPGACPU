@@ -1,0 +1,11 @@
+all: disk boot.bin bios.bin
+	bochs -f c.bxrc -q > /dev/null 2>&1
+disk:
+	dd if=/dev/zero of=disk.img count=524288
+	mkdir disk
+bios.bin: bios.asm
+	fasm bios.asm
+	dd conv=notrunc if=bios.bin of=disk.img bs=512 seek=1
+boot.bin:
+	fasm boot.asm
+	dd conv=notrunc if=boot.bin of=disk.img bs=512 count=1

@@ -1,2 +1,5 @@
-bios.bin
+*.bin
+*.ini
 fasm.exe
+disk.img
+/disk
