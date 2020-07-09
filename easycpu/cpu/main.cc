@@ -60,8 +60,8 @@ int main(int argc, char* argv[]) {
         else {
 
             // Отслеживание нажатия в реальном времени
-            if (cpu.is_intf() && (evt & KEYDOWN)) { cpu.sendkey(kbcode(), 1); }
-            if (cpu.is_intf() && (evt & KEYUP))  { cpu.sendkey(kbcode(), 0); }
+            if (evt & KEYDOWN) { cpu.sendkey(kbcode(), 1); }
+            if (evt & KEYUP)   { cpu.sendkey(kbcode(), 0); }
 
             cpu.send_irq();
 

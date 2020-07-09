@@ -84,16 +84,17 @@ void CPU::debug() {
 
     color(11, bg);
     for (int i = 0; i < 15; i++) {
-        sprintf(ts, "r%02d: %04X", i, regs[i]);
-        pout(2, 1 + i, ts);
+        sprintf(ts, "r%02d %04X", i, regs[i]);
+        pout(2, 2 + i, ts);
     }
 
-    sprintf(ts, " SP: %04X", regs[15]); pout(2, 16, ts);
-    sprintf(ts, " IP: %04X", ip); pout(2, 17, ts);
-    sprintf(ts, "ACC: %04X", acc); pout(2, 18, ts);
-    sprintf(ts, " CF: %d",  cf); pout(2, 19, ts);
-    sprintf(ts, " ZF: %d",  zf); pout(2, 20, ts);
-    sprintf(ts, " IF: %d",  intf); pout(2, 21, ts);
+    color(11, bg);
+    sprintf(ts, "ACC %04X", acc); pout(2, 1, ts);
+    sprintf(ts, " SP %04X", regs[15]); pout(2, 17, ts);
+    sprintf(ts, " IP %04X", ip); pout(2, 18, ts);
+    sprintf(ts, " CF %d",  cf); pout(2, 20, ts);
+    sprintf(ts, " ZF %d",  zf); pout(2, 21, ts);
+    sprintf(ts, " IF %d",  intf); pout(2, 22, ts);
 
     // Состояние стека
     for (int i = -6; i < 10; i++) {
@@ -229,20 +230,17 @@ void CPU::send_irq() {
 
     int irq_id = 0;
 
-    if (intf) {
+    if (int kn = (keyb_code_in & 0xFF)) {
 
-        if (int kn = (keyb_code_in & 0xFF)) {
+        mem[0xFFA0] = kn;
+        mem[0xFFA1] = (++keyb_cntr) & 0xFF;
 
-            mem[0xFFA0] = kn;
-            mem[0xFFA1] = (++keyb_cntr) & 0xFF;
-
-            keyb_code_in >>= 8;
-            irq_id = 1;
-        }
+        keyb_code_in >>= 8;
+        irq_id = 1;
     }
 
     // Есть вызов прерывания?
-    if (irq_id) {
+    if (intf && irq_id) {
 
         regs[15] -= 2;
         write(regs[15],   ip & 0xFF);

@@ -18,14 +18,14 @@ reset:  cli
         ldi     r0, mesg
         ldi     r1, $f000 + 2*(80 + 2)
         print()
-       
+
         ;sti
 @@:     inputkbd()
         sta     [r1]
         inc     r1
         inc     r1
         bra     @b
-        
+
 ; -----------------------------------------------
 inputkbd:
 
@@ -41,7 +41,7 @@ inputkbd:
         lda     [$FFA0]
         clh
         pop     r0
-        ret        
+        ret
 .last   dw 0
 ; -----------------------------------------------
 
