@@ -6,14 +6,14 @@
 
         macro   brk { xchg bx, bx }
         org     7C00h
-        
+
         cli
         cld
         xor     ax, ax
         mov     ds, ax
         mov     es, ax
         mov     ss, ax
-        mov     sp, 7BFEh        
+        mov     sp, 7BFEh
         mov     ah, 42h
         mov     si, DAP_sector  ; BIOS DAP https://en.wikipedia.org/wiki/INT_13H
         int     13h
@@ -45,7 +45,7 @@ DAP_sector:
         dq      1           ; +8 номер сектора, который нужно загрузить с диска (64 битный)
                             ;    первый сектор = 0
 
-init_pm:     
+init_pm:
 
         ; Создать сегменты
         mov     ax, 0x20
@@ -60,7 +60,7 @@ init_pm:
         mov     cx, 1024
         rep     stosd
         mov     [1000h], dword 2003h
-        
+
         ; Разметка
         mov     eax, 3
         mov     di, 2000h
@@ -68,14 +68,14 @@ init_pm:
         add     eax,  1000h
         cmp     eax, 400003h
         jne     @b
-        
+
         ; Разметка Paging
         mov     eax, 1000h
         mov     cr3, eax
-        
+
         ; B000h(4*B) + 8000h(8*4) = 4Ch
         mov     [204Ch], dword 0B8003h
-   
+
         mov     esi, 0x8000
         mov     edi, 0x8000 + 0xc000
         mov     cx, 16384 shr 2
@@ -84,7 +84,7 @@ init_pm:
         add     esi, 4
         add     edi, 4
         loop    @b
-        
+
         ; Восстановить правильный сегмент
         mov     ax, 10h
         mov     ds, ax
@@ -97,6 +97,6 @@ init_pm:
 
         ; Запуск эмуляции
         jmp     8 : 0xfff0      ; Здесь начинается BIOS
-                            
+
         db      (7C00h + 510 - $) dup 0 ; Филлер
         dw      0AA55h
