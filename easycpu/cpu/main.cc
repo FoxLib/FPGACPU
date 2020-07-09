@@ -59,12 +59,14 @@ int main(int argc, char* argv[]) {
         // Выполниить несколько инструкции [скорость 50 КГц]
         else {
 
-            if (evt & KEYDOWN) { cpu.sendkey(kbcode(), 1); }
-            if (evt & KEYUP)   { cpu.sendkey(kbcode(), 0); }
+            // Отслеживание нажатия в реальном времени
+            if (cpu.is_intf() && (evt & KEYDOWN)) { cpu.sendkey(kbcode(), 1); }
+            if (cpu.is_intf() && (evt & KEYUP))  { cpu.sendkey(kbcode(), 0); }
 
             cpu.send_irq();
 
             for (int i = 0; i < CPU_FREQUENCY_KHZ*(1000/50); i++) {
+
                 if (cpu.step()) {
                     stop = debubber_on = 1;
                     cpu.setdsip(); cpu.debug();

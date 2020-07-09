@@ -210,6 +210,8 @@ void CPU::debug() {
     if (match == 0) { ds = ip; up = ip; debug(); }
 }
 
+int CPU::is_intf() { return intf; }
+
 // Имитация приходящих данных
 void CPU::sendkey(int xt, int press) {
 

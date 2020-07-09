@@ -80,7 +80,9 @@ foreach ($list as $row) {
         $rows[] = "  ".$c[1]." ".$c[2];
         $rows[] = "    STA " . trim($c[2]);
     }
-    else if (preg_match('~(push|pop)\s(.+)~i', $row, $c)) {
+    else if (preg_match('~\b(push|pop)\s(.+)~i', $row, $c)) {
+
+        $rows[] = str_replace($c[0], '', $row);
         foreach (preg_split("~\s+~", trim($c[2])) as $m) {
             $rows[] = "    ".$c[1]." " . $m;
         }

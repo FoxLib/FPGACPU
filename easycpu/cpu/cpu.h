@@ -33,6 +33,7 @@ public:
     void    setdsip();
     void    sendkey(int xt, int press);
     void    send_irq();
+    int     is_intf();
     int     step();
     byte    fetch_byte();
     word    fetch_word();
