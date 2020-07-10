@@ -1,0 +1,375 @@
+<html>
+<head>
+    <title>Список инструкций</title>
+</head>
+<style>
+    * { font-size: 16px; font-family: "Ubuntu Mono", Monospace; }
+    table { border-collapse: collapse; }
+    .done { background: #e0ffe0; }
+    .done b { font-weight: bold; display: block; }
+    .pref { background: #e0e0ff; }
+    h1 { font-size: 1.6em; }
+    tr { vertical-align: top; }
+</style>
+<body>
+    <h1>Список поддерживаемых инструкций</h1>
+    <p>Ревизия 2</p>
+<table cellpadding="8" cellspacing="0" border="1">
+    <tr><th width="32"></th><th width="64">+0</th><th width="64">+1</th><th width="64">+2</th><th width="64">+3</th><th width="64">+4</th><th width="64">+5</th><th width="64">+6</th><th width="64">+7</th></tr>
+    <tr>
+        <th>00</th>
+        <td class="done"><b>ADD</b>rm,r8</td>
+        <td class="done"><b>ADD</b>rm,r16</td>
+        <td class="done"><b>ADD</b>r8,rm</td>
+        <td class="done"><b>ADD</b>r16,rm</td>
+        <td class="done"><b>ADD</b>al,i8</td>
+        <td class="done"><b>ADD</b>ax,i16</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>08</th>
+        <td class="done"><b>OR</b>rm,r8</td>
+        <td class="done"><b>OR</b>rm,r16</td>
+        <td class="done"><b>OR</b>r8,rm</td>
+        <td class="done"><b>OR</b>r16,rm</td>
+        <td class="done"><b>OR</b>al,i8</td>
+        <td class="done"><b>OR</b>ax,i16</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>10</th>
+        <td class="done"><b>ADC</b>rm,r8</td>
+        <td class="done"><b>ADC</b>rm,r16</td>
+        <td class="done"><b>ADC</b>r8,rm</td>
+        <td class="done"><b>ADC</b>r16,rm</td>
+        <td class="done"><b>ADC</b>al,i8</td>
+        <td class="done"><b>ADC</b>ax,i16</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>18</th>
+        <td class="done"><b>SBB</b>rm,r8</td>
+        <td class="done"><b>SBB</b>rm,r16</td>
+        <td class="done"><b>SBB</b>r8,rm</td>
+        <td class="done"><b>SBB</b>r16,rm</td>
+        <td class="done"><b>SBB</b>al,i8</td>
+        <td class="done"><b>SBB</b>ax,i16</td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>20</th>
+        <td class="done"><b>AND</b>rm,r8</td>
+        <td class="done"><b>AND</b>rm,r16</td>
+        <td class="done"><b>AND</b>r8,rm</td>
+        <td class="done"><b>AND</b>r16,rm</td>
+        <td class="done"><b>AND</b>al,i8</td>
+        <td class="done"><b>AND</b>ax,i16</td>
+        <td class="pref">ES:</td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>28</th>
+        <td class="done"><b>SUB</b>rm,r8</td>
+        <td class="done"><b>SUB</b>rm,r16</td>
+        <td class="done"><b>SUB</b>r8,rm</td>
+        <td class="done"><b>SUB</b>r16,rm</td>
+        <td class="done"><b>SUB</b>al,i8</td>
+        <td class="done"><b>SUB</b>ax,i16</td>
+        <td class="pref">CS:</td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>30</th>
+        <td class="done"><b>XOR</b>rm,r8</td>
+        <td class="done"><b>XOR</b>rm,r16</td>
+        <td class="done"><b>XOR</b>r8,rm</td>
+        <td class="done"><b>XOR</b>r16,rm</td>
+        <td class="done"><b>XOR</b>al,i8</td>
+        <td class="done"><b>XOR</b>ax,i16</td>
+        <td class="pref">SS:</td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>38</th>
+        <td class="done"><b>CMP</b>rm,r8</td>
+        <td class="done"><b>CMP</b>rm,r16</td>
+        <td class="done"><b>CMP</b>r8,rm</td>
+        <td class="done"><b>CMP</b>r16,rm</td>
+        <td class="done"><b>CMP</b>al,i8</td>
+        <td class="done"><b>CMP</b>ax,i16</td>
+        <td class="pref">DS:</td>
+        <td></td>
+    </tr>
+
+    <tr>
+        <th>40</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>48</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>50</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>58</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>60</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>68</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>70</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>78</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>80</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>88</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>90</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>98</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>A0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>A8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>B0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>B8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>C0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>C8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>D0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>D8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>E0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>E8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>F0</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+    <tr>
+        <th>F8</th>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+
+</table>
+</body>
+</html>
