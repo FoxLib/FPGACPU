@@ -24,8 +24,8 @@
         <td class="done"><b>ADD</b>r16,rm</td>
         <td class="done"><b>ADD</b>al,i8</td>
         <td class="done"><b>ADD</b>ax,i16</td>
-        <td></td>
-        <td></td>
+        <td class="done"><b>PUSH</b>es</td>
+        <td class="done"><b>POP</b>es</td>
     </tr>
     <tr>
         <th>08</th>
@@ -35,8 +35,8 @@
         <td class="done"><b>OR</b>r16,rm</td>
         <td class="done"><b>OR</b>al,i8</td>
         <td class="done"><b>OR</b>ax,i16</td>
-        <td></td>
-        <td></td>
+        <td class="done"><b>PUSH</b>cs</td>
+        <td class="pref"><b>EXT:</b></td>
     </tr>
     <tr>
         <th>10</th>
@@ -46,8 +46,8 @@
         <td class="done"><b>ADC</b>r16,rm</td>
         <td class="done"><b>ADC</b>al,i8</td>
         <td class="done"><b>ADC</b>ax,i16</td>
-        <td></td>
-        <td></td>
+        <td class="done"><b>PUSH</b>ss</td>
+        <td class="done"><b>POP</b>ss</td>
     </tr>
     <tr>
         <th>18</th>
@@ -57,8 +57,8 @@
         <td class="done"><b>SBB</b>r16,rm</td>
         <td class="done"><b>SBB</b>al,i8</td>
         <td class="done"><b>SBB</b>ax,i16</td>
-        <td></td>
-        <td></td>
+        <td class="done"><b>PUSH</b>ds</td>
+        <td class="done"><b>POP</b>ds</td>
     </tr>
     <tr>
         <th>20</th>
@@ -341,7 +341,7 @@
         <td></td>
         <td></td>
         <td></td>
-        <td></td>
+        <td class="done"><b>JMP</b>b8</td>
         <td></td>
         <td></td>
         <td></td>
@@ -351,21 +351,21 @@
         <th>F0</th>
         <td></td>
         <td></td>
-        <td class="pref">REPNZ</td>
-        <td class="pref">REPZ</td>
-        <td></td>
-        <td></td>
+        <td class="pref"><b>REPNZ</b></td>
+        <td class="pref"><b>REPZ</b></td>
+        <td class="done"><b>HLT</b></td>
+        <td class="done"><b>CMC</b></td>
         <td></td>
         <td></td>
     </tr>
     <tr>
         <th>F8</th>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="done"><b>CLC</b></td>
+        <td class="done"><b>STC</b></td>
+        <td class="done"><b>CLI</b></td>
+        <td class="done"><b>STI</b></td>
+        <td class="done"><b>CLD</b></td>
+        <td class="done"><b>STD</b></td>
         <td></td>
         <td></td>
     </tr>

@@ -1,6 +1,6 @@
 `include "localparam.v"
 
-wire [15:0] __debug = r[reg_dx];
+wire [15:0] __debug = s[seg_es];
 
 // ---------------------------------------------------------------------
 initial begin
@@ -55,6 +55,7 @@ wire [2:0]  data20  =   data[2:0];
 wire [15:0] rdata43 = r[data[4:3]];
 wire [15:0] rdata10 = r[data[1:0]];
 wire [2:0]  opc20   = opcode[2:0];
+wire [2:0]  opc43   = opcode[4:3];
 // ---------------------------------------------------------------------
 wire [7:0]  condition =
 {

@@ -1,6 +1,16 @@
 
         org     $8000
 
+        push    ss
+        pop     es
+        cmc
+        clc
+        stc
+        sti
+        cli
+        std
+        cld
+@@:
         nop
         xchg    ax, dx
         mov     dx, $55FF

@@ -45,23 +45,26 @@ begin
             8'b01_00x_xxx: begin r[opcode[2:0]] <= result; sub <= sub_opcode; flags[11:1] <= flags_out[11:1]; end
 
             // PUSH r16
+            8'b000_xx_110,
             8'b01_010_xxx: case (fn)
 
-                0: begin fn   <= 1; out <= r[opc20][15:8]; r[reg_sp] <= eff; eff <= eff + 1; end
+                0: begin fn   <= 1; out <= opcode[6] ? r[opc20][15:8] : s[opc43][15:8]; r[reg_sp] <= eff; eff <= eff + 1; end
                 1: begin wren <= 0; sub <= sub_opcode;     swi <= 1'b0; end
 
             endcase
 
             // POP r16
+            8'b000_xx_111,
             8'b01_011_xxx: case (fn)
 
-                0: begin fn  <= 1; eff <= eff + 1;    wb[7:0] <= data; end
-                1: begin swi <= 0; sub <= sub_opcode; r[opc20] <= {data, wb[7:0]}; end
+                0: begin fn  <= 1; eff <= eff + 1; wb[7:0] <= data; end
+                1: begin if (opcode[6]) r[opc20] <= {data, wb[7:0]}; else s[opc43] <= {data, wb[7:0]}; swi <= 0; sub <= sub_opcode; end
 
             endcase
 
             // J<ccc>, JMP *
-            8'b01_11x_xxx: begin sub <= sub_opcode; ip <= ip + 1 + {{8{data[7]}}, data[7:0]}; end
+            8'b0111_xxxx,
+            8'b1110_1011: begin sub <= sub_opcode; ip <= ip + 1 + {{8{data[7]}}, data[7:0]}; end
 
             // MOV r, i8/16
             8'b10_11x_xxx: case (fn)

@@ -20,9 +20,13 @@ localparam
     alu_adc = 2, alu_xor = 6, alu_rcl = 10, alu_sh2 = 14,
     alu_sbb = 3, alu_cmp = 7, alu_rcr = 11, alu_sar = 15;
 
+// https://ru.wikipedia.org/wiki/Регистр_флагов
 localparam
 
     flag_o = 11,
+    flag_d = 10,
+    flag_i =  9,
+    flag_t =  8,
     flag_s =  7,
     flag_z =  6,
     flag_a =  4,

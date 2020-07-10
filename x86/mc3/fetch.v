@@ -39,10 +39,14 @@ sub_opcode: begin
                 8'b01_00x_xxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
                                      op1 <= r[data20]; op2 <= 1'b1; end
                 // PUSH r16
+                // PUSH sreg
+                8'b000_xx_110,
                 8'b01_010_xxx: begin sub <= sub_exec;  wren <= 1'b1;
                                      seg <= s[seg_ss]; eff  <= r[reg_sp] - 2;
-                                     swi <= 1'b1;      out  <= r[data20][7:0]; end
+                                     swi <= 1'b1;      out  <= data[6] ? r[data20][7:0] : s[data[4:3]][7:0]; end
                 // POP r16
+                // POP sreg
+                8'b000_xx_111,
                 8'b01_011_xxx: begin sub <= sub_exec;  r[reg_sp] <= r[reg_sp] + 2;
                                      seg <= s[seg_ss]; eff <= r[reg_sp]; swi <= 1'b1; end
 
@@ -51,6 +55,15 @@ sub_opcode: begin
 
                 // J<cond> +d8
                 8'b01_11x_xxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
+
+                // HLT, CMC
+                8'b1111_0100: ip <= ip;
+                8'b1111_0101: flags[flag_c] <= ~flags[flag_c];
+
+                // CLC, STC, CLI, STI, CLD, STD
+                8'b1111_100x: flags[flag_c] <= data[0];
+                8'b1111_101x: flags[flag_i] <= data[0];
+                8'b1111_110x: flags[flag_d] <= data[0];
 
                 // Все остальные инструкции, не требующие первого такта
                 default: sub <= sub_exec;

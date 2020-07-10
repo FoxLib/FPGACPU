@@ -66,7 +66,7 @@ always @* begin
 
     endcase
 
-    // Полученные флаги https://ru.wikipedia.org/wiki/Регистр_флагов
+    // Полученные флаги
     case (alu)
 
         alu_add,
