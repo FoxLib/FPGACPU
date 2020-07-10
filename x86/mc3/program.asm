@@ -1,9 +1,12 @@
 
         org     $8000
 
-        push    sp
+        jb      @f
+        push    bx
+        pop     sp
         dec     sp
         inc     ax
+@@:
         cmp     ax, bx
         xor     ax, bx
         or      ax, dx

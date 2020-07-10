@@ -49,10 +49,21 @@ begin
                 // PUSH r16
                 8'b01_010_xxx: case (fn)
 
-                    0: begin fn   <= 1; out <= r[opcode[2:0]][15:8]; r[reg_sp] <= eff; eff <= eff + 1; end
-                    1: begin wren <= 0; sub <= sub_opcode; swi <= 1'b0; end
+                    0: begin fn   <= 1; out <= r[opc20][15:8]; r[reg_sp] <= eff; eff <= eff + 1; end
+                    1: begin wren <= 0; sub <= sub_opcode;     swi <= 1'b0; end
 
                 endcase
+
+                // POP r16
+                8'b01_011_xxx: case (fn)
+
+                    0: begin fn  <= 1; eff <= eff + 1;    wb[7:0] <= data; end
+                    1: begin swi <= 0; sub <= sub_opcode; r[opc20] <= {data, wb[7:0]}; end
+
+                endcase
+
+                // J<ccc>, JMP *
+                8'b01_11x_xxx: begin sub <= sub_opcode; ip <= ip + 1 + {{8{data[7]}}, data[7:0]}; end
 
             endcase
 

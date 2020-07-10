@@ -1,7 +1,7 @@
 
-// ===============================
+// ---------------------------------------------------------------------
 // Считывание префиксов и опкода
-// ===============================
+// ---------------------------------------------------------------------
 
 sub_opcode: begin
 
@@ -42,6 +42,12 @@ sub_opcode: begin
                 8'b01_010_xxx: begin sub <= sub_exec;  wren <= 1'b1;
                                      seg <= s[seg_ss]; eff  <= r[reg_sp] - 2;
                                      swi <= 1'b1;      out  <= r[data20][7:0]; end
+                // POP r16
+                8'b01_011_xxx: begin sub <= sub_exec;  r[reg_sp] <= r[reg_sp] + 2;
+                                     seg <= s[seg_ss]; eff <= r[reg_sp]; swi <= 1'b1; end
+
+                // J<cond> +d8
+                8'b01_11x_xxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
 
             endcase
 

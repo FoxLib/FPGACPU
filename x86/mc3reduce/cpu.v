@@ -216,7 +216,6 @@ wire condition =
     CSel == 3'b110 ? (flags[7] ^ flags[11]) :             // SF != OF
                      (flags[7] ^ flags[11]) | (flags[6]); // (ZF=1) OR (SF != OF)
 
-
 reg [15:0] Sr;
 reg        Sc; // Carry
 

@@ -19,3 +19,12 @@ localparam
     alu_or  = 1, alu_sub = 5, alu_ror = 9,  alu_shr = 13,
     alu_adc = 2, alu_xor = 6, alu_rcl = 10, alu_sh2 = 14,
     alu_sbb = 3, alu_cmp = 7, alu_rcr = 11, alu_sar = 15;
+
+localparam
+
+    flag_o = 11,
+    flag_s =  7,
+    flag_z =  6,
+    flag_a =  4,
+    flag_p =  2,
+    flag_c =  0;
