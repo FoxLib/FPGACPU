@@ -46,6 +46,9 @@ sub_opcode: begin
                 8'b01_011_xxx: begin sub <= sub_exec;  r[reg_sp] <= r[reg_sp] + 2;
                                      seg <= s[seg_ss]; eff <= r[reg_sp]; swi <= 1'b1; end
 
+                // XCHG AX, r16
+                8'b1001_0_xxx: begin r[reg_ax] <= r[data20]; r[data20] <= r[reg_ax]; end
+
                 // J<cond> +d8
                 8'b01_11x_xxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
 

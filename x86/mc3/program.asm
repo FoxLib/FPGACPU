@@ -1,6 +1,8 @@
 
         org     $8000
 
+        nop
+        xchg    ax, dx
         mov     dx, $55FF
         jb      @f
         push    bx
