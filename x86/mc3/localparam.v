@@ -15,7 +15,7 @@ localparam
 
 localparam
 
-    alu_add = 0, alu_and = 4,
-    alu_or  = 1, alu_sub = 5,
-    alu_adc = 2, alu_xor = 6,
-    alu_sbb = 3, alu_cmp = 7;
+    alu_add = 0, alu_and = 4, alu_rol = 8,  alu_shl = 12,
+    alu_or  = 1, alu_sub = 5, alu_ror = 9,  alu_shr = 13,
+    alu_adc = 2, alu_xor = 6, alu_rcl = 10, alu_sh2 = 14,
+    alu_sbb = 3, alu_cmp = 7, alu_rcr = 11, alu_sar = 15;

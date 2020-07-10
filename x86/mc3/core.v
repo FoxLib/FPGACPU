@@ -46,8 +46,10 @@ begin
                     // Защелкивание кода инструкции и префикса
                      rep   <= _rep;   override <= _override;  seg <= _seg;
                     _rep   <= 2'b00; _override <= 1'b0;      _seg <= s[seg_ds];
-                    fn     <= 0;
-                    fn2    <= 0;
+                    fn     <= 1'b0;
+                    fn2    <= 1'b0;
+                    bit16  <= 1'b0;
+                    dir    <= 1'b0;
                     opcode <= data;
 
                     // Декодирование опкода

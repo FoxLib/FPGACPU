@@ -68,6 +68,6 @@ alu ArithLogicUnit
     .op2    (op2),
     .flags  (flags),
     .bit16  (bit16),
-    .result (result),
+    .value  (result),
     .flags_out (flags_out)
 );
