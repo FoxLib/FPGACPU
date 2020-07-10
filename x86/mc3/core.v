@@ -17,6 +17,8 @@ module core
 `include "declare.v"
 // ---------------------------------------------------------------------
 
+wire [15:0] __debug = r[reg_ax];
+
 always @(posedge clock)
 begin
 
@@ -45,6 +47,7 @@ begin
                      rep   <= _rep;   override <= _override;  seg <= _seg;
                     _rep   <= 2'b00; _override <= 1'b0;      _seg <= s[seg_ds];
                     fn     <= 0;
+                    fn2    <= 0;
                     opcode <= data;
 
                     // Декодирование опкода
@@ -170,25 +173,70 @@ begin
 
         sub_exec: begin
 
-            /* .. */
+            casex (opcode)
+
+                // ADD|ADC|SUB|SBB|AND|XOR|OR|CMP <modrm>
+                8'b00_xxx_0xx: begin
+
+                    // Инструкция CMP не пишет результат
+                    if (alu == alu_cmp)
+                         begin sub <= sub_opcode; swi <= 1'b0; end
+                    else begin sub <= sub_wb;     wb  <= result; end
+
+                    flags  <= flags_out;
+                    subret <= sub_opcode;
+
+                end
+
+            endcase
 
         end
+
+        // ===============================
+        // Обратная запись в байт ModRM
+        // или в память (зависит от modrm)
+        // ===============================
+
+        sub_wb: case (fn2)
+
+            0: begin
+
+                // Запись либо в регистр, либо в reg-часть от r/m
+                if (modrm[7:6] == 2'b11 || dir) begin
+
+                    if (bit16) begin
+
+                        if (dir) r[ modrm[5:3] ] <= wb[15:0];
+                        else     r[ modrm[2:0] ] <= wb[15:0];
+
+                    end
+                    // 8 bit
+                    else begin
+
+                        if (dir) begin
+
+                            if (modrm[5]) r[ modrm[4:3] ][15:8] <= wb[7:0];
+                            else          r[ modrm[4:3] ][ 7:0] <= wb[7:0];
+
+                        end else begin
+
+                            if (modrm[3]) r[ modrm[2:0] ][15:8] <= wb[7:0];
+                            else          r[ modrm[2:0] ][ 7:0] <= wb[7:0];
+
+                        end
+
+                    end
+
+                    sub <= subret;
+
+                end
+
+            end
+
+        endcase
 
     endcase
 
 end
-
-// ---------------------------------------------------------------------
-// Объявление арифметико-логического устройства
-// ---------------------------------------------------------------------
-
-alu ArithLogicUnit
-(
-    .alu    (alu),
-    .op1    (op1),
-    .op2    (op2),
-    .flags  (flags),
-    .bit16  (bit16)
-);
 
 endmodule

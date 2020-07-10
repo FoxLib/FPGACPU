@@ -35,6 +35,9 @@ wire SUB_Overflow16 = (op1[15] ^ op2[15]       ) & (op2[15] ^ Ar[15]);
 
 always @* begin
 
+    result    = 0;
+    flags_out = 0;
+
     // Результат вычисления
     case (alu)
 
