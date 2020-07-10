@@ -53,6 +53,7 @@ always @* begin
         alu_sub: result = op1 - op2;
         alu_xor: result = op1 ^ op2;
         alu_cmp: result = op1 - op2;
+
         // Сдвиги
         alu_rol: result = bit16 ? {op1[14:0], op1[15]}   : {op1[6:0], op1[7]};
         alu_ror: result = bit16 ? {op1[0],    op1[15:1]} : {op1[0],   op1[7:1]};
@@ -65,8 +66,7 @@ always @* begin
 
     endcase
 
-    // Полученные флаги
-
+    // Полученные флаги https://ru.wikipedia.org/wiki/Регистр_флагов
     case (alu)
 
         alu_adc,

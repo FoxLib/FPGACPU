@@ -224,8 +224,8 @@ begin
 
                         end else begin
 
-                            if (modrm[3]) r[ modrm[2:0] ][15:8] <= wb[7:0];
-                            else          r[ modrm[2:0] ][ 7:0] <= wb[7:0];
+                            if (modrm[2]) r[ modrm[1:0] ][15:8] <= wb[7:0];
+                            else          r[ modrm[1:0] ][ 7:0] <= wb[7:0];
 
                         end
 
