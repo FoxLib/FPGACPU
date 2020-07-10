@@ -8,30 +8,29 @@
 
 module alu
 (
-    input wire [3:0]    alu,
-    input wire [15:0]   op1,
-    input wire [15:0]   op2,
-    input wire          bit16,          // 16-битный операнд
-    output reg [15:0]   result,
-    input wire [11:0]   flags,
-    output reg [11:0]   flags_out
+    input  wire [3:0]   alu,
+    input  wire [15:0]  op1,
+    input  wire [15:0]  op2,
+    input  wire         bit16,          // 16-битный операнд
+    output reg  [15:0]  result,
+    input  wire [11:0]  flags,
+    output reg  [11:0]  flags_out
 );
 
-/*
+`include "localparam.v"
 
 // Некоторые флаги АЛУ
-wire Zero8  = ~|Ar[7:0];
-wire Zero16 = ~|Ar[15:8] && Zero8;
-wire Sign8  =   Ar[7];
-wire Sign16 =   Ar[15];
-wire Parity = ~^Ar[7:0];
+wire zero8  = ~|result[7:0];
+wire zero16 = ~|result[15:0];
+wire sign8  =   result[7];
+wire sign16 =   result[15];
+wire parity = ~^result[7:0];
 
 // Специальный случай: переполнение ADD/SUB
-wire ADD_Overflow8  = (op1[7]  ^ op2[7]  ^ 1'b1) & (op2[7]  ^ Ar[7]);
-wire ADD_Overflow16 = (op1[15] ^ op2[15] ^ 1'b1) & (op2[15] ^ Ar[15]);
-wire SUB_Overflow8  = (op1[7]  ^ op2[7]        ) & (op2[7]  ^ Ar[7]);
-wire SUB_Overflow16 = (op1[15] ^ op2[15]       ) & (op2[15] ^ Ar[15]);
-*/
+wire addof8  = (op1[7]  ^ op2[7]  ^ 1'b1) & (op2[7]  ^ result[7]);
+wire addof16 = (op1[15] ^ op2[15] ^ 1'b1) & (op2[15] ^ result[15]);
+wire subof8  = (op1[7]  ^ op2[7]        ) & (op2[7]  ^ result[7]);
+wire subof16 = (op1[15] ^ op2[15]       ) & (op2[15] ^ result[15]);
 
 always @* begin
 
@@ -61,6 +60,66 @@ always @* begin
     endcase
 
     // Полученные флаги
+
+    case (alu)
+
+        alu_adc,
+        alu_adc:
+
+            flags_out = {
+                /* 11 OF */ bit16 ? addof16 : addof8,
+                /* 10 DF */ flags[10],
+                /*  9 IF */ flags[9],
+                /*  8 TF */ flags[8],
+                /*  7 SF */ bit16 ? sign16 : sign8,
+                /*  6 ZF */ bit16 ? zero16 : zero8,
+                /*  5  - */ 1'b0,
+                /*  4 AF */ op1[3:0] + op2[3:0] + (alu == alu_adc ? flags[0] : 1'b0) >= 5'h10,
+                /*  3  - */ 1'b0,
+                /*  2 PF */ parity,
+                /*  1  - */ 1'b1,
+                /*  0 CF */ bit16 ? result[16] : result[8]
+            };
+
+        alu_sbb,
+        alu_sub,
+        alu_cmp:
+
+            flags_out = {
+                /* 11 OF */ bit16 ? subof16 : subof8,
+                /* 10 DF */ flags[10],
+                /*  9 IF */ flags[9],
+                /*  8 TF */ flags[8],
+                /*  7 SF */ bit16 ? sign16 : sign8,
+                /*  6 ZF */ bit16 ? zero16 : zero8,
+                /*  5  - */ 1'b0,
+                /*  4 AF */ op1[3:0] < op2[3:0] + (alu == alu_sbb ? flags[0] : 1'b0),
+                /*  3  - */ 1'b0,
+                /*  2 PF */ parity,
+                /*  1  - */ 1'b1,
+                /*  0 CF */ bit16 ? result[16] : result[8]
+            };
+
+        alu_or,
+        alu_xor,
+        alu_and:
+
+            flags_out = {
+                /* 11 OF */ 1'b0,
+                /* 10 DF */ flags[10],
+                /*  9 IF */ flags[9],
+                /*  8 TF */ flags[8],
+                /*  7 SF */ bit16 ? sign16 : sign8,
+                /*  6 ZF */ bit16 ? zero16 : zero8,
+                /*  5  - */ 1'b0,
+                /*  4 AF */ result[4], /* Undefined */
+                /*  3  - */ 1'b0,
+                /*  2 PF */ parity,
+                /*  1  - */ 1'b1,
+                /*  0 CF */ 1'b0
+            };
+
+    endcase
 
 end
 
