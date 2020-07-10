@@ -69,7 +69,7 @@ always @* begin
     // Полученные флаги https://ru.wikipedia.org/wiki/Регистр_флагов
     case (alu)
 
-        alu_adc,
+        alu_add,
         alu_adc:
 
             flags_out = {
@@ -87,8 +87,8 @@ always @* begin
                 /*  0 CF */ bit16 ? result[16] : result[8]
             };
 
-        alu_sbb,
         alu_sub,
+        alu_sbb,
         alu_cmp:
 
             flags_out = {

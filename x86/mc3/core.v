@@ -17,8 +17,6 @@ module core
 `include "declare.v"
 // ---------------------------------------------------------------------
 
-wire [15:0] __debug = r[reg_ax];
-
 always @(posedge clock)
 begin
 
@@ -30,7 +28,8 @@ begin
 
         sub_opcode: begin
 
-            ip <= ip + 1;
+            ip   <= ip + 1;
+            wren <= 1'b0;
 
             casex (data)
 
@@ -58,6 +57,14 @@ begin
                         // Инструкции ADD|ADC|SUB|SBB|AND|XOR|OR|CMP <modrm>|Acc,i8/16
                         8'b00_xxx_0xx: begin sub <= sub_modrm; alu <= data53; bit16 <= data[0]; dir <= data[1]; end
                         8'b00_xxx_10x: begin sub <= sub_exec;  alu <= data53; bit16 <= data[0]; end
+
+                        // INC|DEC r16
+                        8'b01_00x_xxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
+                                             op1 <= r[data20]; op2 <= 1'b1; end
+                        // PUSH r16
+                        8'b01_010_xxx: begin sub <= sub_exec;  wren <= 1'b1;
+                                             seg <= s[seg_ss]; eff  <= r[reg_sp] - 2;
+                                             swi <= 1'b1;      out  <= r[data20][7:0]; end
 
                     endcase
 
@@ -189,6 +196,17 @@ begin
                     subret <= sub_opcode;
 
                 end
+
+                // INC|DEC r16 Все флаги меняются, кроме флага CF
+                8'b01_00x_xxx: begin r[opcode[2:0]] <= result; sub <= sub_opcode; flags[11:1] <= flags_out[11:1]; end
+
+                // PUSH r16
+                8'b01_010_xxx: case (fn)
+
+                    0: begin fn   <= 1; out <= r[opcode[2:0]][15:8]; r[reg_sp] <= eff; eff <= eff + 1; end
+                    1: begin wren <= 0; sub <= sub_opcode; swi <= 1'b0; end
+
+                endcase
 
             endcase
 
