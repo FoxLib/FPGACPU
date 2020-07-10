@@ -195,10 +195,12 @@ begin
         // ===============================
         // Обратная запись в байт ModRM
         // или в память (зависит от modrm)
+        // По завершении записи swi -> 0
         // ===============================
 
         sub_wb: case (fn2)
 
+            // Запись в регистр
             0: begin
 
                 // Запись либо в регистр, либо в reg-часть от r/m
@@ -228,10 +230,30 @@ begin
                     end
 
                     sub <= subret;
+                    swi <= 1'b0;
+
+                end
+                // Запись в память байта или слова
+                else begin
+
+                    wren <= 1'b1;
+                    out  <= wb[7:0];
+                    fn2  <= 1;
 
                 end
 
             end
+
+            // Запись 8 бит
+            1: begin
+
+                if (bit16) begin fn2 <= 2; eff <= eff + 1; out <= wb[15:8]; end
+                else       begin fn2 <= 0; sub <= subret; wren <= 1'b0; swi <= 1'b0; end
+
+            end
+
+            // Запись 16 бит
+            2: begin fn2 <= 0; swi <= 1'b0; sub <= subret; wren <= 1'b0; eff <= eff - 1; end
 
         endcase
 
