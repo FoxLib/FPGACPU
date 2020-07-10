@@ -92,6 +92,9 @@ begin
 
             endcase
 
+            // MOV rm,r | r,rm
+            8'b1000_10xx: begin wb <= op2; sub <= sub_wb; end
+
         endcase
 
     endcase

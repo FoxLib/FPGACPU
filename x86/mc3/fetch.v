@@ -35,6 +35,9 @@ sub_opcode: begin
                 8'b00_xxx_0xx: begin sub <= sub_modrm; alu <= data53; bit16 <= data[0]; dir <= data[1]; end
                 8'b00_xxx_10x: begin sub <= sub_exec;  alu <= data53; bit16 <= data[0]; end
 
+                // MOV rm,r | r,rm
+                8'b1000_10xx:  begin sub <= sub_modrm; dir <= data[1]; bit16 <= data[0]; end
+
                 // INC|DEC r16
                 8'b01_00x_xxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
                                      op1 <= r[data20]; op2 <= 1'b1; end

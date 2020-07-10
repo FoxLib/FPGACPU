@@ -1,7 +1,7 @@
 
         org     $8000
 
-        cwd
+        mov     [$1234], bx
         push    ss
         pop     es
         cmc
