@@ -88,4 +88,21 @@ vga VGA
 // Процессор
 // --------------------------------------------------------------------------
 
+// Схема безопасной разблокировки процессора
+reg unlock = 1'b0; always @(posedge clock_25) if (locked) unlock <= 1'b1;
+
+wire [19:0] address;
+wire [ 7:0] data;
+wire [ 7:0] out;
+wire        wren;
+
+core IntelCore
+(
+    .clock      (clock_25 & unlock),
+    .address    (address),
+    .data       (data),
+    .out        (out),
+    .wren       (wren)
+);
+
 endmodule
