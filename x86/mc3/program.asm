@@ -1,6 +1,7 @@
 
         org     $8000
 
+        mov     dx, $55FF
         jb      @f
         push    bx
         pop     sp

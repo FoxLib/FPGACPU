@@ -49,6 +49,9 @@ sub_opcode: begin
                 // J<cond> +d8
                 8'b01_11x_xxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
 
+                // Все остальные инструкции, не требующие первого такта
+                default: sub <= sub_exec;
+
             endcase
 
         end

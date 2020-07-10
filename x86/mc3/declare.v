@@ -1,6 +1,6 @@
 `include "localparam.v"
 
-wire [15:0] __debug = r[reg_sp];
+wire [15:0] __debug = r[reg_dx];
 
 // ---------------------------------------------------------------------
 initial begin
