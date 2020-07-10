@@ -22,9 +22,9 @@ begin
 
     case (sub)
 
-        `include "fetch.v"
-        `include "modrm.v"
-        `include "subwb.v"
+        `include "fetch.v"      // sub_opcode
+        `include "modrm.v"      // sub_modrm
+        `include "subwb.v"      // sub_wb
 
         // Исполнение инструкции
         sub_exec: casex (opcode)

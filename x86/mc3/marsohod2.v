@@ -69,6 +69,10 @@ pll PLL(
 
 // Видеоадаптер
 // ---------------------------------------------------------------------
+wire [11:0] font_addr; wire [7:0] font_data;
+wire [11:0] char_addr; wire [7:0] char_data;
+wire [10:0] cursor = 0;
+
 vga VGA
 (
     // Опорная частота
@@ -79,20 +83,69 @@ vga VGA
     .VGA_G      (vga_green),
     .VGA_B      (vga_blue),
     .VGA_HS     (vga_hs),
-    .VGA_VS     (vga_vs)
+    .VGA_VS     (vga_vs),
+
+    // Знакогенератор
+    .FONT_ADDR  (font_addr),
+    .FONT_DATA  (font_data),
+    .CHAR_ADDR  (char_addr),
+    .CHAR_DATA  (char_data),
+
+    // Управление
+    .CURSOR     (cursor)
 );
 
 // Память
-// --------------------------------------------------------------------------
+// ---------------------------------------------------------------------
+
+wire [7:0] map_videoram;
+reg        map_videoram_wren;
+
+// #B8000-$B8FFF Видеопамять
+videoram VideoMemory
+(
+    .clock   (clk),
+    .addr_rd (char_addr),
+    .q       (char_data),
+    .addr_wr (address[11:0]),
+    .qw      (map_videoram),
+    .data_wr (out),
+    .wren    (wren & map_videoram_wren)
+);
+
+// #C0000-$C0FFF Знакогенератор
+videofont FontGenerator
+(
+    .clock   (clk),
+    .addr_rd (font_addr),
+    .q       (font_data),
+);
+
+// Контроллер памяти
+// ---------------------------------------------------------------------
+
+always @* begin
+
+    map_videoram_wren = 1'b0;
+    data = 8'hFF;
+
+    casex (address)
+
+        // B8000-B8FFF Видеопамять текстовая
+        20'b1011_1000_xxxx_xxxx_xxxx: begin map_videoram_wren = 1'b1; data = map_videoram; end
+
+    endcase
+
+end
 
 // Процессор
-// --------------------------------------------------------------------------
+// ---------------------------------------------------------------------
 
 // Схема безопасной разблокировки процессора
 reg unlock = 1'b0; always @(posedge clock_25) if (locked) unlock <= 1'b1;
 
 wire [19:0] address;
-wire [ 7:0] data;
+reg  [ 7:0] data;
 wire [ 7:0] out;
 wire        wren;
 
