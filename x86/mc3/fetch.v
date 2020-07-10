@@ -65,6 +65,10 @@ sub_opcode: begin
                 8'b1111_101x: flags[flag_i] <= data[0];
                 8'b1111_110x: flags[flag_d] <= data[0];
 
+                // CBW, CWD
+                8'b1001_1000: r[reg_ax] <= {{8{r[reg_ax][7]}}, r[reg_ax][7:0]};
+                8'b1001_1001: r[reg_dx] <= {16{r[reg_ax][15]}};
+
                 // Все остальные инструкции, не требующие первого такта
                 default: sub <= sub_exec;
 

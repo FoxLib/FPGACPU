@@ -1,6 +1,7 @@
 
         org     $8000
 
+        cwd
         push    ss
         pop     es
         cmc
