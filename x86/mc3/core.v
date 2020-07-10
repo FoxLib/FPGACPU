@@ -34,6 +34,7 @@ begin
 
                 // Загрузка сегмента эффективного адреса
                 8'b001x_x110: begin _override <= 1'b1; _seg <= s[ data[4:3] ]; end
+                8'b0000_1111: begin  sub <= sub_extended; end
                 8'b1111_0000: begin /* lock: */ end
                 8'b1111_001x: begin _rep <= data[1:0]; end
 
@@ -96,30 +97,19 @@ begin
                 // Вычисление эффективного адреса
                 casex (data)
 
-                    8'b00_xxx_110: eff <= 0; // disp16
-                    8'bxx_xxx_000: eff <= r[reg_bx] + r[reg_si];
-                    8'bxx_xxx_001: eff <= r[reg_bx] + r[reg_di];
-                    8'bxx_xxx_010: eff <= r[reg_bp] + r[reg_si];
-                    8'bxx_xxx_011: eff <= r[reg_bp] + r[reg_di];
+                    8'bxx_xxx_000: eff <= r[reg_si] + r[reg_bx];
+                    8'bxx_xxx_001: eff <= r[reg_di] + r[reg_bx];
+                    8'bxx_xxx_010: eff <= r[reg_si] + r[reg_bp];
+                    8'bxx_xxx_011: eff <= r[reg_di] + r[reg_bp];
                     8'bxx_xxx_100: eff <= r[reg_si];
                     8'bxx_xxx_101: eff <= r[reg_di];
+                    8'b00_xxx_110: eff <= 0; // [disp16]
                     8'bxx_xxx_110: eff <= r[reg_bp];
                     8'bxx_xxx_111: eff <= r[reg_bx];
 
                 endcase
 
-                // Вычисление эффективного адреса
-                casex (data)
-
-                    8'b00_xxx_110,
-                    8'b10_xxx_xxx: begin fn <= 1; end // +disp16
-                    8'b00_xxx_xxx: begin fn <= 4; swi <= 1'b1; end
-                    8'b01_xxx_xxx: begin fn <= 3; end // +disp8
-                    8'b11_xxx_xxx: begin sub <= sub_exec; end
-
-                endcase
-
-                // Если ранее был override, то в seg уже будет значение сегментного регистра
+                // Если ранее был override, то в seg уже будет значение
                 if (override == 1'b0)
                 casex (data)
 
@@ -128,6 +118,17 @@ begin
                     8'b01_xxx_110, // bp
                     8'b10_xxx_110:  seg <= s[seg_ss];
                     default:        seg <= s[seg_ds];
+
+                endcase
+
+                // Переход к процедуре
+                casex (data)
+
+                    8'b00_xxx_110,
+                    8'b10_xxx_xxx: begin fn <= 1; end // +disp16
+                    8'b00_xxx_xxx: begin fn <= 4; swi <= 1'b1; end
+                    8'b01_xxx_xxx: begin fn <= 3; end // +disp8
+                    8'b11_xxx_xxx: begin sub <= sub_exec; end
 
                 endcase
 
