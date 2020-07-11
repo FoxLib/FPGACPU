@@ -13,7 +13,7 @@ initial begin
     s[seg_ss] = 16'hF123;
     s[seg_ds] = 16'h0000;
 
-    r[reg_ax] = 16'h8071; r[reg_sp] = 16'hEFAE;
+    r[reg_ax] = 16'h87A3; r[reg_sp] = 16'hEFAE;
     r[reg_cx] = 16'h2233; r[reg_bp] = 16'hBABA;
     r[reg_dx] = 16'h6677; r[reg_si] = 16'hBEBE;
     r[reg_bx] = 16'hAFFA; r[reg_di] = 16'hCACA;

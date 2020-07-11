@@ -1,43 +1,43 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Jul 10 14:48:23 2020
+[*] Sat Jul 11 02:20:37 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/x86/mc3/main.vcd"
-[dumpfile_mtime] "Fri Jul 10 14:18:22 2020"
-[dumpfile_size] 87234
+[dumpfile_mtime] "Fri Jul 10 17:53:20 2020"
+[dumpfile_size] 88288
 [savefile] "/disk/fox/dev/fpgacpu/x86/mc3/main.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 164 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 195 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
 [treeopen] main.IntelCore.
 [sst_width] 243
 [signals_width] 194
 [sst_expanded] 1
-[sst_vpaned_height] 306
+[sst_vpaned_height] 309
 @28
 [color] 2
 main.clk
 [color] 2
 main.IntelCore.clock
-@800201
+@800200
 -mem
-@29
+@28
 [color] 3
 main.IntelCore.swi
-@23
+@22
 main.IntelCore.address[19:0]
 main.IntelCore.data[7:0]
 main.IntelCore.out[7:0]
-@29
+@28
 main.IntelCore.wren
-@23
+@22
 main.IntelCore.seg[15:0]
 main.IntelCore.eff[15:0]
-@1000201
+@1000200
 -mem
-@c00200
+@800200
 -state
 @22
 [color] 7
@@ -62,17 +62,19 @@ main.IntelCore.modrm[7:0]
 (7)main.IntelCore.modrm[7:0]
 @1401200
 -group_end
+@23
+main.IntelCore.wb[15:0]
+@1000200
 -state
-@c00200
+@800200
 -alu
 @22
 main.IntelCore.alu[3:0]
 main.IntelCore.op1[15:0]
 main.IntelCore.op2[15:0]
-main.IntelCore.wb[15:0]
 main.IntelCore.ArithLogicUnit.result[16:0]
 main.IntelCore.ArithLogicUnit.flags_out[11:0]
-@1401200
+@1000200
 -alu
 @22
 main.IntelCore.__debug[15:0]

@@ -1,16 +1,8 @@
 
         org     $8000
 
-        mov     [$1234], bx
-        push    ss
-        pop     es
-        cmc
-        clc
-        stc
-        sti
-        cli
-        std
-        cld
+        sub     [$0001], word $12FF
+
 @@:
         nop
         xchg    ax, dx
