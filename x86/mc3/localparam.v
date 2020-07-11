@@ -1,6 +1,6 @@
 localparam
 
-    sub_opcode      = 0,    // Базовый опкод
+    sub_fetch       = 0,    // Базовый опкод
     sub_extended    = 1,    // Считывание расширенного кода
     sub_modrm       = 2,    // Прочитать и разобрать modrm
     sub_exec        = 3,    // Исполнить инструкции

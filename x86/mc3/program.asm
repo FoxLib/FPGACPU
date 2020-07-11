@@ -1,8 +1,7 @@
 
         org     $8000
 
-        sub     [$0001], word $12FF
-
+        xchg    [$0001], dl
 @@:
         nop
         xchg    ax, dx

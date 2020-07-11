@@ -1,15 +1,15 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Sat Jul 11 02:20:37 2020
+[*] Sat Jul 11 05:05:26 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/x86/mc3/main.vcd"
-[dumpfile_mtime] "Fri Jul 10 17:53:20 2020"
-[dumpfile_size] 88288
+[dumpfile_mtime] "Sat Jul 11 05:04:49 2020"
+[dumpfile_size] 86478
 [savefile] "/disk/fox/dev/fpgacpu/x86/mc3/main.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 195 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 105 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
 [treeopen] main.IntelCore.
 [sst_width] 243
@@ -28,13 +28,14 @@ main.IntelCore.clock
 main.IntelCore.swi
 @22
 main.IntelCore.address[19:0]
+@23
 main.IntelCore.data[7:0]
-main.IntelCore.out[7:0]
-@28
-main.IntelCore.wren
 @22
 main.IntelCore.seg[15:0]
 main.IntelCore.eff[15:0]
+main.IntelCore.out[7:0]
+@28
+main.IntelCore.wren
 @1000200
 -mem
 @800200
@@ -62,7 +63,7 @@ main.IntelCore.modrm[7:0]
 (7)main.IntelCore.modrm[7:0]
 @1401200
 -group_end
-@23
+@22
 main.IntelCore.wb[15:0]
 @1000200
 -state

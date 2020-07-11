@@ -22,34 +22,34 @@ begin
 
     case (sub)
 
-        `include "fetch.v"      // sub_opcode
+        `include "fetch.v"      // sub_fetch
         `include "modrm.v"      // sub_modrm
         `include "subwb.v"      // sub_wb
 
         // Исполнение инструкции
         sub_exec: casex (opcode)
 
-            // ADD|ADC|SUB|SBB|AND|XOR|OR|CMP <modrm>
+            //<AR> <modrm>
             8'b00_xxx_0xx: begin
 
                 // Инструкция CMP не пишет результат
                 if (alu == alu_cmp)
-                     begin sub <= sub_opcode; swi <= 1'b0; end
+                     begin sub <= sub_fetch; swi <= 1'b0; end
                 else begin sub <= sub_wb;     wb  <= result; end
 
                 flags  <= flags_out;
-                subret <= sub_opcode;
+                subret <= sub_fetch;
 
             end
 
-            // ADD|ADC|SUB|SBB|AND|XOR|OR|CMP acc,i8/16
+            // <AR> acc,i8/16
             8'b00_xxx_10x: case (fn)
 
                 0: begin ip <= ip + 1; fn <= bit16 ? 1 : 2; op1 <= r[reg_ax]; op2 <= data; end
                 1: begin ip <= ip + 1; fn <= 2; op2[15:8] <= data; end
-                2: begin
+                2: begin // Сохранение результата
 
-                    sub   <= sub_opcode;
+                    sub   <= sub_fetch;
                     flags <= flags_out;
 
                     // Сохраняется в AL/AX кроме CMP
@@ -87,7 +87,7 @@ begin
 
                     flags <= flags_out;
                     if (modrm[5:3] == alu_cmp)
-                         begin sub <= sub_opcode; end
+                         begin sub <= sub_fetch; end
                     else begin sub <= sub_wb; wb <= result; swi <= 1'b1; end
 
                 end
@@ -95,7 +95,7 @@ begin
             endcase
 
             // INC|DEC r16 Все флаги меняются, кроме флага CF
-            8'b01_00x_xxx: begin r[opcode[2:0]] <= result; sub <= sub_opcode; flags[11:1] <= flags_out[11:1]; end
+            8'b01_00x_xxx: begin r[opcode[2:0]] <= result; sub <= sub_fetch; flags[11:1] <= flags_out[11:1]; end
 
             // PUSH xxx
             8'b0101_0xxx,
@@ -117,7 +117,7 @@ begin
 
                 end
 
-                1: begin wren <= 0; sub <= sub_opcode;     swi <= 1'b0; end
+                1: begin wren <= 0; sub <= sub_fetch;     swi <= 1'b0; end
 
             endcase
 
@@ -131,7 +131,7 @@ begin
                 1: begin
 
                     swi <= 0;
-                    sub <= sub_opcode;
+                    sub <= sub_fetch;
 
                     casex (opcode)
 
@@ -147,7 +147,7 @@ begin
 
             // J<ccc>, JMP *
             8'b0111_xxxx,
-            8'b1110_1011: begin sub <= sub_opcode; ip <= ip + 1 + {{8{data[7]}}, data[7:0]}; end
+            8'b1110_1011: begin sub <= sub_fetch; ip <= ip + 1 + {{8{data[7]}}, data[7:0]}; end
 
             // MOV r, i8/16
             8'b10_11x_xxx: case (fn)
@@ -161,7 +161,7 @@ begin
 
                     if (opcode[3] == 1'b0) begin
 
-                        sub <= sub_opcode;
+                        sub <= sub_fetch;
                         if (opcode[2]) r[ opcode[1:0] ][15:8] <= data;
                         else           r[ opcode[1:0] ][ 7:0] <= data;
 
@@ -170,12 +170,65 @@ begin
                 end
 
                 // Прочесть старший байт
-                1: begin r[ opcode[2:0] ] <= {data, wb[7:0]}; sub <= sub_opcode; ip <= ip + 1; end
+                1: begin r[ opcode[2:0] ] <= {data, wb[7:0]}; sub <= sub_fetch; ip <= ip + 1; end
 
             endcase
 
             // MOV rm,r | r,rm
             8'b1000_10xx: begin wb <= op2; sub <= sub_wb; end
+
+            // MOV a16|al
+            8'b1010_00xx: case (fn)
+
+                // imm16
+                0: begin fn <= 1; ip <= ip + 1; eff[ 7:0] <= data; if (!override) seg <= s[seg_ds]; end
+                1: begin fn <= 2; ip <= ip + 1; eff[15:8] <= data; swi <= 1'b1;
+                         if (opcode[1]) begin out <= r[reg_ax][7:0]; wren <= 1'b1; end
+                   end
+
+                // 8 bit
+                2: begin
+
+                    fn  <= 3;
+                    eff <= eff + 1;
+
+                    // MOV [m16], acc
+                    if (opcode[1]) begin
+
+                        if (opcode[0]) begin out  <= r[reg_ax][15:8]; end
+                        else           begin wren <= 1'b0; swi <= 1'b0; sub <= sub_fetch; end
+
+                    end
+                    // MOV acc, [m16]
+                    else begin r[reg_ax][7:0] <= data; if (!opcode[0]) begin swi <= 1'b0; sub <= sub_fetch; end end
+
+                end
+
+                // 16 bit
+                3: begin wren <= 1'b0; swi <= 1'b0; sub <= sub_fetch; if (!opcode[1]) r[reg_ax][15:8] <= data; end
+
+            endcase
+
+            // TEST rm, r8
+            8'b1000_010x: begin flags <= flags_out; swi <= 1'b0; sub <= sub_fetch; end
+
+            // XCHG rm, r8
+            8'b1000_011x: begin
+
+                // Запись в регистр из RM-части
+                if (opcode[0]) r[modrm[5:3]] <= op1;
+                else begin
+
+                    if (modrm[5]) r[modrm[4:3]][15:8] <= op1[7:0]; // HI
+                    else          r[modrm[4:3]][ 7:0] <= op1[7:0]; // LO
+
+                end
+
+                // Запись в регистр или память из REG-части
+                sub <= sub_wb;
+                wb  <= op2;
+
+            end
 
         endcase
 

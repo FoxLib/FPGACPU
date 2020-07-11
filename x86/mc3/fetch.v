@@ -3,7 +3,7 @@
 // Считывание префиксов и опкода
 // ---------------------------------------------------------------------
 
-sub_opcode: begin
+sub_fetch: begin
 
     ip   <= ip + 1;
     wren <= 1'b0;
@@ -35,14 +35,8 @@ sub_opcode: begin
                 8'b00_xxx_0xx: begin sub <= sub_modrm; alu <= data53; bit16 <= data[0]; dir <= data[1]; end
                 8'b00_xxx_10x: begin sub <= sub_exec;  alu <= data53; bit16 <= data[0]; end
 
-                // Групповые арифметические
-                8'b1000_00xx:  begin sub <= sub_modrm; bit16 <= data[0]; dir <= 1'b0; end
-
-                // MOV rm,r | r,rm
-                8'b1000_10xx:  begin sub <= sub_modrm; dir <= data[1]; bit16 <= data[0]; end
-
                 // INC|DEC r16
-                8'b01_00x_xxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
+                8'b0100_xxxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
                                      op1 <= r[data20]; op2 <= 1'b1; end
 
                 8'b000x_x110, // PUSH r16
@@ -75,11 +69,21 @@ sub_opcode: begin
 
                 end
 
+                // Групповые арифметические
+                8'b1000_00xx: begin sub <= sub_modrm; bit16 <= data[0]; dir <= 1'b0; end
+
+                // TEST rm,r
+                // XCHG rm,r
+                8'b1000_01xx: begin sub <= sub_modrm; bit16 <= data[0]; dir <= 1'b0; alu <= alu_and; end
+
+                // MOV rm,r | r,rm
+                8'b1000_10xx: begin sub <= sub_modrm; bit16 <= data[0]; dir <= data[1]; end
+
                 // XCHG AX, r16
-                8'b1001_0_xxx: begin r[reg_ax] <= r[data20]; r[data20] <= r[reg_ax]; end
+                8'b1001_0xxx: begin r[reg_ax] <= r[data20]; r[data20] <= r[reg_ax]; end
 
                 // J<cond> +d8
-                8'b01_11x_xxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
+                8'b0111_xxxx: if (condition[data[3:1]] ^ data[0]) sub <= sub_exec; else ip <= ip + 2;
 
                 // HLT, CMC
                 8'b1111_0100: ip <= ip;
