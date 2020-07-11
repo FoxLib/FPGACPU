@@ -12,9 +12,10 @@
 ; 27 - ESC
 ; --------------------------------------------------------
 
-getch:  in      al, 64h
+getch:  push    bx
+.L1:    in      al, 64h
         and     al, 1
-        je      getch               ; Ожидание нажатия
+        je      .L1                 ; Ожидание нажатия
         in      al, 60h             ; Прием скан-кода
         cmp     al, $2A
         jne     @f                  ; Клавиша SHIFT нажата
@@ -23,9 +24,10 @@ getch:  in      al, 64h
         jne     @f                  ; Клавиша SHIFT отпущена
         mov     [.layout_address], word .keyb_dn
 @@:     test    al, $80
-        jne     short getch         ; Отпущенные клавиши не фиксировать
+        jne     .L1                 ; Отпущенные клавиши не фиксировать
         mov     bx, [.layout_address]
         xlatb
+        pop     bx
         ret
 
 .keyb_dn:
