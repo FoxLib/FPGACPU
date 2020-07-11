@@ -2,6 +2,12 @@
         org     0x8000
         macro   brk { xchg bx, bx }
 
+        ; Инициализация
+        xor     ax, ax
+        xor     sp, sp
+        mov     ds, ax
+        mov     ss, ax
+
         ; Очистить экран
         mov     ax, $b800
         mov     es, ax
@@ -9,10 +15,9 @@
         mov     ax, $1700
         mov     cx, 2000
         rep     stosw
+brk
+@@:     call    getch
 
-@@:     in      al, $64
-        test    al, 1
-        je      @b
-        in      al, $60
-    brk
         jmp     @b
+
+        include "inc/keyboard.asm"

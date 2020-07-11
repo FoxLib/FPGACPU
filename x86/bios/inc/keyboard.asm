@@ -1,41 +1,4 @@
 ; Получение ASCII кода нажатого символа
-
-GETCH:  in      al, 64h
-        and     al, 1
-        je      short GETCH
-        in      al, 60h     ; Получение скан-кода
-
-        ; Клавиша Shift
-        cmp     al, $2a
-        je      short .shift_up
-        cmp     al, $aa
-        je      short .shift_dn
-
-        ; Особый расширенный скан-код
-        cmp     al, $e0
-        je      short EXTGCH
-
-        ; Код любой отжатой клавиши не брать
-        cmp     al, 80h
-        jnb     short GETCH
-
-        ; Преобразование в ASCII (xlatb)
-        mov     bx, [SHIFT_TBL]
-        xlatb
-        ret
-
-.shift_up:
-
-        mov     [SHIFT_TBL], word keyb_up
-        jmp     short GETCH
-
-.shift_dn:
-
-        mov     [SHIFT_TBL], word keyb_dn
-        jmp     short GETCH
-
-EXTGCH: ret
-
 ; --------------------------------------------------------
 ; 1-7  F1-F7
 ; 8  - Backspace
@@ -47,9 +10,25 @@ EXTGCH: ret
 ; 14   F11
 ; 15   F12
 ; 27 - ESC
+; --------------------------------------------------------
 
+getch:  in      al, 64h
+        and     al, 1
+        je      getch               ; Ожидание нажатия
+        in      al, 60h             ; Прием скан-кода
+        cmp     al, $2A
+        jne     @f                  ; Клавиша SHIFT нажата
+        mov     [.layout_address], word .keyb_up
+@@:     cmp     al, $AA
+        jne     @f                  ; Клавиша SHIFT отпущена
+        mov     [.layout_address], word .keyb_dn
+@@:     test    al, $80
+        jne     short getch         ; Отпущенные клавиши не фиксировать
+        mov     bx, [.layout_address]
+        xlatb
+        ret
 
-keyb_dn:
+.keyb_dn:
 
     ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F
     db   0,   27,  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',  8,   9    ; 0
@@ -59,7 +38,7 @@ keyb_dn:
     db   6,   7,   10,  11,  12,  0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1'   ; 4
     db   '2', '3', '0', '.', 0,   0,   0,   14,  15,   0,   0,   0,   0,   0,   0,   0    ; 5
 
-keyb_up:
+.keyb_up:
 
     ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F
     db   0,   27,  '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',  8,   9    ; 0
@@ -68,6 +47,9 @@ keyb_up:
     db   'B', 'N', 'M', '<', '>', '?', 0,   '*',  0,  ' ',  0,  1,    2,   3,   4,   5    ; 3
     db   6,   7,   10,  11,  12,  0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1'   ; 4
     db   '2', '3', '0', '.', 0,   0,   0,   14,  15,   0,   0,   0,   0,   0,   0,   0    ; 5
+
+; Указатель на раскладку клавиатуры
+.layout_address dw .keyb_dn
 
 
 
