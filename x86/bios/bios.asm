@@ -3,4 +3,8 @@
         macro   brk { xchg bx, bx }
 
         brk
-        jmp     $
+@@:     in      al, $64
+        test    al, 1
+        je      @b
+    brk
+        jmp     @b
