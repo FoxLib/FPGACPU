@@ -7,8 +7,9 @@
     * { font-size: 16px; font-family: "Ubuntu Mono", Monospace; }
     table { border-collapse: collapse; }
     .done { background: #e0ffe0; }
-    .done b { font-weight: bold; display: block; }
     .pref { background: #e0e0ff; }
+    .pros { background: #fcc; }
+    td > b { font-weight: bold; display: block; }
     h1 { font-size: 1.6em; }
     th { background: #eee; }
     tr { vertical-align: top; }
@@ -212,10 +213,10 @@
         <td class="done"><b>MOV</b>rm,r16</td>
         <td class="done"><b>MOV</b>r8,rm</td>
         <td class="done"><b>MOV</b>r16,rm</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>MOV</b>rm,sreg</td>
+        <td class="pros"><b>LEA</b>r16,rm</td>
+        <td class="pros"><b>MOV</b>sreg,rm</td>
+        <td class="pros"><b>POP</b>rm16</td>
     </tr>
     <tr>
         <th>90</th>
@@ -252,12 +253,12 @@
     </tr>
     <tr>
         <th>A8</th>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>TEST</b>al,i8</td>
+        <td class="pros"><b>TEST</b>ax,i16</td>
+        <td class="pros"><b>STOSB</b></td>
+        <td class="pros"><b>STOSW</b></td>
+        <td class="pros"><b>LODSB</b></td>
+        <td class="pros"><b>LODSW</b></td>
         <td></td>
         <td></td>
     </tr>
@@ -291,8 +292,8 @@
         <td></td>
         <td></td>
         <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>MOV</b>rm,i8</td>
+        <td class="pros"><b>MOV</b>rm,i16</td>
     </tr>
     <tr>
         <th>C8</th>
@@ -313,8 +314,8 @@
         <td></td>
         <td></td>
         <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>SALC</b></td>
+        <td class="pros"><b>XLATB</b></td>
     </tr>
     <tr>
         <th>D8</th>
@@ -333,10 +334,10 @@
         <td></td>
         <td></td>
         <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>IN</b>al,i8</td>
+        <td class="pros"><b>IN</b>ax,i8</td>
+        <td class="pros"><b>OUT</b>i8,al</td>
+        <td class="pros"><b>OUT</b>i8,ax</td>
     </tr>
     <tr>
         <th>E8</th>
@@ -344,10 +345,10 @@
         <td></td>
         <td></td>
         <td class="done"><b>JMP</b>b8</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
+        <td class="pros"><b>IN</b>al,dx</td>
+        <td class="pros"><b>IN</b>ax,dx</td>
+        <td class="pros"><b>OUT</b>dx,al</td>
+        <td class="pros"><b>OUT</b>dx,ax</td>
     </tr>
     <tr>
         <th>F0</th>

@@ -3,29 +3,28 @@
 GETCH:  in      al, 64h
         and     al, 1
         je      short GETCH
-
         in      al, 60h     ; Получение скан-кода
-        
+
         ; Клавиша Shift
         cmp     al, $2a
         je      short .shift_up
         cmp     al, $aa
         je      short .shift_dn
-        
+
         ; Особый расширенный скан-код
         cmp     al, $e0
         je      short EXTGCH
-        
+
         ; Код любой отжатой клавиши не брать
         cmp     al, 80h
-        jnb     short GETCH       
-        
+        jnb     short GETCH
+
         ; Преобразование в ASCII (xlatb)
         mov     bx, [SHIFT_TBL]
         xlatb
         ret
 
-.shift_up: 
+.shift_up:
 
         mov     [SHIFT_TBL], word keyb_up
         jmp     short GETCH
@@ -34,9 +33,9 @@ GETCH:  in      al, 64h
 
         mov     [SHIFT_TBL], word keyb_dn
         jmp     short GETCH
-        
+
 EXTGCH: ret
-        
+
 ; --------------------------------------------------------
 ; 1-7  F1-F7
 ; 8  - Backspace
@@ -50,9 +49,9 @@ EXTGCH: ret
 ; 27 - ESC
 
 
-keyb_dn:  
+keyb_dn:
 
-    ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F   
+    ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F
     db   0,   27,  '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',  8,   9    ; 0
     db   'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[', ']', 13,   0,  'a', 's'   ; 1
     db   'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', $27, '~',  0,  $5C, 'z', 'x', 'c', 'v'   ; 2
@@ -60,9 +59,9 @@ keyb_dn:
     db   6,   7,   10,  11,  12,  0,   0,   '7', '8', '9', '-', '4', '5', '6', '+', '1'   ; 4
     db   '2', '3', '0', '.', 0,   0,   0,   14,  15,   0,   0,   0,   0,   0,   0,   0    ; 5
 
-keyb_up: 
+keyb_up:
 
-    ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F   
+    ;    0    1     2    3    4    5    6    7    8    9    A    B    C    D    E    F
     db   0,   27,  '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '+',  8,   9    ; 0
     db   'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', 13,   0,  'A', 'S'   ; 1
     db   'D', 'F', 'G', 'H', 'J', 'K', 'L', ':', '"', '~',  0,  '|', 'Z', 'X', 'C', 'V'   ; 2
@@ -71,5 +70,5 @@ keyb_up:
     db   '2', '3', '0', '.', 0,   0,   0,   14,  15,   0,   0,   0,   0,   0,   0,   0    ; 5
 
 
-    
-    
+
+
