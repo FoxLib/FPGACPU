@@ -2,20 +2,26 @@
 ; Очистка экрана cls(word attrbyte)
 ; ----------------------------------------------------------------------
 cls:    xor     di, di
+        push    bp
         mov     bp, sp
-        mov     ax, [bp + 2]
+        mov     ax, arg0
         mov     cx, 4000
         rep     stosw
+        pop     bp
         ret     2
 
 ; ----------------------------------------------------------------------
 ; Установка положения курсора
 ; Входное значение arg=(Y*80 + X)
 ; ----------------------------------------------------------------------
+
 setcursor:
 
+        push    bp
         mov     bp, sp
-        mov     bx, [bp + 2]
+        push    ax dx
+        mov     bx, arg0
+        mov     [stdio.cursor], bx
         mov     dx, $3d4
         mov     al, $0f
         out     dx, al      ; outb(0x3D4, 0x0F)
@@ -28,6 +34,101 @@ setcursor:
         inc     dx
         mov     al, bh
         out     dx, al      ; outb(0x3D5, pos[15:8])
+        pop     dx ax
+        pop     bp
         ret     2
 
-; printf(..)
+; ----------------------------------------------------------------------
+; Установка курсора (x,y)
+; ----------------------------------------------------------------------
+locate: push    bp
+        mov     bp, sp
+        push    ax bx
+        mov     ax, arg1        ; Y
+        shl     ax, 4
+        mov     bx, ax
+        shl     ax, 2
+        add     bx, ax
+        add     bx, arg0        ; X
+        invoke  setcursor, bx
+        pop     bx ax
+        pop     bp
+        ret     4
+
+; ----------------------------------------------------------------------
+; Печать символа AL в телетайпе
+; ----------------------------------------------------------------------
+
+print:  push    ax bx cx di
+        mov     bx, [stdio.cursor]
+        add     bx, bx
+        mov     [es: bx], al
+        add     bx, 2
+        cmp     bx, 8000
+        jb      .L2
+        ; ---
+        xor     di, di              ; Сдвиг экрана наверх
+        mov     cx, 3920
+.L1:    mov     ax, [es: di + 160]
+        stosw
+        loop    .L1
+        mov     cx, 80              ; Очистить последнюю строку
+        mov     al, 0x20
+        rep     stosw
+        mov     bx, 7840
+        ; ---
+.L2:    shr     bx, 1
+        invoke  setcursor, bx
+        pop     di cx bx ax
+        ret
+
+; ----------------------------------------------------------------------
+; Печать форматированной строки
+; printf(char* format, ...)
+; ----------------------------------------------------------------------
+printf: push    bp
+        mov     bp, sp
+        push    si
+
+        mov     si, arg0
+        lea     bx, arg1
+.L1:    lodsb                   ; Чтение входного потока символов
+        and     al, al
+        je      .exit
+        cmp     al, '%'
+        je      .form
+.L2:    call    print
+        jmp     short .L1
+
+; Форматированная строка
+.form:  lodsb
+        cmp     al, 's'
+        je      .str            ; Строка
+        jmp     .L2             ; Неопознанный символ просто печатать
+
+; Вывести строку %s
+.str:   push    si
+        mov     si, [ss: bx]
+        inc     bx
+        inc     bx
+@@:     lodsb
+        and     al, al
+        je      .L3
+        call    print
+        jmp     @b
+.L3:    pop     si
+        jmp     short .L1
+
+; Выход из процедуры с очисткой стека
+.exit:
+        sub     bx, bp
+        sub     bx, 4       ; RET, BP
+        pop     si bp ax
+        add     sp, bx
+        push    ax
+        ret
+
+; ----------------------------------------------------------------------
+stdio:          ; ОБЛАСТЬ ДАННЫХ
+; ----------------------------------------------------------------------
+.cursor         dw 0
