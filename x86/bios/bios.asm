@@ -10,9 +10,9 @@
         mov     ax, $b800
         mov     es, ax
 
-        invoke  cls, $0700
+        invoke  cls, $0740
         invoke  setcursor, 0
-        brk
+        ;brk
 @@:     call    getch
 
         jmp     @b

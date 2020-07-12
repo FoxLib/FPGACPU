@@ -14,6 +14,16 @@
         mov     es, ax
         mov     ss, ax
         mov     sp, 7C00h
+
+        mov     ax, $0003       ; 80x25
+        int     10h
+        mov     ax, $1112       ; 80x50
+        mov     bl, 0
+        int     10h
+        mov     ax, $0100
+        mov     cx, $0607
+        int     10h
+
         mov     ah, 42h
         mov     si, DAP_sector  ; BIOS DAP https://en.wikipedia.org/wiki/INT_13H
         int     13h
