@@ -1,6 +1,7 @@
 DEVICE  = attiny85
 CLOCK   = 25000000
 LIBRARY = -I../../include
+AV		= ../../av/avr
 WARNING = -Wall -Wno-unused-but-set-variable
 STACK   = 0x80ffff
 HEAPEND = 0x807fff
@@ -12,6 +13,7 @@ all:
 	avr-objdump -S main.elf > main.lst
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
 	rm main.elf
+	$(AV) main.bin
 
 build:
 #	php ../../mc3/hexer.php main.bin > ../../de0/avr.hex
