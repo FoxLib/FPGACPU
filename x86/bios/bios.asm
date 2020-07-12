@@ -10,12 +10,12 @@
         mov     ax, $b800
         mov     es, ax
 
-        invoke  cls, $0720
-        invoke  locate,2,2
+        invoke  cls,$0720
+        invoke  locate,2,49
         invoke  printf,h
 
 @@:     call    getch
-
+        call    print
         jmp     @b
 
 h:      db "Core decompressing initializing procedure...", 0

@@ -59,12 +59,29 @@ locate: push    bp
 ; Печать символа AL в телетайпе
 ; ----------------------------------------------------------------------
 
-print:  push    ax bx cx di
+print:  and     al, al
+        je      .LR
+        push    ax bx cx di
         mov     bx, [stdio.cursor]
-        add     bx, bx
+        cmp     al, 13              ; Клавиша ENTER
+        jne     .L3
+        xchg    ax, bx
+        mov     bx, 80
+        cwd
+        div     bx                  ; ax = На какой линии находися
+        inc     ax
+        cmp     ax, 50
+        jb      .L5                 ; Превышение размера экрана
+        mov     bx, 8000
+        jmp     short .L4
+.L5:    invoke  locate,0,ax         ; К следующей строке
+        jmp     short .L6
+
+        ; Печать символа
+.L3:    add     bx, bx
         mov     [es: bx], al
         add     bx, 2
-        cmp     bx, 8000
+.L4:    cmp     bx, 8000
         jb      .L2
         ; ---
         xor     di, di              ; Сдвиг экрана наверх
@@ -79,8 +96,8 @@ print:  push    ax bx cx di
         ; ---
 .L2:    shr     bx, 1
         invoke  setcursor, bx
-        pop     di cx bx ax
-        ret
+.L6:    pop     di cx bx ax
+.LR:    ret
 
 ; ----------------------------------------------------------------------
 ; Печать форматированной строки
