@@ -3,6 +3,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+// 128Kb 0x1FFFF
+//   8Kb 0x01FFF
+#define MAX_FLASH 0x1FFF
+
 static const char* ds_brcs[4][8] = {
     {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
     {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
@@ -242,8 +246,8 @@ public:
 
     // Относительные переходы
     int skip_instr();
-    int get_rjmp()   { return (pc + 2*((opcode & 0x800) > 0 ? ((opcode & 0x7FF) - 0x800) : (opcode & 0x7FF))) & 0x1FFFF; }
-    int get_branch() { return (pc + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) )) & 0x1FFFF; }
+    int get_rjmp()   { return (pc + 2*((opcode & 0x800) > 0 ? ((opcode & 0x7FF)   - 0x800) : ( opcode & 0x7FF))) & MAX_FLASH; }
+    int get_branch() { return (pc + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) )) & MAX_FLASH; }
     int step();
 
     // SPI
