@@ -56,8 +56,8 @@ module marsohod2(
 );
 // --------------------------------------------------------------------------
 
-pll PLL(
-
+pll PLL
+(
     .clk        (clk),          // Входящие 100 Мгц
     .locked     (locked),       // 1 - готово и стабильно
     .c0         (clock_25),     // 25,0 Mhz
@@ -66,17 +66,103 @@ pll PLL(
     .c3         (clock_50)      // 50,0 Mhz
 );
 
+// ---------------------------------------------------------------------
+wire [11:0] font_addr; wire [7:0] font_data;
+wire [11:0] char_addr; wire [7:0] char_data;
+wire [10:0] cursor = 0;
+
 vga VGA
 (
     // Опорная частота
-    .CLOCK (clock_25),
+    .CLOCK      (clock_25),
 
     // Выходные данные
-    .VGA_R  (vga_red[4:1]),
-    .VGA_G  (vga_green[5:2]),
-    .VGA_B  (vga_blue[4:1]),
-    .VGA_HS (vga_hs),
-    .VGA_VS (vga_vs)
+    .VGA_R      (vga_red),
+    .VGA_G      (vga_green),
+    .VGA_B      (vga_blue),
+    .VGA_HS     (vga_hs),
+    .VGA_VS     (vga_vs),
+
+    // Знакогенератор
+    .FONT_ADDR  (font_addr),
+    .FONT_DATA  (font_data),
+    .CHAR_ADDR  (char_addr),
+    .CHAR_DATA  (char_data),
+
+    // Управление
+    .CURSOR     (cursor)
+);
+
+// Память
+// ---------------------------------------------------------------------
+
+wire [7:0] map_videoram;
+reg        wren_videoram;
+
+// #B8000-$B8FFF Видеопамять
+videoram VideoMemory
+(
+    .clock   (clk),
+    .addr_rd (char_addr),
+    .q       (char_data),
+    .addr_wr (address[11:0]),
+    .qw      (map_videoram),
+    .data_wr (out),
+    .wren    (wren & wren_videoram)
+);
+
+// #C0000-$C0FFF Знакогенератор
+videofont FontGenerator
+(
+    .clock   (clk),
+    .addr_rd (font_addr),
+    .q       (font_data),
+);
+
+// #0000-$0FFF x WORD Память программ
+flash ProgramFlash
+(
+    .clock   (clk),
+    .addr_rd (pc[11:0]),
+    .q       (ir),
+);
+
+// ---------------------------------------------------------------------
+always @* begin
+
+    din = 8'hFF;
+    wren_videoram = 1'b0;
+
+    casex (address)
+
+        // 8000-8FFF Видеопамять текстовая
+        16'b1000_xxxx_xxxx_xxxx: begin wren_videoram = 1'b1; din = map_videoram; end
+
+    endcase
+
+end
+// ---------------------------------------------------------------------
+
+// Схема безопасной разблокировки процессора
+reg unlock = 1'b0; always @(posedge clock_25) if (locked) unlock <= 1'b1;
+
+wire [15:0] pc;
+wire [15:0] address;
+reg  [15:0] ir;
+reg  [ 7:0] din;
+wire [ 7:0] wb;
+wire        w;
+
+cpu AVRBench
+(
+    .clock      (clock_25),
+    .locked     (unlock),
+    .pc         (pc),
+    .ir         (ir),
+    .address    (address),
+    .din_raw    (din),
+    .wb         (wb),
+    .w          (w)
 );
 
 endmodule
