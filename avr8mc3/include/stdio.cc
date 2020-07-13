@@ -4,12 +4,13 @@ class stdio {
 
 protected:
 
-    byte _key_cnt;
-    byte _shift_key;
+    byte  _key_cnt;
+    byte  _shift_key;
+    dword _seed;
 
 public:
 
-    stdio() { _key_cnt = inp(KB_HIT); _shift_key = 0; }
+    stdio() { _key_cnt = inp(KB_HIT); _shift_key = 0; _seed = 1; }
 
     // Значение таймера
     word timer() { return (inp(TIMER_LO) | inp(TIMER_HI)<<8); }
@@ -70,4 +71,13 @@ public:
         return k;
     }
 
+    void seed(dword seed) { _seed = seed; }
+
+    // "Случайное" число
+    dword rand() {
+
+        dword next = ((_seed >> 31) ^ (_seed >> 30) ^ (_seed >> 29) ^ (_seed >> 27) ^ (_seed>>25) ^ _seed) & 1;
+        _seed = (_seed >> 1) | (next << 31);
+        return _seed;
+    }
 };

@@ -277,9 +277,11 @@ always @(posedge pin_clk) begin
                     alt    <= im == 2 ? 1 : 0;
                     cursor <= {i[7:0], 8'hFF};
 
+                    if (im != 2) Z80_Delay <= (13-5);
+
                 end
                 6: begin irq <= 7; pc[7:0]  <= pin_i; cursor <= cursor + 1; alt <= 1; end
-                7: begin irq <= 0; pc[15:8] <= pin_i; Z80_Delay <= 4 + (13-5); end
+                7: begin irq <= 0; pc[15:8] <= pin_i; Z80_Delay <= 4; end
 
             endcase
 

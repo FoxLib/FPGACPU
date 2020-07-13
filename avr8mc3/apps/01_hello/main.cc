@@ -21,6 +21,7 @@ int main() {
 
         D.locate(8, 16);
         D.print(io.timer());
+        D.print("    ");
 
         //D.print4( io.getch() );
     }
