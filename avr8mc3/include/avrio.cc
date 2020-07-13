@@ -25,7 +25,7 @@ inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
 
 // Объявление указателя на память (имя x, адрес a)
-#define heap(x, a)  byte* x = (byte*) a
-#define disp(x) byte* x = (byte*) 0x8000
+#define heap(x, a) byte* x = (byte*) a
+#define display(x) byte* x = (byte*) 0x8000
 
 #endif
