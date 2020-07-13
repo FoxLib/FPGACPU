@@ -26,7 +26,7 @@ void APP::update_byte_scr(int addr) {
 
             int  X = (addr % 160) << 1;
             int  Y = (addr / 160);
-            int  cb = sram[0x17000 + addr];
+            int  cb = sram[0x8000 + addr];
 
             // 2 Пикселя в байте
             for (int o = 0; o < 2; o++) {
