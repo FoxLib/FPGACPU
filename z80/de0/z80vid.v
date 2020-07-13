@@ -62,17 +62,17 @@ wire [2:0] src_color = flashed_bit ? current_attr[2:0] : current_attr[5:3];
 wire [11:0] color = {
 
 // Если current_attr[6] = 1, то переходим в повышенную яркость (в 2 раза)
-/* Красный цвет - это бит 1 */ src_color[1] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01,
-/* Зеленый цвет - это бит 2 */ src_color[2] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01,
-/* Синий цвет   - это бит 0 */ src_color[0] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01
+/* Красный цвет - это бит 1 */ src_color[1] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01,
+/* Зеленый цвет - это бит 2 */ src_color[2] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01,
+/* Синий цвет   - это бит 0 */ src_color[0] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01
 
 };
 
 // Регистр border(3 бита) будет задаваться извне, например записью в порты какие-нибудь
 wire [11:0] bgcolor = {
-    border[1] ? 4'h7 : 4'h1,
-    border[2] ? 4'h7 : 4'h1,
-    border[0] ? 4'h7 : 4'h1
+    border[1] ? 4'hC : 4'h1,
+    border[2] ? 4'hC : 4'h1,
+    border[0] ? 4'hC : 4'h1
 };
 
 reg        flash;
@@ -80,7 +80,7 @@ reg [23:0] timer;
 
 always @(posedge clk) begin
 
-    if (timer == 24'd3125000) begin /* полсекунды */
+    if (timer == 12500000) begin /* полсекунды */
         timer <= 1'b0;
         flash <= flash ^ 1'b1; // мигать каждые 0.5 секунд
     end else begin
@@ -93,26 +93,12 @@ end
 // будет осциллироваться на частоте 25 мгц (в 4 раза медленее, чем 100 мгц)
 always @(posedge clk) begin
 
-    // аналогично этой конструции на C
-    // if (x == 799) x = 0; else x += 1;
     x <= x == (horiz_whole - 1) ? 1'b0 : (x + 1'b1);
-
-    // Когда достигаем конца горизонтальной линии, переходим к Y+1
     if (x == (horiz_whole - 1)) begin
-
-        // if (x == 524) y = 0; else y += 1;
         y <= y == (vert_whole - 1) ? 1'b0 : (y + 1'b1);
-
     end
 
-    // Обязательно надо тут использовать попиксельный выход, а то пиксели
-    // наполовину съезжают
-
     case (x[3:0])
-
-        // Видеоадрес в ZX Spectrum непросто вычислить
-        //         FEDC BA98 7654 3210
-        // Адрес =    Y Yzzz yyyx xxxx
 
                                // БанкY  СмещениеY ПолубанкY СмещениеX
         4'b0000: video_addr <= { Y[7:6], Y[2:0],   Y[5:3],   X[7:3] };
@@ -150,17 +136,9 @@ always @(posedge clk) begin
     if (x < horiz_visible && y < vert_visible) begin
 
         if (x >= 64 && x < (64 + 512) && y >= 48 && y < (48 + 384)) begin
-
-            // Цвет вычисляется выше и зависит от
-            // 1. Атрибута
-            // 2. Это пиксель или нет
-            {red, green, blue} <= color;
-
-        // Тут будет бордюр
+            {red, green, blue} <= color;        
         end else begin
-
             {red, green, blue} <= bgcolor;
-
         end
 
     // В невидимой области мы ДОЛЖНЫ очищать в черный цвет

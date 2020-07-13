@@ -9,9 +9,9 @@ module main;
 // ---------------------------------------------------------------------
 
 reg         clk;
-always #0.5 clk         = ~clk;
+always #0.5 clk = ~clk;
 
-initial begin clk = 1; #2000 $finish; end
+initial begin clk = 1; #10000 $finish; end
 initial begin $dumpfile("main.vcd"); $dumpvars(0, main); end
 
 // ---------------------------------------------------------------------
@@ -24,7 +24,7 @@ reg  [ 7:0] bus_data_i = 8'h00;       // То, что читается из па
 wire [ 7:0] bus_data_o;               // То, что пишется в память
 wire [15:0] bus_addr;
 
-initial $readmemh("mon/mon.hex", memory, 16'h0000);
+initial $readmemh("rom.hex", memory, 16'h0000);
 
 /* Формируется логика чтения и записи в память */
 always @(posedge clk) begin
@@ -47,13 +47,17 @@ end
 wire [15:0] pin_pa;
 wire [ 7:0] pin_pi = 0;
 wire [ 7:0] pin_po;
-wire       pin_pw;
-wire       pin_intr = 1'b1;
+wire        pin_pw;
+reg         pin_intr = 1'b0;
+
+initial begin #255.5 pin_intr = 1; end
 
 // ---------------------------------------------------------------------
 
 z80 cpu(
 
+    1'b0,
+    
     clock_cpu,
     bus_data_i,
     bus_addr,

@@ -78,6 +78,7 @@ assign HEX5 = 7'b1111111;
 // -----------------------------------------------------------------------
 
 wire        locked;
+wire        clk_cpu;
 reg  [1:0]  locked_rst = 2'b00;
 
 // Ожидание реальной стабилизации данных
@@ -86,13 +87,17 @@ always @(posedge CLOCK_50) locked_rst <= {locked_rst[0], locked};
 pll u0(
     .clkin      (CLOCK_50),     // BASE
     .m25        (clk25),        // VGA
-    .m20        (clk20),        // CPU LOWSPEED
+    .m20        (clk_cpu),      // CPU LOWSPEED
     .m100       (clk),          // MEMORY
     .locked     (locked)
 );
 
-// Память программ
+// ROM + RAM
 // -----------------------------------------------------------------------
+
+// Определение переднего фронта CPU CLOCK и запись только на 1 такте
+reg [3:0] wren = 4'b0000;
+always @(posedge clk) wren <= {wren[2:0], clock_cpu};
 
 ram u1(
 
@@ -102,7 +107,7 @@ ram u1(
     .address_a  (pin_a),
     .q_a        (pin_i),
     .data_a     (pin_o),
-    .wren_a     (pin_enw),
+    .wren_a     (pin_enw && (pin_a >= 16'h4000) && wren == 4'b0011),
 
     /* Видео */
     .address_b  ({3'b010, video_addr}),
@@ -113,6 +118,8 @@ ram u1(
 // Центральный процессор
 // -----------------------------------------------------------------------
 
+reg  [19:0] irq50    = 0;
+wire        pin_intr = irq50 == 62500;
 wire        pin_enw;
 wire [15:0] pin_a;
 wire [ 7:0] pin_i;
@@ -121,10 +128,14 @@ wire [15:0] pin_pa;
 reg  [ 7:0] pin_pi;
 wire [ 7:0] pin_po;
 wire        pin_pw;
-wire        pin_intr = VGA_VS;
-wire        clock_cpu = clk25 & (locked_rst == 2'b11); // clk25, clk20
+wire        clock_cpu = (clk_cpu) & (locked_rst == 2'b11);
+
+// Генератор 50 Гц IRQ для частоты 3.125 Мгц : 3`125`000 / 50 = 62500
+always @(posedge clock_cpu) irq50 <= (irq50 == 62500) ? 0 : (irq50 + 1);  
 
 z80 u3(
+
+    .pin_reset  (~RESET_N),
 
     /* Шина данных */
     .pin_clk    (clock_cpu),
@@ -140,7 +151,7 @@ z80 u3(
     .pin_pw     (pin_pw),
 
     /* Interrupt */
-    .pin_intr   (pin_intr)
+    .pin_intr   (pin_intr & 1)
 );
 
 
@@ -150,11 +161,17 @@ z80 u3(
 /* Запись в порты */
 always @(negedge clock_cpu) begin
 
-    if (pin_pa[7:0] == 8'hFE)
-        border_color <= pin_po[2:0];
+    // Запись разрешена
+    if (pin_pw) begin
+
+        if (pin_pa[7:0] == 8'hFE)
+            border_color <= pin_po[2:0];
+
+    end
 
 end
 
+/* Чтение из портов */
 always @(*) begin
 
     case (pin_pa[7:0])

@@ -13,16 +13,16 @@ module  pll(
 
 	altera_pll #(
 		.fractional_vco_multiplier("false"),
-		.reference_clock_frequency("50.0 MHz"),
+		.reference_clock_frequency("50.0 MHz"), // MAIN
 		.operation_mode("normal"),
 		.number_of_clocks(3),
-		.output_clock_frequency0("25.0 MHz"), 
+		.output_clock_frequency0("25.0 MHz"),   // VGA
 		.phase_shift0("0 ps"),
 		.duty_cycle0(50),
-		.output_clock_frequency1("100.0 MHz"),
+		.output_clock_frequency1("100.0 MHz"),  // MEMORY WRITE
 		.phase_shift1("0 ps"),
 		.duty_cycle1(50),
-		.output_clock_frequency2("20.0 MHz"),
+		.output_clock_frequency2("3.125 MHz"),  // CPU CLOCK 3.125 MHZ = 50 / 16
 		.phase_shift2("0 ps"),
 		.duty_cycle2(50),
 		.output_clock_frequency3("0 MHz"),
