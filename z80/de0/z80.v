@@ -263,7 +263,7 @@ always @(posedge pin_clk) begin
 
             case (irq)
 
-                1: begin irq <= 2; cursor <= sp; if (im == 0) pc <= pc + 1; r <= rh;  end
+                1: begin irq <= 2; cursor <= sp; if (im == 0) pc <= pc + 1; r <= rh; end
                 2: begin irq <= 3; cursor <= cursor - 1; pin_o <= pc[15:8]; pin_enw <= 1; alt <= 1; end
                 3: begin irq <= 4; cursor <= cursor - 1; pin_o <= pc[ 7:0]; pin_enw <= 1; alt <= 1; end
                 4: begin irq <= 5; /* Сброс ALT=1 */ end
@@ -277,11 +277,9 @@ always @(posedge pin_clk) begin
                     alt    <= im == 2 ? 1 : 0;
                     cursor <= {i[7:0], 8'hFF};
 
-                    Z80_Delay <= (13-5);
-
                 end
                 6: begin irq <= 7; pc[7:0]  <= pin_i; cursor <= cursor + 1; alt <= 1; end
-                7: begin irq <= 0; pc[15:8] <= pin_i; Z80_Delay <= 4; end
+                7: begin irq <= 0; pc[15:8] <= pin_i; Z80_Delay <= 4 + (13-5); end
 
             endcase
 
