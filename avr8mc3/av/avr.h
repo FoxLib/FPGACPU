@@ -158,10 +158,9 @@ protected:
     unsigned char port_keyb_xt;
 
     int  text_px, text_py;
-    int  cursor_x, cursor_y, flash, flash_id, require_disp_update;
     int  mouse_x, mouse_y, mouse_cmd;
-    unsigned long timer;
-    unsigned long intr_timer, last_timer;
+    unsigned short timer;
+    unsigned long  intr_timer, last_timer;
 
     struct CPUFlags flag;
 

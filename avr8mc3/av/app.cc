@@ -36,20 +36,13 @@ APP::APP() {
     instr_counter   = 0;
     framecycle      = 0;
     ds_brk_cnt      = 0;
-    port_kb_cnt     = 0;
-    text_px         = 0;
-    text_py         = 0;
-    cursor_x        = 0;
-    cursor_y        = 0;
-    flash           = 0;
-    flash_id        = 0;
 
+    port_kb_cnt     = 0;
     mouse_cmd       = 0;
     intr_timer      = 0;
     last_timer      = 0;
 
     count_per_frame = 200000;    // 10,0 mHz процессор
-    require_disp_update = 0;
 }
 
 void APP::window(const char* caption) {
@@ -359,18 +352,12 @@ void APP::infinite() {
                 }
 
                 // Вызывается по таймеру
-                case SDL_USEREVENT: redraw = 1; break;
+                case SDL_USEREVENT: redraw = 1; timer = (timer + 20); break;
             }
         }
 
         // Обнаружено событие обновления экрана
         if (redraw) {
-
-            timer = (timer + 20);
-            require_disp_update = 0;
-
-            flash_id++;
-            if (flash_id > 10) { flash_id = 0; flash ^= 1; require_disp_update = 1; }
 
             // Если запрошена остановка
             if (require_halt) {
@@ -387,7 +374,7 @@ void APP::infinite() {
                 // Выполнить инструкции
                 while (framecycle < count_per_frame) {
 
-                    // Вызов прерывание
+                    // Вызов прерывания
                     if ((flag.i == 1) && (timer - last_timer) > intr_timer) {
                         interruptcall();
                     }

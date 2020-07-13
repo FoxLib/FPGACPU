@@ -13,6 +13,8 @@ unsigned char APP::get(int addr) {
         // Управление клавиатурой
         case 0x20: dv = port_keyb_xt; break;
         case 0x21: dv = port_kb_cnt; break;
+        case 0x22: dv = timer & 0xFF; break;
+        case 0x23: dv = timer >> 8;   break;
 
         // Остальная память
         default:   dv = sram[addr]; break;
