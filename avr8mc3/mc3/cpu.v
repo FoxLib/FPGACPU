@@ -74,7 +74,7 @@ if (locked) begin
             wb      <= pcnext[15:8];
             w       <= 1'b1;
             sp_mth  <= `SPDEC;
-            pc      <= 2;           // ISR(INT0_vect)
+            pc      <= `INT0_VECT;           // AVR8K ISR(INT0_vect)
 
             // Сброс флага I->0 (sreg)
             alu     <= 11;

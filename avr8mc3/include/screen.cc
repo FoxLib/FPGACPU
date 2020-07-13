@@ -21,8 +21,25 @@ public:
     void color(char fr, char bg) { color_fr = fr; color_bg = bg; }
     void locate(int x, int y) { cursor_x = x; cursor_y = y; }
 
-    // Печать символа 4x8 на экране. Допустиы только 0x20 - 0x7E
+    // Очистить экран
+    void cls(byte cl) {
+
+        display(vm);
+        cl = (cl << 4) | cl;
+        for (int i = 0; i < 32000; i++)
+            vm[i] = cl;
+    }
+
+    // Печать символа 4x8 на экране. Допустимы только 0x20 - 0x7E
     void print4(char ch) {
+
+        // Возврат каретки
+        if (ch == 0x0A) {
+
+            cursor_x = 0;
+            cursor_y += 8;
+            return;
+        }
 
         if (ch < 0x20 || ch >= 0x80)
             return;
@@ -52,13 +69,8 @@ public:
 
         // Перемотка
         if (cursor_x >= 320) {
-
-            cursor_x = 0;
+            cursor_x  = 0;
             cursor_y += 8;
-
-            if (cursor_y >= 200) {
-                cursor_y = 192;
-            }
         }
     }
 
@@ -148,6 +160,37 @@ public:
 
             x++;
         }
+    }
+
+    // Закрашенная окружность
+    void circlef(int xc, int yc, int r, byte c) {
+
+        int x = 0;
+        int y = r;
+        int d = 3 - 2*y;
+
+        while (x <= y) {
+
+            for (int i = xc - x; i < xc + x; i++) { pset(i, yc+y, c); pset(i, yc-y, c); }
+            for (int i = xc - y; i < xc + y; i++) { pset(i, yc+x, c); pset(i, yc-x, c); }
+
+            d += 4*x + 6;
+            if (d >= 0) {
+                d += 4*(1 - y);
+                y--;
+            }
+
+            x++;
+        }
+    }
+
+    // Квадрат с ободком
+    void lineb(int x1, int y1, int x2, int y2, byte cl) {
+
+        line(x1, y1, x2, y1, cl);
+        line(x2, y1, x2, y2, cl);
+        line(x1, y2, x2, y2, cl);
+        line(x1, y1, x1, y2, cl);
     }
 
     // Печать строки

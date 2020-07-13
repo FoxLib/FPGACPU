@@ -1,6 +1,7 @@
 
 `define SPDEC 1
 `define SPINC 2
+`define INT0_VECT 1
 
 initial begin
 

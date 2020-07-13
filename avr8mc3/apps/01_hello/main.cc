@@ -1,17 +1,19 @@
 #include <avrio.cc>
 #include <screen.cc>
 
-// Шаблон с чтением из PGM
 int main() {
 
     screen D;
 
-    D.line(0, 0, 320, 199, 11);
-    D.circle(160, 100, 50, 10);
+    D.cls(1);
+    D.circlef(160, 100, 20, 14);
 
     D.color(15, 1);
     D.locate(8, 8);
     D.print("Hello, World!");
+
+    D.lineb(1,1,318,198,7);
+    D.lineb(3,3,316,196,7);
 
     for(;;);
 }

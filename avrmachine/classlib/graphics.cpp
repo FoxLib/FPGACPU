@@ -75,7 +75,7 @@ public:
 
         block(0, 0, 319, 199, cl);
         return this;
-    }    
+    }
 
     // Установить точку
     Graphics* pset(int x, int y, byte cl) {
@@ -268,7 +268,6 @@ public:
         wipe_under = w;
         return this;
     }
-    
 
     // Печать в режиме телетайпа
     Graphics* printch(byte cl) {

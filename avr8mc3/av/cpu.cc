@@ -138,7 +138,7 @@ void APP::interruptcall() {
     flag_to_byte();
     last_timer = timer;
     push16(pc >> 1);
-    pc = 4;
+    pc = 2; // AVR8K
 }
 
 // Исполнение шага процессора
