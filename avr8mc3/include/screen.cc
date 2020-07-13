@@ -1,7 +1,7 @@
 #include "ansi3.h"
 #include "numeric.cc"
 
-class screen : public numeric {
+class screen : public Numeric {
 protected:
 
     word cursor_x, cursor_y;

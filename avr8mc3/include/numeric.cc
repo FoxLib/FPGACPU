@@ -1,7 +1,7 @@
 #ifndef __FILE_NUMERIC
 #define __FILE_NUMERIC
 
-class numeric {
+class Numeric {
 
 protected:
 

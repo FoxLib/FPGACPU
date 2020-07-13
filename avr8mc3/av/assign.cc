@@ -98,7 +98,7 @@ void APP::assign() {
     // Непрямые и длинные переходы
     assign_mask("1001010100001001", ICALL);
     assign_mask("1001010100011001", EICALL);
-    assign_mask("1001010000001001", IJMP);
+    assign_mask("1001010000001001", IJMP);  // +
     assign_mask("1001010000011001", EIJMP);
     assign_mask("1001010kkkkk111k", CALL);  // +
     assign_mask("1001010kkkkk110k", JMP);   // +

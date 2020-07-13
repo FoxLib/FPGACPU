@@ -498,11 +498,8 @@ int APP::step() {
             break;
         */
 
-        case JMP:
-
-            pc = 2 * ((get_jmp() << 16) | fetch());
-            cycles = 3;
-            break;
+        case IJMP: pc = 2 * (get_Z()); cycles = 2; break;
+        case JMP:  pc = 2 * ((get_jmp() << 16) | fetch()); cycles = 3; break;
 
         case CALL:
 
