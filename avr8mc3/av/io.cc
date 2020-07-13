@@ -10,6 +10,10 @@ unsigned char APP::get(int addr) {
     // Очистка бита в порту 00 при чтении
     switch (addr) {
 
+        // Управление клавиатурой
+        case 0x20: dv = port_keyb_xt; break;
+        case 0x21: dv = port_kb_cnt; break;
+
         // Остальная память
         default:   dv = sram[addr]; break;
     }
