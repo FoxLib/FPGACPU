@@ -132,6 +132,40 @@ public:
         pset(x1, y1, cl);
     }
 
+    // Ускоренное рисование блока
+    void block(int x1, int y1, int x2, int y2, byte cl) {
+
+        display(vm);
+
+        // Выход за пределы рисования
+        if (x2 < 0 || y2 < 0 || x1 >= 320 || y1 >= 200) return;
+        if (x1 < 0) x1 = 0; if (x2 > 319) x2 = 319;
+        if (y1 < 0) y1 = 0; if (y2 > 199) x2 = 199;
+
+        // Расчет инициирующей точки
+        word  xc = (x2>>1) - (x1>>1);     // Расстояние
+        word  cc = cl | (cl << 4);        // Сдвоенный цвет
+        word  z  = 160*y1 + (x1>>1), zc;
+
+        // Коррекции, если не попадает
+        if (x1 & 1) { z++; xc--; }
+        if (x2 & 1) { xc++; }
+
+        // Построение линии сверху вниз
+        for (int i = y1; i <= y2; i++) {
+
+            // Рисование горизонтальной линии
+            zc = z; for (word j = 0; j < xc; j++) vm[zc++] = cc;
+
+            // К следующему Y++
+            z += 160;
+        }
+
+        // Дорисовать линии слева и справа
+        if ( (x1 & 1)) for (int i = y1; i <= y2; i++) pset(x1, i, cl);
+        if (!(x2 & 1)) for (int i = y1; i <= y2; i++) pset(x2, i, cl);
+    }
+
     // Рисование окружности
     void circle(int xc, int yc, int r, byte c) {
 
@@ -171,8 +205,10 @@ public:
 
         while (x <= y) {
 
-            for (int i = xc - x; i < xc + x; i++) { pset(i, yc+y, c); pset(i, yc-y, c); }
-            for (int i = xc - y; i < xc + y; i++) { pset(i, yc+x, c); pset(i, yc-x, c); }
+            block(xc-x, yc+y, xc+x, yc+y, c);
+            block(xc-x, yc-y, xc+x, yc-y, c);
+            block(xc-y, yc-x, xc+y, yc-x, c);
+            block(xc-y, yc+x, xc+y, yc+x, c);
 
             d += 4*x + 6;
             if (d >= 0) {

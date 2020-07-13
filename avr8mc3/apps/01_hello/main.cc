@@ -8,7 +8,7 @@ stdio io;
 int main() {
 
     D.cls(1);
-    D.circlef(160, 100, 50, 14);
+    D.circlef(-60, 130, 110, 14);
 
     D.color(15, 1);
     D.locate(8, 8);
