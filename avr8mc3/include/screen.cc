@@ -1,6 +1,7 @@
 #include "ansi3.h"
+#include "numeric.cc"
 
-class screen {
+class screen : public numeric {
 protected:
 
     word cursor_x, cursor_y;
@@ -155,4 +156,8 @@ public:
         int i = 0;
         while (byte b = s[i]) { print4(b); i++; }
     }
+
+    // Печать целого числа
+    void print(long num)  { i2a(num); print(buf); }
+    void print(float num, int n) { f2a(num, n); print(buf); }
 };
