@@ -24,9 +24,6 @@ APP::APP() {
 
     // Инициализация
     pc              = 0x0000;
-    membank         = 0;
-    videomode       = 0;
-
     ds_start        = 0;
     ds_cursor       = 0;
     ds_debugger     = 1;
@@ -46,22 +43,13 @@ APP::APP() {
     cursor_y        = 0;
     flash           = 0;
     flash_id        = 0;
-    spi_status      = 0;
-    spi_command     = 0;
-    spi_phase       = 0;
-    spi_arg         = 0;
-    spi_lba         = 0;
-    spi_resp        = 0xFF;
+
     mouse_cmd       = 0;
-    spi_st          = 2; // Timeout SD
     intr_timer      = 0;
     last_timer      = 0;
 
     count_per_frame = 200000;    // 10,0 mHz процессор
     require_disp_update = 0;
-
-    sdram_data = (unsigned char*)malloc(64*1024*1024);
-    for (int i = 0; i < 64*1024*1024; i++) sdram_data[i] = 0x55 ^ i;
 }
 
 void APP::window(const char* caption) {
@@ -81,7 +69,6 @@ void APP::window(const char* caption) {
 }
 
 APP::~APP() {
-    free(sdram_data);
 }
 
 // Загрузка файла в память
@@ -429,9 +416,6 @@ void APP::infinite() {
 
             require_halt = 0;
 
-            // Запрос обновления экрана в режиме экрана (flash)
-            if (require_disp_update && !ds_debugger && videomode == 0) { display_update(); }
-
             flip();
         }
 
@@ -442,25 +426,14 @@ void APP::infinite() {
 // Положение курсора мыши X
 int APP::get_mouse_x() {
 
-    switch (videomode) {
-
-        case 0: return mouse_x >> 4; break; // 80 x 25
-        case 3: return mouse_x >> 2; break; // 320 x 200
-    }
-
-    return 0;
+    return mouse_x >> 2;// 320 x 200
 }
 
 // Положение курсора мыши Y
 int APP::get_mouse_y() {
 
-    switch (videomode) {
-
-        case 0: return mouse_y >> 5; break; // 80 x 25
-        case 3: return mouse_y >> 2; break; // 320 x 200
-    }
-
-    return 0;
+    // 320 x 200
+    return mouse_y >> 2;
 }
 
 // Установить или удалить brkpoint

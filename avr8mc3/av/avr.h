@@ -101,17 +101,11 @@ protected:
     // Процессор
     // ---------------------------
 
-    unsigned char   program[128*1024];  // Память программы
-    unsigned char   sram   [1024*1024]; // Общая память, также включает регистры с портами (1 Mb)
-    unsigned char   pvsram [96];        // Для отладчика
+    uint8_t   program[128*1024];  // Память программы
+    uint8_t   sram   [1024*1024]; // Общая память, также включает регистры с портами (1 Mb)
+    uint8_t   pvsram [96];        // Для отладчика
     int             map[65536];
-    unsigned short  opcode, command;
-
-    // SDRAM Контроллер
-    unsigned int    sdram_addr;
-    unsigned char*  sdram_data;
-    unsigned char   sdram_ctl;
-    unsigned char   sdram_data_byte;
+    uint16_t  opcode, command;
 
     int  pc;
     int  cpu_halt;
@@ -125,8 +119,6 @@ protected:
     int  config_width, config_height;
 
     // I/O
-    int  membank;
-    int  videomode;      // 0 - TEXT 80x25, 1 - 320x200, 2 - 256x240
     int  port_keyb_hit;
     int  port_keyb_xt;
     int  text_px, text_py;
@@ -134,19 +126,6 @@ protected:
     int  mouse_x, mouse_y, mouse_cmd;
     unsigned long timer;
     unsigned long intr_timer, last_timer;
-
-    // Информация о SPI
-    unsigned char spi_data;
-    unsigned char spi_st;
-    unsigned char spi_status;
-    unsigned char spi_command;
-    unsigned long spi_arg;
-    unsigned long spi_lba;
-    unsigned char spi_crc;
-    unsigned char spi_resp;
-    unsigned int  spi_phase;
-    FILE*    spi_file;
-    unsigned char spi_sector[512];
 
     struct CPUFlags flag;
 
@@ -162,7 +141,6 @@ public:
     int  get_key(SDL_Event event);
     void update_screen();
     void display_update();
-    void update_text_xy(int x, int y);
     void update_byte_scr(int addr);
     void swi_brk();
     int  get_mouse_x();
@@ -172,7 +150,7 @@ public:
     void pset(int x, int y, uint color);
     void flip();
     void cls(uint);
-    void print16char(int col, int row, unsigned char ch, uint cl);
+    void print16char(int col, int row, uint8_t ch, uint cl);
     void print(int col, int row, const char* s, uint cl);
 
     // Дизассемблер
@@ -186,33 +164,33 @@ public:
     // Вспомогательные функции
     void assign();
     void config();
+    void interruptcall();
     void assign_mask(const char* mask, int opcode);
     int  fetch() { int data = program[pc] + program[pc+1]*256; pc = (pc + 2) & 0xffff; return data; }
-    void interruptcall();
 
     // Установка флагов
-    unsigned int neg(unsigned int);
-    void set_logic_flags(unsigned char);
+    unsigned int neg    (unsigned int);
+    void set_logic_flags(uint8_t);
     void set_subcarry_flag(int, int, int, int);
     void set_subtract_flag(int, int, int);
-    void set_add_flag(int, int, int, int);
-    void set_adiw_flag(int, int);
-    void set_sbiw_flag(int, int);
-    void set_lsr_flag(int, int);
+    void set_add_flag   (int, int, int, int);
+    void set_adiw_flag  (int, int);
+    void set_sbiw_flag  (int, int);
+    void set_lsr_flag   (int, int);
 
     // Извлечение операндов
-    int get_rd_index() { return (opcode & 0x1F0) >> 4; }
-    int get_rr_index() { return (opcode & 0x00F) | ((opcode & 0x200)>>5); }
-    int get_rd() { return sram[ get_rd_index() ]; }
-    int get_rr() { return sram[ get_rr_index() ]; }
-    int get_rdi() { return sram[ get_rd_index() | 0x10 ]; }
-    int get_rri() { return sram[ get_rr_index() | 0x10 ]; }
-    int get_imm8() { return (opcode & 0xF) + ((opcode & 0xF00) >> 4); }
-    int get_ap() { return (opcode & 0x00F) | ((opcode & 0x600) >> 5); }
-    int get_ka() { return (opcode & 0x00F) | ((opcode & 0x0C0) >> 2); }
-    int get_qi() { return (opcode & 0x007) | ((opcode & 0xC00) >> 7) | ((opcode & 0x2000) >> 8); }
-    int get_s3() { return (opcode & 0x070) >> 4; }
-    int get_jmp() { return (opcode & 1) | ((opcode & 0x1F0) >> 3); }
+    int get_rd_index()  { return (opcode & 0x1F0) >> 4; }
+    int get_rr_index()  { return (opcode & 0x00F) | ((opcode & 0x200)>>5); }
+    int get_rd()        { return sram[ get_rd_index() ]; }
+    int get_rr()        { return sram[ get_rr_index() ]; }
+    int get_rdi()       { return sram[ get_rd_index() | 0x10 ]; }
+    int get_rri()       { return sram[ get_rr_index() | 0x10 ]; }
+    int get_imm8()      { return (opcode & 0xF) + ((opcode & 0xF00) >> 4); }
+    int get_ap()        { return (opcode & 0x00F) | ((opcode & 0x600) >> 5); }
+    int get_ka()        { return (opcode & 0x00F) | ((opcode & 0x0C0) >> 2); }
+    int get_qi()        { return (opcode & 0x007) | ((opcode & 0xC00) >> 7) | ((opcode & 0x2000) >> 8); }
+    int get_s3()        { return (opcode & 0x070) >> 4; }
+    int get_jmp()       { return (opcode & 1) | ((opcode & 0x1F0) >> 3); }
 
     // 16 bit
     int get_S() { return sram[0x5D] + sram[0x5E]*256; }
@@ -220,40 +198,33 @@ public:
     int get_Y() { return sram[0x1C] + sram[0x1D]*256; }
     int get_Z() { return sram[0x1E] + sram[0x1F]*256; }
 
-    void put_S(unsigned short a) { sram[0x5D] = a & 0xFF; sram[0x5E] = (a >> 8) & 0xFF; }
-    void put_X(unsigned short a) { sram[0x1A] = a & 0xFF; sram[0x1B] = (a >> 8) & 0xFF; }
-    void put_Y(unsigned short a) { sram[0x1C] = a & 0xFF; sram[0x1D] = (a >> 8) & 0xFF; }
-    void put_Z(unsigned short a) { sram[0x1E] = a & 0xFF; sram[0x1F] = (a >> 8) & 0xFF; }
+    void put_S(uint16_t a) { sram[0x5D] = a & 0xFF; sram[0x5E] = (a >> 8) & 0xFF; }
+    void put_X(uint16_t a) { sram[0x1A] = a & 0xFF; sram[0x1B] = (a >> 8) & 0xFF; }
+    void put_Y(uint16_t a) { sram[0x1C] = a & 0xFF; sram[0x1D] = (a >> 8) & 0xFF; }
+    void put_Z(uint16_t a) { sram[0x1E] = a & 0xFF; sram[0x1F] = (a >> 8) & 0xFF; }
 
-    void put16(int a, unsigned short v) { sram[a] = v & 0xff; sram[a+1] = (v >> 8) & 0xff; }
-    unsigned short get16(int a)  { return sram[a] + 256*sram[a+1]; }
+    void     put16(int a, uint16_t v) { sram[a] = v & 0xff; sram[a+1] = (v >> 8) & 0xff; }
+    uint16_t get16(int a)             { return sram[a] + 256*sram[a+1]; }
 
-    void put(int, unsigned char);
-    void put_rd(unsigned char value) { sram[get_rd_index()] = value & 0xff; }
-    void put_rr(unsigned char value) { sram[get_rr_index()] = value & 0xff; }
-    void put_rdi(unsigned char value) { sram[get_rd_index() | 0x10] = value & 0xff; }
-    unsigned char get(int);
+    void put(int, uint8_t);
+    void put_rd(uint8_t value)  { sram[get_rd_index()] = value & 0xff; }
+    void put_rr(uint8_t value)  { sram[get_rr_index()] = value & 0xff; }
+    void put_rdi(uint8_t value) { sram[get_rd_index() | 0x10] = value & 0xff; }
+    uint8_t get(int);
 
     // Работа со стеком
-    void push8(unsigned char v8) { unsigned short sp = get_S(); put(sp, v8); put_S((sp - 1) & 0xffff); }
-    unsigned char pop8() { unsigned short sp = (get_S() + 1) & 0xffff; put_S(sp); return get(sp); }
+    void    push8(uint8_t v8)   { uint16_t sp = get_S(); put(sp, v8); put_S((sp - 1) & 0xffff); }
+    uint8_t pop8()              { uint16_t sp = (get_S() + 1) & 0xffff; put_S(sp); return get(sp); }
 
-    void push16(unsigned short v16) { push8(v16 & 0xff); push8(v16 >> 8); }
-    unsigned short pop16() { int h = pop8(); int l = pop8(); return h*256 + l; }
+    void        push16(uint16_t v16) { push8(v16 & 0xff); push8(v16 >> 8); }
+    uint16_t    pop16()              { int h = pop8(); int l = pop8(); return h*256 + l; }
 
-    void byte_to_flag(unsigned char);
-    unsigned char flag_to_byte();
+    void    byte_to_flag(uint8_t);
+    uint8_t flag_to_byte();
 
     // Относительные переходы
-    int skip_instr();
     int get_rjmp()   { return (pc + 2*((opcode & 0x800) > 0 ? ((opcode & 0x7FF)   - 0x800) : ( opcode & 0x7FF))) & MAX_FLASH; }
     int get_branch() { return (pc + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) )) & MAX_FLASH; }
+    int skip_instr();
     int step();
-
-    // SPI
-    unsigned char spi_read_data();
-    unsigned char spi_read_status();
-    void spi_write_data(unsigned char data);
-    void spi_write_cmd(unsigned char data);
-
 };
