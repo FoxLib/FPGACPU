@@ -1,3 +1,5 @@
+#include <avrio.cc>
+
 #include "ansi3.h"
 #include "numeric.cc"
 
@@ -239,4 +241,24 @@ public:
     // Печать целого числа
     void print(long num)  { i2a(num); print(buf); }
     void print(float num, int n) { f2a(num, n); print(buf); }
+
+    // Рисование тайла на экране (X кратен 2), нет проверки границ
+    void tile(const byte* data, int x, int y, int w, int h) {
+
+        display(vm);
+
+        w >>= 1;
+
+        word z = 160*y + (x>>1), zc;
+        int  n = 0;
+
+        // Построчное рисование
+        for (int i = 0; i < h; i++) {
+
+            zc = z;
+            for (int j = 0; j < w; j++) vm[zc++] = pgm_read_byte(&data[n++]);
+            z += 160;
+        }
+
+    }
 };
