@@ -1,7 +1,6 @@
-#include <avrio.cc>
 #include <vector3.cc>
-#include <screen.cc>
 #include <stdio.cc>
+#include <avr8k/screen.cc>
 
 #define MAX_STAR 64
 

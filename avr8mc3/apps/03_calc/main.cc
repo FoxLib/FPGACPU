@@ -1,4 +1,4 @@
-#include <gui.cc>
+#include <avr8k/gui.cc>
 
 gui D;
 

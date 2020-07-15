@@ -1,5 +1,5 @@
-#include <screen.cc>
 #include <stdio.cc>
+#include <avr8k/screen.cc>
 
 screen D;
 stdio io;

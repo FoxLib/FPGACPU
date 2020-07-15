@@ -1,3 +1,4 @@
+#include "avrio.cc"
 #include "stdio.h"
 
 class stdio {
