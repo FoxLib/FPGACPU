@@ -1,11 +1,9 @@
-#include <avr32k/screen.cc>
+#include <avr32k/graphics.cc>
+
+graphics D;
 
 // Шаблон
 int main() {
-
-    display(vm);
-
-
 
     // Бесконечный цикл
     for(;;);
