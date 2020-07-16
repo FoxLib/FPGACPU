@@ -1,7 +1,6 @@
 #include <avrio.cc>
-
-#include "ansi3.h"
-#include "numeric.cc"
+#include <ansi3.h>
+#include <numeric.cc>
 
 class screen : public Numeric {
 protected:
@@ -19,18 +18,15 @@ public:
         color_bg = -1;
     }
 
+    // Должны быть реализованы в классе-потомке
+    // -----------------------------------------------------------------
+    virtual void pset(int x, int y, char cl);
+    virtual void block(int x1, int y1, int x2, int y2, byte cl);
+    // -----------------------------------------------------------------
+
     void color(char fr) { color_fr = fr; }
     void color(char fr, char bg) { color_fr = fr; color_bg = bg; }
     void locate(int x, int y) { cursor_x = x; cursor_y = y; }
-
-    // Очистить экран
-    void cls(byte cl) {
-
-        display(vm);
-        cl = (cl << 4) | cl;
-        for (int i = 0; i < 32000; i++)
-            vm[i] = cl;
-    }
 
     // Печать символа 4x8 на экране. Допустимы только 0x20 - 0x7E
     void print4(char ch) {
@@ -76,30 +72,6 @@ public:
         }
     }
 
-    // Рисование точки на экране
-    void pset(int x, int y, char cl) {
-
-        display(vm);
-
-        // Не должен превышать границы
-        if (x < 0 || y < 0 || x >= 320 || y >= 200)
-            return;
-
-        word z = y*160 + (x>>1); // Расчет номера байта
-        cl &= 15;
-
-        // Установка точки в ниббл
-        vm[z] = x & 1 ? ((vm[z] & 0xF0) | cl) : ((vm[z] & 0x0F) | (cl << 4));
-    }
-
-    // Вернуть точку
-    byte point(int x, int y) {
-
-        display(vm);
-        word z = y*160 + (x>>1); // Расчет номера байта
-        return x & 1 ? vm[z] & 0x0F : (vm[z] >> 4);
-    }
-
     // Рисование линии
     void line(int x1, int y1, int x2, int y2, byte cl) {
 
@@ -132,40 +104,6 @@ public:
         }
 
         pset(x1, y1, cl);
-    }
-
-    // Ускоренное рисование блока
-    void block(int x1, int y1, int x2, int y2, byte cl) {
-
-        display(vm);
-
-        // Выход за пределы рисования
-        if (x2 < 0 || y2 < 0 || x1 >= 320 || y1 >= 200) return;
-        if (x1 < 0) x1 = 0; if (x2 > 319) x2 = 319;
-        if (y1 < 0) y1 = 0; if (y2 > 199) x2 = 199;
-
-        // Расчет инициирующей точки
-        word  xc = (x2>>1) - (x1>>1);     // Расстояние
-        word  cc = cl | (cl << 4);        // Сдвоенный цвет
-        word  z  = 160*y1 + (x1>>1), zc;
-
-        // Коррекции, если не попадает
-        if (x1 & 1) { z++; xc--; }
-        if (x2 & 1) { xc++; }
-
-        // Построение линии сверху вниз
-        for (int i = y1; i <= y2; i++) {
-
-            // Рисование горизонтальной линии
-            zc = z; for (word j = 0; j < xc; j++) vm[zc++] = cc;
-
-            // К следующему Y++
-            z += 160;
-        }
-
-        // Дорисовать линии слева и справа
-        if ( (x1 & 1)) for (int i = y1; i <= y2; i++) pset(x1, i, cl);
-        if (!(x2 & 1)) for (int i = y1; i <= y2; i++) pset(x2, i, cl);
     }
 
     // Рисование окружности
@@ -241,24 +179,4 @@ public:
     // Печать целого числа
     void print(long num)  { i2a(num); print(buf); }
     void print(float num, int n) { f2a(num, n); print(buf); }
-
-    // Рисование тайла на экране (X кратен 2), нет проверки границ
-    void tile(const byte* data, int x, int y, int w, int h) {
-
-        display(vm);
-
-        w >>= 1;
-
-        word z = 160*y + (x>>1), zc;
-        int  n = 0;
-
-        // Построчное рисование
-        for (int i = 0; i < h; i++) {
-
-            zc = z;
-            for (int j = 0; j < w; j++) vm[zc++] = pgm_read_byte(&data[n++]);
-            z += 160;
-        }
-
-    }
 };

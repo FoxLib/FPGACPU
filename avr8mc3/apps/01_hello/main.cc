@@ -1,7 +1,7 @@
 #include <stdio.cc>
-#include <avr8k/screen.cc>
+#include <avr8k/graphics.cc>
 
-screen D;
+graphics D;
 stdio io;
 
 const byte SAND[128] PROGMEM = {
@@ -45,8 +45,8 @@ int main() {
         D.tile(SAND, j*16, i*16, 16, 16);
 
     // Человече
-    D.line(160, 100, 160, 115, 11);
     D.line(160, 103, 165, 112, 11);
+    D.line(160, 100, 160, 115, 11);
     D.line(160, 103, 155, 112, 11);
     D.line(160, 115, 165, 127, 11);
     D.line(160, 115, 155, 127, 11);

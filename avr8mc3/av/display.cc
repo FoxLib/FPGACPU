@@ -21,10 +21,11 @@ void APP::update_byte_scr(int addr) {
     // Область видеопамяти
     if (!ds_debugger) {
 
+        addr -= 0x8000;
+
         // 320x200x4 для Attiny85
         if (cpu_model == ATTINY85) {
 
-            addr -= 0x8000;
             if (addr >= 0 && addr < 32000) {
 
                 int  X = (addr % 160) << 1;
@@ -49,6 +50,29 @@ void APP::update_byte_scr(int addr) {
                 }
             }
         }
+        // Просто модель памяти такая
+        else if (cpu_model == ATMEGA328) {
+
+            int s = (width >= 1024 && height >= 800) ? 4 : 2;
+
+            xshift = (width  - s*256) / 2,
+            yshift = (height - s*192) / 2;
+
+            if (addr >= 0 && addr < 6144) {
+
+                int  X = (addr & 0x1F);
+                int  Y = (addr >> 5);
+                int  cb = sram[0x8000 + addr];
+
+                for (int i = 0; i < 8; i++) {
+
+                    int cl = cb & (1 << i) ? DOS_13[7] : 0;
+
+                    for (int m = 0; m < s*s; m++)
+                    pset(xshift + (8*X+i)*s + (m%s), yshift + Y*s + (m/s), cl);
+                }
+            }
+        }
     }
 }
 
@@ -57,11 +81,10 @@ void APP::display_update() {
 
     cls(0);
 
-    // Видеорежим 320x200x4
-    if (cpu_model == ATTINY85) {
-        for (int i = 0; i < 32000; i++)
-            update_byte_scr(0x8000 + i);
-    }
+    // Видеорежим 320x200x4 или 256x192x1
+    for (int i = 0; i < (cpu_model == ATTINY85 ? 32000 : 6144); i++)
+        update_byte_scr(0x8000 + i);
+
 }
 
 // ---------------------------------------------------------------------

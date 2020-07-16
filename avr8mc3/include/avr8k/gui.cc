@@ -1,4 +1,4 @@
-#include "screen.cc"
+#include "graphics.cc"
 
 enum WINDOW_PARAM {
 
@@ -7,7 +7,7 @@ enum WINDOW_PARAM {
     WIN_MINIMIZE = 4,
 };
 
-class gui : public screen {
+class gui : public graphics {
 
 protected:
 

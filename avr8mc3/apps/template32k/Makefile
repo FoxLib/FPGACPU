@@ -1,4 +1,4 @@
-DEVICE  = atmega328
+DEVICE  = at76c711
 CLOCK   = 25000000
 LIBRARY = -I../../include
 AV		= ../../av/avr

@@ -3,7 +3,7 @@ CLOCK   = 25000000
 LIBRARY = -I../../include
 AV		= ../../av/avr
 WARNING = -Wall -Wno-unused-but-set-variable
-STACK   = 0x80ffff
+STACK   = 0x8017ff
 HEAPEND = 0x807fff
 COMPILE = avr-gcc $(LIBRARY) $(WARNING) -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=$(STACK),--defsym=__heap_end=$(HEAPEND)
 

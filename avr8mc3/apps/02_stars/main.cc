@@ -1,10 +1,10 @@
 #include <vector3.cc>
 #include <stdio.cc>
-#include <avr8k/screen.cc>
+#include <avr8k/graphics.cc>
 
 #define MAX_STAR 64
 
-screen D;
+graphics D;
 stdio  io;
 
 vec3i star[MAX_STAR];

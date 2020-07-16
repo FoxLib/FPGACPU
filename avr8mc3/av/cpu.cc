@@ -508,6 +508,13 @@ int APP::step() {
             cycles = 4;
             break;
 
+        case ICALL:
+
+            push16(pc >> 1);
+            pc = 2*get_Z();
+            cycles = 3;
+            break;
+
         default:
 
             printf("Неизвестная инструкция $%04x в pc=$%04x\n", opcode, pc - 2);
