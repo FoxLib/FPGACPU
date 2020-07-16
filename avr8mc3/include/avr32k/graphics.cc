@@ -10,7 +10,8 @@ public:
         for (int i = 0; i < 6144; i++)
             vm[i] = cl ? 255 : 0;
 
-        color(cl, 1 - cl);
+        color(1 - cl, cl);
+        maxwidth = 256;
     }
 
     // Реализация рисования точки

@@ -7,6 +7,7 @@ protected:
 
     word cursor_x, cursor_y;
     char color_fr, color_bg;
+    word maxwidth;
 
 public:
 
@@ -16,6 +17,7 @@ public:
         cursor_y = 0;
         color_fr = 15;
         color_bg = -1;
+        maxwidth = 320;
     }
 
     // Должны быть реализованы в классе-потомке
@@ -66,7 +68,7 @@ public:
         cursor_x += 4;
 
         // Перемотка
-        if (cursor_x >= 320) {
+        if (cursor_x >= maxwidth) {
             cursor_x  = 0;
             cursor_y += 8;
         }
