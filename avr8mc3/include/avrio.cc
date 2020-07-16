@@ -67,6 +67,6 @@ inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[
 
 // Объявление указателя на память (имя x, адрес a)
 #define heap(x, a) byte* x = (byte*) a
-#define display(x) byte* x = (byte*) 0x8000
+#define DISPLAY(x) byte* x = (byte*) 0x8000
 
 #endif

@@ -11,7 +11,7 @@ public:
     // Очистить экран
     void cls(byte cl) {
 
-        display(vm);
+        DISPLAY(vm);
         cl = (cl << 4) | cl;
         for (int i = 0; i < 32000; i++)
             vm[i] = cl;
@@ -20,7 +20,7 @@ public:
     // Рисование точки на экране
     void pset(int x, int y, char cl) {
 
-        display(vm);
+        DISPLAY(vm);
 
         // Не должен превышать границы
         if (x < 0 || y < 0 || x >= 320 || y >= 200)
@@ -36,7 +36,7 @@ public:
     // Вернуть точку
     byte point(int x, int y) {
 
-        display(vm);
+        DISPLAY(vm);
         word z = y*160 + (x>>1); // Расчет номера байта
         return x & 1 ? vm[z] & 0x0F : (vm[z] >> 4);
     }
@@ -44,7 +44,7 @@ public:
     // Ускоренное рисование блока
     void block(int x1, int y1, int x2, int y2, byte cl) {
 
-        display(vm);
+        DISPLAY(vm);
 
         // Выход за пределы рисования
         if (x2 < 0 || y2 < 0 || x1 >= 320 || y1 >= 200) return;
@@ -78,7 +78,7 @@ public:
     // Рисование тайла на экране (X кратен 2), нет проверки границ
     void tile(const byte* data, int x, int y, int w, int h) {
 
-        display(vm);
+        DISPLAY(vm);
 
         w >>= 1;
 

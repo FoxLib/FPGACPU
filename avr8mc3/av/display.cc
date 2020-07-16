@@ -66,7 +66,7 @@ void APP::update_byte_scr(int addr) {
 
                 for (int i = 0; i < 8; i++) {
 
-                    int cl = cb & (1 << i) ? DOS_13[7] : 0;
+                    int cl = cb & (1 << (7-i)) ? DOS_13[7] : 0;
 
                     for (int m = 0; m < s*s; m++)
                     pset(xshift + (8*X+i)*s + (m%s), yshift + Y*s + (m/s), cl);
