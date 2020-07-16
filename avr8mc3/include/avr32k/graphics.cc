@@ -48,6 +48,7 @@ public:
         // Если находится на одной линии 8 битной
         if (x8a == x8b) {
 
+            z += x8a;
             byte m = L & R;
             for (int i = y1; i <= y2; i++) {
                 if (cl) vm[z] |= m; else vm[z] &= ~m;
