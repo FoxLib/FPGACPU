@@ -42,6 +42,9 @@ APP::APP() {
     intr_timer      = 0;
     last_timer      = 0;
 
+    cpu_model       = ATTINY85;
+    max_flash       = 0x1FFF;
+
     count_per_frame = 200000;    // 10,0 mHz процессор
 }
 
@@ -182,6 +185,17 @@ void APP::loadfile(const char* fn) {
         fseek(fp, 0, SEEK_SET);
         fread(program, 1, size, fp);
         fclose(fp);
+
+        // Attiny85
+        if ((program[1] & 0xF0) == 0xC0) {
+
+            cpu_model = ATTINY85;
+            max_flash = 0x1FFF;
+
+        } else if ((program[1] & 0xFF) == 0x94) {
+            cpu_model = ATMEGA328;
+            max_flash = 0x7FFF;
+        }
 
     } else {
 

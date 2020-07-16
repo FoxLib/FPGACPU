@@ -12,7 +12,7 @@ void APP::update_screen() {
     else display_update();
 }
 
-// 0xC000 - 0xFFFF Видеопамять
+// 0x8000 - 0xFFFF Видеопамять
 void APP::update_byte_scr(int addr) {
 
     int xshift = (width  - 640) / 2,
@@ -21,26 +21,30 @@ void APP::update_byte_scr(int addr) {
     // Область видеопамяти
     if (!ds_debugger) {
 
-        addr -= 0x8000;
-        if (addr >= 0 && addr < 32000) {
+        // 320x200x4 для Attiny85
+        if (cpu_model == ATTINY85) {
 
-            int  X = (addr % 160) << 1;
-            int  Y = (addr / 160);
-            int  cb = sram[0x8000 + addr];
+            addr -= 0x8000;
+            if (addr >= 0 && addr < 32000) {
 
-            // 2 Пикселя в байте
-            for (int o = 0; o < 2; o++) {
+                int  X = (addr % 160) << 1;
+                int  Y = (addr / 160);
+                int  cb = sram[0x8000 + addr];
 
-                uint cl = o ? cb & 15 : (cb >> 4);
-                     cl = DOS_13[cl];
+                // 2 Пикселя в байте
+                for (int o = 0; o < 2; o++) {
 
-                if (height <= 480) {
-                    for (int m = 0; m < 4; m++) {
-                        pset((X + o)*2 + (m>>1) + xshift, Y*2 + (m&1) + yshift , cl);
-                    }
-                } else {
-                    for (int m = 0; m < 16; m++) {
-                        pset(4*(X + o) + (m>>2), 4*Y + (m&3), cl);
+                    uint cl = o ? cb & 15 : (cb >> 4);
+                         cl = DOS_13[cl];
+
+                    if (height <= 480) {
+                        for (int m = 0; m < 4; m++) {
+                            pset((X + o)*2 + (m>>1) + xshift, Y*2 + (m&1) + yshift , cl);
+                        }
+                    } else {
+                        for (int m = 0; m < 16; m++) {
+                            pset(4*(X + o) + (m>>2), 4*Y + (m&3), cl);
+                        }
                     }
                 }
             }
@@ -54,8 +58,10 @@ void APP::display_update() {
     cls(0);
 
     // Видеорежим 320x200x4
-    for (int i = 0; i < 32000; i++)
-        update_byte_scr(0x8000 + i);
+    if (cpu_model == ATTINY85) {
+        for (int i = 0; i < 32000; i++)
+            update_byte_scr(0x8000 + i);
+    }
 }
 
 // ---------------------------------------------------------------------

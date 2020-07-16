@@ -3,10 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// 128Kb 0x1FFFF
-//   8Kb 0x01FFF
-#define MAX_FLASH 0x1FFF
-
 static const char* ds_brcs[4][8] = {
     {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
     {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
@@ -107,6 +103,12 @@ enum KEY_ASCII {
     key_SPECIAL     = 0x1F          // Особая клавиша
 };
 
+enum CPU_MODEL {
+
+    ATTINY85        = 1,    // 0x1FFF 8k
+    ATMEGA328       = 2,    // 0x7FFF 32k
+};
+
 // ---------------------------------------------------------------------
 
 class APP {
@@ -136,11 +138,14 @@ protected:
     // Процессор
     // ---------------------------
 
-    uint8_t   program[128*1024];  // Память программы
-    uint8_t   sram   [1024*1024]; // Общая память, также включает регистры с портами (1 Mb)
-    uint8_t   pvsram [96];        // Для отладчика
+    int      cpu_model;         // Модель процессора
+    uint32_t max_flash;         // Максимальный объем памяти flash
+
+    uint8_t program[128*1024];  // Память программы
+    uint8_t sram   [1024*1024]; // Общая память, также включает регистры с портами (1 Mb)
+    uint8_t pvsram [96];        // Для отладчика
     int             map[65536];
-    uint16_t  opcode, command;
+    uint16_t opcode, command;
 
     int  pc;
     int  cpu_halt;
@@ -258,8 +263,8 @@ public:
     uint8_t flag_to_byte();
 
     // Относительные переходы
-    int get_rjmp()   { return (pc + 2*((opcode & 0x800) > 0 ? ((opcode & 0x7FF)   - 0x800) : ( opcode & 0x7FF))) & MAX_FLASH; }
-    int get_branch() { return (pc + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) )) & MAX_FLASH; }
+    int get_rjmp()   { return (pc + 2*((opcode & 0x800) > 0 ? ((opcode & 0x7FF)   - 0x800) : ( opcode & 0x7FF))) & max_flash; }
+    int get_branch() { return (pc + 2*((opcode & 0x200) > 0 ? ((opcode & 0x1F8)>>3) - 0x40 : ((opcode & 0x1F8)>>3) )) & max_flash; }
     int skip_instr();
     int step();
 };
