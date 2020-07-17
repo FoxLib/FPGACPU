@@ -1,4 +1,5 @@
-DEVICE  = at76c711
+# https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html
+DEVICE  = atmega32u2
 CLOCK   = 25000000
 LIBRARY = -I../../include
 AV		= ../../av/avr

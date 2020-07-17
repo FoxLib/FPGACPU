@@ -172,10 +172,11 @@ public:
     }
 
     // Печать строки
-    void print(const char* s) {
+    int print(const char* s) {
 
         int i = 0;
         while (byte b = s[i]) { print4(b); i++; }
+        return i;
     }
 
     // Печать целого числа

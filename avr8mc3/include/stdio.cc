@@ -77,8 +77,9 @@ public:
     // "Случайное" число
     dword rand() {
 
-        dword next = ((_seed>>31) ^ (_seed>>30) ^ (_seed>>29) ^ (_seed>>27) ^ (_seed>>25) ^ _seed) & 1;
-        _seed = (_seed >> 1) | (next << 31);
+        _seed = (106    *_seed + 1283) % 6075;
+        _seed = _seed ? _seed : 1;
+
         return _seed;
     }
 };
