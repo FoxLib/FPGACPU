@@ -14,7 +14,7 @@ module core
 );
 
 // ---------------------------------------------------------------------
-`include "declare.v"
+`include "core_declare.v"
 // ---------------------------------------------------------------------
 
 always @(posedge clock)
@@ -22,9 +22,9 @@ begin
 
     case (sub)
 
-        `include "fetch.v"      // sub_fetch
-        `include "modrm.v"      // sub_modrm
-        `include "subwb.v"      // sub_wb
+        `include "core_fetch.v"      // sub_fetch
+        `include "core_modrm.v"      // sub_modrm
+        `include "core_subwb.v"      // sub_wb
 
         // Исполнение инструкции
         sub_exec: casex (opcode)
