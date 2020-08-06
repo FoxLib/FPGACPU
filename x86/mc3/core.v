@@ -35,7 +35,7 @@ begin
                 // Инструкция CMP не пишет результат
                 if (alu == alu_cmp)
                      begin sub <= sub_fetch; swi <= 1'b0; end
-                else begin sub <= sub_wb;     wb  <= result; end
+                else begin sub <= sub_wb;    wb  <= result; end
 
                 flags  <= flags_out;
                 subret <= sub_fetch;
