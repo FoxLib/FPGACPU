@@ -157,7 +157,7 @@ always @(posedge pin_clk) begin
 
         casex (opcode)
 
-            /* LD r, i16 */
+            /* 3 LD r, i16 */
             8'b00_xx0_001: case (t)
 
                 0: begin pc <= pc + 1; t <= 1; reg_n <= opcode[5:4]; end
@@ -166,28 +166,40 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* ADD HL, r */
+            /* 4 ADD HL, r */
             8'b00_xx1_001: case (t)
 
-                0: begin t <= 1; op1 <= hl[ 7:0]; reg_n <= {opcode[5:4], 1'b1}; pc <= pc + 1; end
-                1: begin t <= 2; op2 <= reg_r8;   reg_n <= {opcode[5:4], 1'b0}; alu_m <= `ALU_ADD; end
-                2: begin t <= 3; op1 <= hl[15:8]; reg_n <= `REG_L;
-                                 op2 <= reg_r8;   reg_b <= 1'b1;
-                                                  reg_l <= alu_r[7:0];
-                         f[`CARRY] <= alu_f[`CARRY];
-                         alu_m     <= `ALU_ADC;
+                0: begin t <= 1;
+                    reg_n   <= {opcode[5:4], 1'b1};
+                    pc      <= pc + 1;
+                end
+                1: begin t <= 2;
+                    reg_n   <= {opcode[5:4], 1'b0};
+                    op1     <= hl[ 7:0];
+                    op2     <= reg_r8;
+                    alu_m   <= `ALU_ADD;
+                end
+                2: begin t <= 3;
+                    op1     <= hl[15:8];
+                    op2     <= reg_r8;
+                    reg_n   <= `REG_L;
+                    reg_b   <= 1'b1;
+                    reg_l   <= alu_r[7:0];
+                    f[`CARRY] <= alu_f[`CARRY];
+                    alu_m     <= `ALU_ADC;
                 end
                 3: begin t <= 0;
-                         reg_n <= `REG_H;
-                         reg_l <= alu_r[7:0];
-                         reg_b <= 1'b1;
-                         f[`AUX]   <= alu_f[`AUX];
-                         f[`CARRY] <= alu_f[`CARRY];
-                 end
+                    reg_n   <= `REG_H;
+                    reg_l   <= alu_r[7:0];
+                    reg_b   <= 1'b1;
+                    f[`AUX]   <= alu_f[`AUX];
+                    f[`CARRY] <= alu_f[`CARRY];
+                    f[`SIGN]  <= alu_f[`SIGN];
+                end
 
             endcase
 
-            /* LD (r16), A */
+            /* 2 LD (r16), A */
             8'b00_0x0_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; cursor <= opcode[4] ? de : bc; alt_a <= 1; pin_o <= a; pin_enw <= 1; end
@@ -195,7 +207,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD A, (r16) */
+            /* 2 LD A, (r16) */
             8'b00_0x1_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; cursor <= opcode[4] ? de : bc; alt_a <= 1; end
@@ -203,7 +215,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD (**), HL */
+            /* 4 LD (**), HL */
             8'b00_100_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -214,7 +226,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD HL, (**) */
+            /* 5 LD HL, (**) */
             8'b00_101_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -225,7 +237,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD (**), A */
+            /* 4 LD (**), A */
             8'b00_110_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -235,7 +247,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD A, (**) */
+            /* 4 LD A, (**) */
             8'b00_111_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -245,7 +257,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* INC r16 */
+            /* 2 INC r16 */
             8'b00_xx0_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; end
@@ -253,7 +265,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* DEC r16 */
+            /* 2 DEC r16 */
             8'b00_xx1_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; end
@@ -261,18 +273,31 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* INC r8 */
-            /* DEC r8 */
+            /* 4 INC r8 */
+            /* 4 DEC r8 */
             8'b00_xxx_10x: case (t)
 
-                0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:3]; cursor <= hl; alt_a <= 1; end
-                1: begin t <= 2; op1 <= reg_hl ? pin_i : reg_r8; op2 <= 1; alu_m <= opcode[0] ? `ALU_SUB : `ALU_ADD; end
-                2: begin t <= 3; pin_enw <= reg_hl; reg_b <= ~reg_hl; reg_l <= alu_r; pin_o <= alu_r; f <= alu_f; alt_a <= 1; end
+                0: begin t <= 1;
+                    pc     <= pc + 1;
+                    reg_n  <= opcode[5:3];
+                    cursor <= hl;
+                    alt_a  <= 1; end
+                1: begin t <= 2;
+                    op1    <= reg_hl ? pin_i : reg_r8;
+                    op2    <= 1;
+                    alu_m  <= opcode[0] ? `ALU_SUB : `ALU_ADD; end
+                2: begin t <= 3;
+                    pin_enw <=  reg_hl;
+                    reg_b   <= ~reg_hl;
+                    reg_l   <= alu_r;
+                    pin_o   <= alu_r;
+                    f       <= alu_f;
+                    alt_a   <= 1; end
                 3: begin t <= 0; end
 
             endcase
 
-            /* LD r, i8 */
+            /* 3 LD r, i8 */
             8'b00_xxx_110: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:3]; cursor <= hl; end
@@ -281,7 +306,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF */
+            /* 2 RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF */
             8'b00_xxx_111: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; alu_m <= {1'b1, opcode[5:3]}; end
@@ -289,7 +314,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* LD r, r */
+            /* 4 LD r, r */
             8'b01_110_110: halt <= 1;
             8'b01_xxx_xxx: case (t)
 
@@ -300,7 +325,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* <alu> A, r */
+            /* 3 <alu> A, r */
             8'b10_xxx_xxx: case (t)
 
                 0: begin t <= 1; op1 <= a; pc <= pc + 1; reg_n <= opcode[2:0]; alt_a <= 1; cursor <= hl; end
@@ -309,7 +334,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* RET c | RET */
+            /* 2/3 RET c | RET */
             8'b11_001_001,
             8'b11_xxx_000: case (t)
 
@@ -319,7 +344,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* POP r16 */
+            /* 4 POP r16 */
             8'b11_xx0_001: case (t)
 
                 0: begin t <= 1; cursor <= sp;         alt_a <= 1;  pc    <= pc + 1; end
@@ -334,21 +359,21 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* JP (HL) */
+            /* 1 JP (HL) */
             8'b11_101_001: case (t)
 
                 0: begin pc <= hl; end
 
             endcase
 
-            /* LD SP, HL */
+            /* 1 LD SP, HL */
             8'b11_111_001: case (t)
 
                 0: begin pc <= pc + 1; reg_n <= `REG_SP; reg_w <= 1; {reg_u, reg_l} <= hl; end
 
             endcase
 
-            /* JP c, ** | JP ** */
+            /* 4 JP c, ** | JP ** */
             8'b11_000_011,
             8'b11_xxx_010: case (t)
 
@@ -359,7 +384,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* OUT (*), A */
+            /* 2 OUT (*), A */
             8'b11_010_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -367,7 +392,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* IN  A, (*)*/
+            /* 3 IN  A, (*)*/
             8'b11_011_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -376,7 +401,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* EX (SP), HL */
+            /* 5 EX (SP), HL */
             8'b11_100_011: case (t)
 
                 0: begin t <= 1; alt_a <= 1; cursor <= sp; pc <= pc + 1;  end
@@ -387,21 +412,21 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* EX DE, HL */
+            /* 1 EX DE, HL */
             8'b11_101_011: case (t)
 
                 0: begin pc <= pc + 1; ex_de_hl <= 1; end
 
             endcase
 
-            /* DI, EI */
+            /* 1 DI, EI */
             8'b11_11x_011: case (t)
 
                 0: begin pc <= pc + 1; ei <= opcode[3]; end
 
             endcase
 
-            /* CALL c, ** */
+            /* 3/6 CALL c, ** */
             8'b11_001_101,
             8'b11_xxx_100: case (t)
 
@@ -415,7 +440,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* PUSH r16 */
+            /* 4 PUSH r16 */
             8'b11_xx0_101: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; cursor <= sp; end
@@ -425,7 +450,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* <alu> A, i8 */
+            /* 3 <alu> A, i8 */
             8'b11_xxx_110: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; alu_m <= opcode[5:3]; op1 <= a; end
@@ -434,7 +459,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* RST # */
+            /* 4 RST # */
             8'b11_xxx_111: case (t)
 
                 0: begin t <= 1; pc <= pc + (!pend_int); cursor <= sp; end
@@ -470,7 +495,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* A */ op1[3:0] + op2[3:0] > 5'hF,
                 /* 0 */ 1'b0,
-                /* P */ flag_prty,
+                /* P */ (op1[7] == op2[7]) && (op1[7] != alu_r[7]),
                 /* 1 */ 1'b1,
                 /* C */ alu_r[8]
 
@@ -489,7 +514,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* A */ op1[3:0] + op2[3:0] + f[`CARRY] > 5'hF,
                 /* 0 */ 1'b0,
-                /* P */ flag_prty,
+                /* P */ (op1[7] == op2[7]) && (op1[7] != alu_r[7]),
                 /* 1 */ 1'b1,
                 /* C */ alu_r[8]
 
@@ -508,7 +533,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* A */ op1[3:0] < op2[3:0],
                 /* 0 */ 1'b0,
-                /* P */ flag_prty,
+                /* P */ (op1[7] != op2[7]) && (op1[7] != alu_r[7]),
                 /* 1 */ 1'b1,
                 /* C */ alu_r[8]
 
@@ -527,7 +552,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* A */ op1[3:0] < op2[3:0] + f[`CARRY],
                 /* 0 */ 1'b0,
-                /* P */ flag_prty,
+                /* P */ (op1[7] != op2[7]) && (op1[7] != alu_r[7]),
                 /* 1 */ 1'b1,
                 /* C */ alu_r[8]
 

@@ -37,14 +37,19 @@ public:
     void        dump(uint16_t addr);
     void        write(uint16_t addr, uint8_t b);
     uint8_t     read(uint16_t addr);
+    uint16_t    read_word(uint16_t addr);
+    void        write_word(uint16_t addr, uint16_t value);
     uint8_t     fetch();
-    uint16_t    fetch_word();
+    uint16_t    fetchw();
     int         fetch_sign();
-    void        putw(int reg16, uint16_t value);
+    void        put_bc(uint16_t v);
+    void        put_de(uint16_t v);
+    void        put_hl(uint16_t v);
     uint16_t    bc();
     uint16_t    de();
     uint16_t    hl();
 
+    uint16_t    alu_adc_hl(uint16_t op);
     uint8_t     alu_add(uint8_t op1, uint8_t op2);
     uint8_t     alu_sub(uint8_t op1, uint8_t op2);
     uint8_t     alu_adc(uint8_t op1, uint8_t op2);
@@ -60,6 +65,7 @@ public:
     uint8_t     alu_cpl(uint8_t op);
     uint8_t     alu_scf(uint8_t op);
     uint8_t     alu_ccf(uint8_t op);
+    void        daa();
 
     void        set_sign(int v)     { f = (f & ~0x80) | (v & 0x80 ? 0x80 : 0); };
     void        set_zero(uint8_t v) { f = (f & ~0x40) | (v == 0 ? 0x40 : 0); };
@@ -71,6 +77,7 @@ public:
         v = (v & 0x01) ^ (v >> 1) ^ 1;
         f = (f & ~0x04) | (v ? 0x04 : 0);
     };
-    void        set_carry(int v)  { f = (f & ~0x01) | (v ? 0x01 : 0); };
+    void        set_overflow(int v) { f = (f & ~0x04) | (v ? 0x04 : 0); };
+    void        set_carry(int v)    { f = (f & ~0x01) | (v ? 0x01 : 0); };
     void        step();
 };
