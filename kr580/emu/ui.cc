@@ -45,10 +45,10 @@ void pset(int x, int y, int cl) {
     if (x >= 0 && x < 256 && y >= 0 && y < 192) {
 
         // Рисовать крупный пиксель
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < 16; i++) {
 
-            int offset  = 2*(y*_window_width + x);
-                offset += (i>>1)*_window_width + (i&1);
+            int offset  = 4*(y*_window_width + x);
+                offset += (i>>2)*_window_width + (i&3);
 
             ( (Uint32*)_screen_surface->pixels )[ offset ] = cl;
         }
@@ -61,7 +61,7 @@ void pset(int x, int y, int cl) {
 int get_key(SDL_Event event) {
 
     /* Получение ссылки на структуру с данными о нажатой клавише */
-    SDL_KeyboardEvent * eventkey = & event.key;
+    SDL_KeyboardEvent* eventkey = & event.key;
 
     int xt = 0;
     int k = eventkey->keysym.scancode;
