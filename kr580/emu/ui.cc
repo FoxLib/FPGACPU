@@ -1,22 +1,10 @@
-#include <SDL.h>
-
 #include "ui.h"
 
-/** Глобальные переменные ----------------------------------------------
- */
-
-int _window_width,
-    _window_height,
-    _window_flip,
-    _color_fore,
-    _color_back;
-int _keycode,
-    _pressed;
-
+int _window_flip;
+int _window_width;
+int _window_height;
+int _keycode, _pressed;
 SDL_Surface* _screen_surface;
-
-/** Реализация ---------------------------------------------------------
- */
 
 // Обработчик кадра
 uint windowtimer(uint interval, void *param) {
@@ -49,21 +37,12 @@ void startup(const char* name, int w, int h) {
     _screen_surface = SDL_SetVideoMode(w, h, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
     SDL_WM_SetCaption(name, 0);
     SDL_AddTimer(20, windowtimer, NULL);
-
-    color(15, 0);
-}
-
-// Установка цвета
-void color(int fr, int bg) {
-
-    _color_fore = fr;
-    _color_back = bg;
 }
 
 // Установка точки
 void pset(int x, int y, int cl) {
 
-    if (x >= 0 && x < 640 && y >= 0 && y < 400) {
+    if (x >= 0 && x < 256 && y >= 0 && y < 192) {
 
         // Рисовать крупный пиксель
         for (int i = 0; i < 4; i++) {
@@ -71,30 +50,10 @@ void pset(int x, int y, int cl) {
             int offset  = 2*(y*_window_width + x);
                 offset += (i>>1)*_window_width + (i&1);
 
-            ( (Uint32*)_screen_surface->pixels )[ offset ] = dospalette[cl & 255];
+            ( (Uint32*)_screen_surface->pixels )[ offset ] = cl;
         }
 
         _window_flip = 1;
-    }
-}
-
-// Печать символа в точке (col, row) с определенным цветом (0..255)
-void pchar(int col, int row, unsigned char ch, int fr, int bg) {
-
-    for (int i = 0; i < 16; i++)
-    for (int j = 0; j < 8; j++)
-        pset(8*col + j, 16*row + i, biosfont8x16[ch][i] & (1 << (7 ^ j)) ? fr : bg);
-}
-
-// Печать строки без переносов телетайпа
-void pout(int col, int row, const char* s) {
-
-    int i = 0;
-    while (s[i]) {
-        pchar(col, row, s[i], _color_fore, _color_back);
-        col++;
-        if (col >= 80) { row++; col = 0; }
-        i++;
     }
 }
 
@@ -205,10 +164,7 @@ int get_key(SDL_Event event) {
     return xt;
 }
 
-int kbcode() { return _keycode; }
-int kbpressed() { return _pressed; }
-
-// Отслеживание событий SDL
+// Главный цикл получения данных
 int mainloop() {
 
     SDL_Event event;
