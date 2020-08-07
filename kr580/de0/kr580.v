@@ -153,6 +153,8 @@ always @(posedge pin_clk) begin
         halt     <= 1'b0;
         ex_de_hl <= 1'b0;
 
+        // @TODO Добавить DJNZ, JR...
+
         casex (opcode)
 
             /* LD r, i16 */
@@ -279,10 +281,10 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* DAA, CPL, SCF, CCF */
-            8'b00_1xx_111: case (t)
+            /* RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF */
+            8'b00_xxx_111: case (t)
 
-                0: begin t <= 1; pc <= pc + 1; alu_m <= {2'b11, opcode[4:3]}; end
+                0: begin t <= 1; pc <= pc + 1; alu_m <= {1'b1, opcode[5:3]}; end
                 1: begin t <= 0; reg_b <= 1; reg_l <= alu_r; reg_n <= `REG_A; f <= alu_f; end
 
             endcase

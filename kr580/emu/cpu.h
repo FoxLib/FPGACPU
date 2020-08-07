@@ -39,6 +39,7 @@ public:
     uint8_t     read(uint16_t addr);
     uint8_t     fetch();
     uint16_t    fetch_word();
+    int         fetch_sign();
     void        putw(int reg16, uint16_t value);
     uint16_t    bc();
     uint16_t    de();
@@ -51,10 +52,18 @@ public:
     uint8_t     alu_and(uint8_t op1, uint8_t op2);
     uint8_t     alu_xor(uint8_t op1, uint8_t op2);
     uint8_t     alu_or (uint8_t op1, uint8_t op2);
+    uint8_t     alu_rlc(uint8_t op);
+    uint8_t     alu_rrc(uint8_t op);
+    uint8_t     alu_rl (uint8_t op);
+    uint8_t     alu_rr (uint8_t op);
+    uint8_t     alu_daa(uint8_t op);
+    uint8_t     alu_cpl(uint8_t op);
+    uint8_t     alu_scf(uint8_t op);
+    uint8_t     alu_ccf(uint8_t op);
 
-    void        set_sign(int v)   { f = (f & ~0x80) | (v ? 0x80 : 0); };
-    void        set_zero(int v)   { f = (f & ~0x40) | (v == 0 ? 0x40 : 0); };
-    void        set_aux(int v)    { f = (f & ~0x10) | (v ? 0x10 : 0); };
+    void        set_sign(int v)     { f = (f & ~0x80) | (v & 0x80 ? 0x80 : 0); };
+    void        set_zero(uint8_t v) { f = (f & ~0x40) | (v == 0 ? 0x40 : 0); };
+    void        set_aux(int v)      { f = (f & ~0x10) | (v ? 0x10 : 0); };
     void        set_parity(uint8_t v)
     {
         v = (v & 0x0F) ^ (v >> 4);
