@@ -9,9 +9,9 @@ cls.L1:     ld      (hl), b
             jr      nz, cls.L1
             inc     h
             ld      a, h
+            cp      $5B
+            ret     z
             cp      $58
             jr      nz, cls.L1
             ld      b, $07              ; Заполнять цветовые атрибуты
-            cp      $5B
-            jr      nz, cls.L1
-            ret
+            jr      cls.L1
