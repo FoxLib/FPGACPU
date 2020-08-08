@@ -278,7 +278,7 @@ void CPU::disasm_repaint() {
     cls();
 
     // Начать отрисовку сверху вниз
-    for (i = 0; i < 30; i++) {
+    for (i = 0; i < 36; i++) {
 
         int dsy  = i + 1;
         int size = this->disasm_line(ds_current);
@@ -299,7 +299,7 @@ void CPU::disasm_repaint() {
         if (ds_cursor == ds_current) {
 
             color(0xffffff, bp_found ? 0xc00000 : 0x0000f0);
-            print(0, dsy, "                               ");
+            print(0, dsy, "                                         ");
             sprintf(tmp, "%04X", ds_current); print(1, dsy, tmp);
 
             ds_match_row = i;
@@ -345,7 +345,7 @@ void CPU::disasm_repaint() {
     }
 
     // В последней строке будет новая страница
-    ds_rowdis[30] = ds_current;
+    ds_rowdis[36] = ds_current;
 
     // Проверка на "вылет"
     // Сдвиг старта на текущий курсор
@@ -358,81 +358,77 @@ void CPU::disasm_repaint() {
     color(0xc0c0c0, 0);
 
     // Вывод содержимого регистров
-    sprintf(tmp, "B: %02X  B': %02X  S: %c", b, b_, f & 0x80 ? '1' : '-'); print(32, 1, tmp);
-    sprintf(tmp, "C: %02X  C': %02X  Z: %c", c, c_, f & 0x40 ? '1' : '-'); print(32, 2, tmp);
-    sprintf(tmp, "D: %02X  D': %02X  Y: %c", d, d_, f & 0x20 ? '1' : '-'); print(32, 3, tmp);
-    sprintf(tmp, "E: %02X  E': %02X  H: %c", e, e_, f & 0x10 ? '1' : '-'); print(32, 4, tmp);
-    sprintf(tmp, "H: %02X  H': %02X  X: %c", h, h_, f & 0x08 ? '1' : '-'); print(32, 5, tmp);
-    sprintf(tmp, "L: %02X  L': %02X  V: %c", l, l_, f & 0x04 ? '1' : '-'); print(32, 6, tmp);
-    sprintf(tmp, "A: %02X  A': %02X  N: %c", a, a_, f & 0x02 ? '1' : '-'); print(32, 7, tmp);
-    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(32, 8, tmp);
-    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(32, 8, tmp);
+    sprintf(tmp, "B: %02X  B': %02X  S: %c", b, b_, f & 0x80 ? '1' : '-'); print(42, 1, tmp);
+    sprintf(tmp, "C: %02X  C': %02X  Z: %c", c, c_, f & 0x40 ? '1' : '-'); print(42, 2, tmp);
+    sprintf(tmp, "D: %02X  D': %02X  Y: %c", d, d_, f & 0x20 ? '1' : '-'); print(42, 3, tmp);
+    sprintf(tmp, "E: %02X  E': %02X  H: %c", e, e_, f & 0x10 ? '1' : '-'); print(42, 4, tmp);
+    sprintf(tmp, "H: %02X  H': %02X  X: %c", h, h_, f & 0x08 ? '1' : '-'); print(42, 5, tmp);
+    sprintf(tmp, "L: %02X  L': %02X  V: %c", l, l_, f & 0x04 ? '1' : '-'); print(42, 6, tmp);
+    sprintf(tmp, "A: %02X  A': %02X  N: %c", a, a_, f & 0x02 ? '1' : '-'); print(42, 7, tmp);
+    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(42, 8, tmp);
+    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(42, 8, tmp);
 
-    sprintf(tmp, "BC: %04X", (b<<8) | c); print(32, 10, tmp);
-    sprintf(tmp, "DE: %04X", (d<<8) | e); print(32, 11, tmp);
-    sprintf(tmp, "HL: %04X", (h<<8) | l); print(32, 12, tmp);
-    sprintf(tmp, "SP: %04X", sp);             print(32, 13, tmp);
-    sprintf(tmp, "AF: %04X", (a<<8) | f); print(32, 14, tmp);
+    sprintf(tmp, "BC: %04X", (b<<8) | c); print(42, 10, tmp);
+    sprintf(tmp, "DE: %04X", (d<<8) | e); print(42, 11, tmp);
+    sprintf(tmp, "HL: %04X", (h<<8) | l); print(42, 12, tmp);
+    sprintf(tmp, "SP: %04X", sp);         print(42, 13, tmp);
+    sprintf(tmp, "AF: %04X", (a<<8) | f); print(42, 14, tmp);
 
-    sprintf(tmp, "(HL): %02X", mem[ (h<<8) | l ]); print(32, 15, tmp);
-    sprintf(tmp, "(SP): %02X", mem[ sp ]); print(32, 16, tmp);
+    sprintf(tmp, "(HL): %02X", mem[ (h<<8) | l ]); print(42, 15, tmp);
+    sprintf(tmp, "(SP): %02X", mem[ sp ]); print(42, 16, tmp);
+    sprintf(tmp, "PC: %04X", pc);  print(51, 12, tmp);
 
-    //sprintf(tmp, "IX: %04X", ix);  print(41, 10, tmp);
-    //sprintf(tmp, "IY: %04X", iy);  print(41, 11, tmp);
-    sprintf(tmp, "PC: %04X", pc);  print(41, 12, tmp);
-
-    //sprintf(tmp, "IR: %04X", (i<<8) | r); print(41, 13, tmp);
-    //sprintf(tmp, "IM:    %01X", im);    print(41, 14, tmp);
-    sprintf(tmp, "IFF0:  %01X", iff0);  print(41, 15, tmp);
-    sprintf(tmp, "IFF1:  %01X", iff1);  print(41, 16, tmp);
+    sprintf(tmp, "IFF0:  %01X", iff0);  print(51, 15, tmp);
+    sprintf(tmp, "IFF1:  %01X", iff1);  print(51, 16, tmp);
 
     // Вывести дамп памяти
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 15; i++) {
 
         for (k = 0; k < 8; k++) {
 
             sprintf(tmp, "%02X", read(8*i+k+ds_dumpaddr));
             color(k % 2 ? 0x40c040 : 0xc0f0c0, 0);
-            print(36 + 2*k, i + 23, tmp);
+            print(47 + 2*k, i + 23, tmp);
         }
 
         color(0x909090, 0);
         sprintf(tmp, "%04X", ds_dumpaddr + 8*i);
-        print(32, i + 23, tmp);
+        print(42, i + 23, tmp);
     }
-    color(0xf0f0f0, 0); print(32, 22, "ADDR 0 1 2 3 4 5 6 7");
+    color(0xf0f0f0, 0); print(42, 22, "ADDR  0 1 2 3 4 5 6 7");
 
     // Прерывание
-    color(0xffff00, 0); print(32, 18, "F2");
-    color(0x00ffff, 0); print(35, 18, "Brk");
+    color(0xffff00, 0); print(42, 18, "F2");
+    color(0x00ffff, 0); print(45, 18, "Brk");
 
     // Один шаг с заходом
-    color(0xffff00, 0); print(32, 19, "F7");
-    color(0x00ffff, 0); print(35, 19, "Step");
+    color(0xffff00, 0); print(42, 19, "F7");
+    color(0x00ffff, 0); print(45, 19, "Step");
 
     // Запуск программы
-    color(0xffff00, 0); print(32, 20, "F9");
-    color(0x00ffff, 0); print(35, 20, "Run");
+    color(0xffff00, 0); print(42, 20, "F9");
+    color(0x00ffff, 0); print(45, 20, "Run");
 
     // Переключить экраны
-    color(0xffff00, 0); print(40, 18, "F5");
-    color(0x00ffff, 0); print(43, 18, "Swi");
+    color(0xffff00, 0); print(50, 18, "F5");
+    color(0x00ffff, 0); print(53, 18, "Swi");
 
     // Один шаг с заходом
-    color(0xffff00, 0); print(40, 19, "F6");
-    color(0x00ffff, 0); print(43, 19, "Intr");
+    color(0xffff00, 0); print(50, 19, "F6");
+    color(0x00ffff, 0); print(53, 19, "Intr");
+
     // Один шаг с заходом
-    color(0xffff00, 0); print(40, 20, "F8");
-    color(0x00ffff, 0); print(43, 20, "Over");
+    color(0xffff00, 0); print(50, 20, "F8");
+    color(0x00ffff, 0); print(53, 20, "Over");
 
     // Некоторые индикаторы
-    color(0x808080, 0); sprintf(tmp, "TStates: %d", cycles); print(4, 31, tmp);
+    color(0x808080, 0); sprintf(tmp, "TStates: %d", cycles); print(4, 37, tmp);
 
     // Halted
     color(halt ? 0xffff00 : 0x707070, 0);
-    print(1, 31, "H");
+    print(1, 37, "H");
 
     // Enabled Halt
     color(enable_halt ? 0xffff00 : 0x707070, 0);
-    print(2, 31, "E");
+    print(2, 37, "E");
 }
