@@ -8,12 +8,15 @@ int main(int argc, char* argv[]) {
 
     if (argc > 1) { cpu.load(argv[1], 0); }
 
-    cpu.step();
-    cpu.dump();
+    //
+    //cpu.dump();
+
+    cpu.disasm_repaint();
 
     while (int evt = mainloop()) {
 
         // .. cpu frequency loop ...
+        cpu.step();
     }
 
     return 0;

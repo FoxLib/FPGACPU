@@ -13,6 +13,21 @@ CPU::CPU() {
 
     pc = 0x0000;
     sp = 0x0000;
+
+    width   = 1024;
+    height  = 768;
+
+    ds_ad       = 0;
+    enable_halt = 0;
+    ds_dumpaddr = 0;
+    ds_cursor   = 0;
+    ds_start    = 0;
+    bp_count    = 0;
+    ds_size     = 0;
+    ds_match_row = 0;
+    cycles      = 0;
+    iff0        = 0;
+    iff1        = 0;
 }
 
 void CPU::load(const char* fn, int addr) {

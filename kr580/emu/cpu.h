@@ -1,3 +1,5 @@
+#include <SDL.h>
+
 enum Reg16 {
     BC = 0,
     DE = 1,
@@ -21,13 +23,31 @@ enum Reg8 {
 class CPU {
 protected:
 
-    uint8_t     a, f;
-    uint8_t     b, c;
-    uint8_t     d, e;
-    uint8_t     h, l;
+    uint8_t     mem[65536];
+
+    uint8_t     a, f, a_, f_;
+    uint8_t     b, c, b_, c_;
+    uint8_t     d, e, d_, e_;
+    uint8_t     h, l, h_, l_;
     uint16_t    sp;
     uint16_t    pc;
-    uint8_t     mem[65536];
+    uint8_t     halt, iff0, iff1, im;
+    uint32_t    cycles;
+
+    // Дизассемблер
+    int         width, height, color_fore, color_back;
+    int         ds_ad;
+    int         enable_halt;
+    int         ds_dumpaddr;
+    int         ds_cursor;
+    int         ds_start;
+    int         bp_count;
+    int         ds_size;
+    int         ds_match_row;
+    char        ds_rowdis[64];
+    char        ds_operand[64];
+    char        ds_opcode[64];
+    int         bp_rows[1024];
 
 public:
 
@@ -80,4 +100,15 @@ public:
     void        set_overflow(int v) { f = (f & ~0x04) | (v ? 0x04 : 0); };
     void        set_carry(int v)    { f = (f & ~0x01) | (v ? 0x01 : 0); };
     void        step();
+
+    // Дизассемблер
+    void        cls();
+    void        color(int fore, int back);
+    void        print_char(int x, int y, unsigned char ch);
+    void        print(int x, int y, const char* s);
+    int         ds_fetch_byte();
+    int         ds_fetch_word();
+    int         ds_fetch_rel();
+    int         disasm_line(int addr);
+    void        disasm_repaint();
 };

@@ -1,24 +1,63 @@
 #include <string.h>
 
-#include "z80.h"
+#include "ui.h"
+#include "cpu.h"
+#include "fonts.h"
 #include "disasm.h"
 
-// Сформировать операнд (IX|IY+d)
-void z80::ixy_disp(int prefix) {
+// Установка цвета
+void CPU::color(int fore, int back) {
 
-    int df = ds_fetch_byte();
+    color_fore = fore;
+    color_back = back;
+}
 
-    if (df & 0x80) {
-        sprintf(ds_prefix, "(%s-$%02x)", (prefix == 1 ? "ix" : "iy"), 1 + (df ^ 0xff));
-    } else if (df) {
-        sprintf(ds_prefix, "(%s+$%02x)", (prefix == 1 ? "ix" : "iy"), df);
-    } else {
-        sprintf(ds_prefix, "(%s)", (prefix == 1 ? "ix" : "iy"));
+// Печать одного символа на хосте (символ размером 8x10)
+void CPU::print_char(int x, int y, unsigned char ch) {
+
+    int i, j;
+    for (i = 0; i < 8; i++) {
+
+        int mask = sysfont[8*ch + i];
+        for (j = 0; j < 8; j++) {
+
+            int color = (mask & (1<<(7-j))) ? color_fore : color_back;
+
+            if (color >= 0) {
+                psetmini(8*x+j, 10*y+i, color);
+            }
+        }
     }
 }
 
+// Печать строки с переносом по Y
+void CPU::print(int x, int y, const char* s) {
+
+    int i = 0;
+    while (s[i]) {
+
+        print_char(x, y, s[i]);
+
+        x++;
+        if (8*x >= width) {
+            x = 0;
+            y++;
+        }
+
+        i++;
+    }
+}
+
+// Очистка экрана в задний цвет
+void CPU::cls() {
+
+    for (int i = 0; i < height; i++)
+    for (int j = 0; j < width; j++)
+        pset(j, i, color_back);
+}
+
 // Прочитать байт дизассемблера
-int z80::ds_fetch_byte() {
+int CPU::ds_fetch_byte() {
 
     int b = mem[ds_ad];
     ds_ad = (ds_ad + 1) & 0xffff;
@@ -27,7 +66,7 @@ int z80::ds_fetch_byte() {
 }
 
 // Прочитать слово дизассемблера
-int z80::ds_fetch_word() {
+int CPU::ds_fetch_word() {
 
     int l = ds_fetch_byte();
     int h = ds_fetch_byte();
@@ -35,21 +74,19 @@ int z80::ds_fetch_word() {
 }
 
 // Прочитать относительный операнд
-int z80::ds_fetch_rel() {
+int CPU::ds_fetch_rel() {
 
     int r8 = ds_fetch_byte();
     return ((r8 & 0x80) ? r8 - 0x100 : r8) + ds_ad;
 }
 
 // Дизассемблирование 1 линии
-int z80::disasm_line(int addr) {
+int CPU::disasm_line(int addr) {
 
     int op, df;
-    int prefix = 0;
 
     ds_opcode[0]  = 0;
     ds_operand[0] = 0;
-    ds_prefix[0]  = 0;
     ds_ad   = addr;
     ds_size = 0;
 
@@ -57,13 +94,7 @@ int z80::disasm_line(int addr) {
     // Считывание опкода и префиксов
     // -----------------------------------------------------------------
 
-    do {
-
-        op = ds_fetch_byte();
-        if (op == 0xDD)      prefix = 1;
-        else if (op == 0xFD) prefix = 2;
-    }
-    while (op == 0xDD || op == 0xFD);
+    op = ds_fetch_byte();
 
     // -----------------------------------------------------------------
     // Разбор опкода и операндов
@@ -127,7 +158,6 @@ int z80::disasm_line(int addr) {
     }
     else if (op == 0xCB) {
 
-        if (prefix) ixy_disp(prefix);
         op = ds_fetch_byte();
 
         int a = (op & 0x38) >> 3;
@@ -137,12 +167,8 @@ int z80::disasm_line(int addr) {
         if ((op & 0xc0) == 0x00) {
 
             sprintf(ds_opcode, "%s", ds_bits[a]);
+            sprintf(ds_operand, "%s", ds_reg8[b]);
 
-            if (prefix && b == 6) {
-                sprintf(ds_operand, "%s", ds_prefix);
-            } else {
-                sprintf(ds_operand, "%s", ds_reg8[b + prefix*8]);
-            }
         }
         else {
 
@@ -150,7 +176,7 @@ int z80::disasm_line(int addr) {
             if ((op & 0xc0) == 0x80) sprintf(ds_opcode, "res");
             if ((op & 0xc0) == 0xc0) sprintf(ds_opcode, "set");
 
-            sprintf(ds_operand, "%x, %s", a, prefix ? ds_prefix : ds_reg8[b]);
+            sprintf(ds_operand, "%x, %s", a, ds_reg8[b]);
         }
 
     } else {
@@ -163,9 +189,7 @@ int z80::disasm_line(int addr) {
 
         // Имя HL в зависимости от префикса
         char hlname[4];
-        if (prefix == 0) sprintf(hlname, "hl");
-        if (prefix == 1) sprintf(hlname, "ix");
-        if (prefix == 2) sprintf(hlname, "iy");
+        sprintf(hlname, "hl");
 
         // Инструкции перемещения LD
         if (op >= 0x40 && op < 0x80) {
@@ -173,73 +197,33 @@ int z80::disasm_line(int addr) {
             if (a == 6 && b == 6) {
                 /* halt */
             }
-            // Префиксированные
-            else if (prefix) {
-
-                // Прочитать +disp8
-                ixy_disp(prefix);
-
-                // Декодирование
-                if (a == 6) {
-                    sprintf(ds_operand, "%s, %s", ds_prefix, ds_reg8[b]);
-                } else if (b == 6) {
-                    sprintf(ds_operand, "%s, %s", ds_reg8[a], ds_prefix);
-                } else {
-                    sprintf(ds_operand, "%s, %s", ds_reg8[8*prefix + a], ds_reg8[8*prefix + b]);
-                }
-            }
             else { sprintf(ds_operand, "%s, %s", ds_reg8[a], ds_reg8[b]); }
         }
         // Арифметико-логика
         else if (op >= 0x80 && op < 0xc0) {
-
-            if (prefix) {
-
-                if (b == 6) {
-
-                    ixy_disp(prefix);
-                    sprintf(ds_operand, "%s", ds_prefix);
-
-                } else {
-                    sprintf(ds_operand, "%s", ds_reg8[8*prefix + b]);
-                }
-            } else {
-                sprintf(ds_operand, "%s", ds_reg8[b]);
-            }
+            sprintf(ds_operand, "%s", ds_reg8[b]);
         }
         // LD r16, **
         else if (op == 0x01 || op == 0x11 || op == 0x21 || op == 0x31) {
 
             df = ds_fetch_word();
-            sprintf(ds_operand, "%s, $%04x", ds_reg16[4*prefix + ((op & 0x30) >> 4)], df);
+            sprintf(ds_operand, "%s, $%04x", ds_reg16[((op & 0x30) >> 4)], df);
         }
         // 00xx x110 LD r8, i8
         else if ((op & 0xc7) == 0x06) {
-
-            if (a == 6 && prefix) {
-                ixy_disp(prefix);
-                sprintf(ds_operand, "%s, $%02x", ds_prefix, ds_fetch_byte());
-            } else {
-                sprintf(ds_operand, "%s, $%02x", ds_reg8[8*prefix + a], ds_fetch_byte());
-            }
+            sprintf(ds_operand, "%s, $%02x", ds_reg8[a], ds_fetch_byte());
         }
         // 00_xxx_10x
         else if ((op & 0xc7) == 0x04 || (op & 0xc7) == 0x05) {
-
-            if (a == 6 && prefix) {
-                ixy_disp(prefix);
-                sprintf(ds_operand, "%s", ds_prefix);
-            } else {
-                sprintf(ds_operand, "%s", ds_reg8[8*prefix + a]);
-            }
+            sprintf(ds_operand, "%s", ds_reg8[a]);
         }
         // 00xx x011
         else if ((op & 0xc7) == 0x03) {
-            sprintf(ds_operand, "%s", ds_reg16[4*prefix + ((op & 0x30) >> 4)]);
+            sprintf(ds_operand, "%s", ds_reg16[((op & 0x30) >> 4)]);
         }
         // 00xx 1001
         else if ((op & 0xcf) == 0x09) {
-            sprintf(ds_operand, "%s, %s", ds_reg16[4*prefix+2], ds_reg16[4*prefix + ((op & 0x30) >> 4)]);
+            sprintf(ds_operand, "%s, %s", ds_reg16[2], ds_reg16[((op & 0x30) >> 4)]);
         }
         else if (op == 0x02) sprintf(ds_operand, "(bc), a");
         else if (op == 0x08) sprintf(ds_operand, "af, af'");
@@ -270,14 +254,14 @@ int z80::disasm_line(int addr) {
         // 11xx x111 RST #
         else if ((op & 0xc7) == 0xc7) sprintf(ds_operand, "$%02x", op & 0x38);
         // 11xx 0x01 PUSH/POP r16
-        else if ((op & 0xcb) == 0xc1) sprintf(ds_operand, "%s", ds_reg16af[ ((op & 0x30) >> 4) + prefix*4 ] );
+        else if ((op & 0xcb) == 0xc1) sprintf(ds_operand, "%s", ds_reg16af[ ((op & 0x30) >> 4)] );
     }
 
     return ds_size;
 }
 
 // Перерисовать дизассемблер
-void z80::disasm_repaint() {
+void CPU::disasm_repaint() {
 
     char tmp[256];
 
@@ -290,7 +274,8 @@ void z80::disasm_repaint() {
     ds_match_row = 0;
 
     // Очистка экрана
-    color(0xffffff, 0)->cls();
+    color(0xffffff, 0);
+    cls();
 
     // Начать отрисовку сверху вниз
     for (i = 0; i < 30; i++) {
@@ -300,7 +285,7 @@ void z80::disasm_repaint() {
 
         // Поиск прерывания
         bp_found = 0;
-        for (j = 0; j < bp_count; j++) {
+        for (int j = 0; j < bp_count; j++) {
             if (bp_rows[j] == ds_current) {
                 bp_found = 1;
                 break;
@@ -332,16 +317,16 @@ void z80::disasm_repaint() {
         }
 
         // Текущее положение PC
-        if (ds_current == reg.pc) print(0, dsy, "\x10");
+        if (ds_current == pc) print(0, dsy, "\x10");
 
         // Печатать опкод в верхнем регистре
         sprintf(tmp, "%s", ds_opcode);
-        for (k = 0; k < strlen(tmp); k++) if (tmp[k] >= 'a' && tmp[k] <= 'z') tmp[k] += ('A' - 'a');
+        for (k = 0; k < (int) strlen(tmp); k++) if (tmp[k] >= 'a' && tmp[k] <= 'z') tmp[k] += ('A' - 'a');
         print(7+6,  dsy, tmp); // Опкод
 
         // Печатать операнды в верхнем регистре
         sprintf(tmp, "%s", ds_operand);
-        for (k = 0; k < strlen(tmp); k++) if (tmp[k] >= 'a' && tmp[k] <= 'z') tmp[k] += ('A' - 'a');
+        for (k = 0; k < (int) strlen(tmp); k++) if (tmp[k] >= 'a' && tmp[k] <= 'z') tmp[k] += ('A' - 'a');
         print(7+12, dsy, tmp); // Операнд
 
         // Вывод микродампа
@@ -373,31 +358,31 @@ void z80::disasm_repaint() {
     color(0xc0c0c0, 0);
 
     // Вывод содержимого регистров
-    sprintf(tmp, "B: %02X  B': %02X  S: %c", reg.b, reg.b_, reg.f & 0x80 ? '1' : '-'); print(32, 1, tmp);
-    sprintf(tmp, "C: %02X  C': %02X  Z: %c", reg.c, reg.c_, reg.f & 0x40 ? '1' : '-'); print(32, 2, tmp);
-    sprintf(tmp, "D: %02X  D': %02X  Y: %c", reg.d, reg.d_, reg.f & 0x20 ? '1' : '-'); print(32, 3, tmp);
-    sprintf(tmp, "E: %02X  E': %02X  H: %c", reg.e, reg.e_, reg.f & 0x10 ? '1' : '-'); print(32, 4, tmp);
-    sprintf(tmp, "H: %02X  H': %02X  X: %c", reg.h, reg.h_, reg.f & 0x08 ? '1' : '-'); print(32, 5, tmp);
-    sprintf(tmp, "L: %02X  L': %02X  V: %c", reg.l, reg.l_, reg.f & 0x04 ? '1' : '-'); print(32, 6, tmp);
-    sprintf(tmp, "A: %02X  A': %02X  N: %c", reg.a, reg.a_, reg.f & 0x02 ? '1' : '-'); print(32, 7, tmp);
-    sprintf(tmp, "F: %02X  F': %02X  C: %c", reg.f, reg.f_, reg.f & 0x01 ? '1' : '-'); print(32, 8, tmp);
-    sprintf(tmp, "F: %02X  F': %02X  C: %c", reg.f, reg.f_, reg.f & 0x01 ? '1' : '-'); print(32, 8, tmp);
+    sprintf(tmp, "B: %02X  B': %02X  S: %c", b, b_, f & 0x80 ? '1' : '-'); print(32, 1, tmp);
+    sprintf(tmp, "C: %02X  C': %02X  Z: %c", c, c_, f & 0x40 ? '1' : '-'); print(32, 2, tmp);
+    sprintf(tmp, "D: %02X  D': %02X  Y: %c", d, d_, f & 0x20 ? '1' : '-'); print(32, 3, tmp);
+    sprintf(tmp, "E: %02X  E': %02X  H: %c", e, e_, f & 0x10 ? '1' : '-'); print(32, 4, tmp);
+    sprintf(tmp, "H: %02X  H': %02X  X: %c", h, h_, f & 0x08 ? '1' : '-'); print(32, 5, tmp);
+    sprintf(tmp, "L: %02X  L': %02X  V: %c", l, l_, f & 0x04 ? '1' : '-'); print(32, 6, tmp);
+    sprintf(tmp, "A: %02X  A': %02X  N: %c", a, a_, f & 0x02 ? '1' : '-'); print(32, 7, tmp);
+    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(32, 8, tmp);
+    sprintf(tmp, "F: %02X  F': %02X  C: %c", f, f_, f & 0x01 ? '1' : '-'); print(32, 8, tmp);
 
-    sprintf(tmp, "BC: %04X", (reg.b<<8) | reg.c); print(32, 10, tmp);
-    sprintf(tmp, "DE: %04X", (reg.d<<8) | reg.e); print(32, 11, tmp);
-    sprintf(tmp, "HL: %04X", (reg.h<<8) | reg.l); print(32, 12, tmp);
-    sprintf(tmp, "SP: %04X", reg.sp);             print(32, 13, tmp);
-    sprintf(tmp, "AF: %04X", (reg.a<<8) | reg.f); print(32, 14, tmp);
+    sprintf(tmp, "BC: %04X", (b<<8) | c); print(32, 10, tmp);
+    sprintf(tmp, "DE: %04X", (d<<8) | e); print(32, 11, tmp);
+    sprintf(tmp, "HL: %04X", (h<<8) | l); print(32, 12, tmp);
+    sprintf(tmp, "SP: %04X", sp);             print(32, 13, tmp);
+    sprintf(tmp, "AF: %04X", (a<<8) | f); print(32, 14, tmp);
 
-    sprintf(tmp, "(HL): %02X", mem[ (reg.h<<8) | reg.l ]); print(32, 15, tmp);
-    sprintf(tmp, "(SP): %02X", mem[ reg.sp ]); print(32, 16, tmp);
+    sprintf(tmp, "(HL): %02X", mem[ (h<<8) | l ]); print(32, 15, tmp);
+    sprintf(tmp, "(SP): %02X", mem[ sp ]); print(32, 16, tmp);
 
-    sprintf(tmp, "IX: %04X", reg.ix);  print(41, 10, tmp);
-    sprintf(tmp, "IY: %04X", reg.iy);  print(41, 11, tmp);
-    sprintf(tmp, "PC: %04X", reg.pc);  print(41, 12, tmp);
+    //sprintf(tmp, "IX: %04X", ix);  print(41, 10, tmp);
+    //sprintf(tmp, "IY: %04X", iy);  print(41, 11, tmp);
+    sprintf(tmp, "PC: %04X", pc);  print(41, 12, tmp);
 
-    sprintf(tmp, "IR: %04X", (reg.i<<8) | reg.r); print(41, 13, tmp);
-    sprintf(tmp, "IM:    %01X", im);    print(41, 14, tmp);
+    //sprintf(tmp, "IR: %04X", (i<<8) | r); print(41, 13, tmp);
+    //sprintf(tmp, "IM:    %01X", im);    print(41, 14, tmp);
     sprintf(tmp, "IFF0:  %01X", iff0);  print(41, 15, tmp);
     sprintf(tmp, "IFF1:  %01X", iff1);  print(41, 16, tmp);
 
@@ -406,7 +391,7 @@ void z80::disasm_repaint() {
 
         for (k = 0; k < 8; k++) {
 
-            sprintf(tmp, "%02X", read_byte(8*i+k+ds_dumpaddr));
+            sprintf(tmp, "%02X", read(8*i+k+ds_dumpaddr));
             color(k % 2 ? 0x40c040 : 0xc0f0c0, 0);
             print(36 + 2*k, i + 23, tmp);
         }
@@ -415,7 +400,7 @@ void z80::disasm_repaint() {
         sprintf(tmp, "%04X", ds_dumpaddr + 8*i);
         print(32, i + 23, tmp);
     }
-    color(0xf0f0f0, 0)->print(32, 22, "ADDR 0 1 2 3 4 5 6 7");
+    color(0xf0f0f0, 0); print(32, 22, "ADDR 0 1 2 3 4 5 6 7");
 
     // Прерывание
     color(0xffff00, 0); print(32, 18, "F2");

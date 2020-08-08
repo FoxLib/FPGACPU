@@ -39,7 +39,7 @@ void startup(const char* name, int w, int h) {
     SDL_AddTimer(20, windowtimer, NULL);
 }
 
-// Установка точки
+// Установка точки 4x4
 void pset(int x, int y, int cl) {
 
     if (x >= 0 && x < 256 && y >= 0 && y < 192) {
@@ -49,6 +49,24 @@ void pset(int x, int y, int cl) {
 
             int offset  = 4*(y*_window_width + x);
                 offset += (i>>2)*_window_width + (i&3);
+
+            ( (Uint32*)_screen_surface->pixels )[ offset ] = cl;
+        }
+
+        _window_flip = 1;
+    }
+}
+
+// Уменьшенная точка
+void psetmini(int x, int y, int cl) {
+
+    if (x >= 0 && x < _window_width/2 && y >= 0 && y < _window_height/2) {
+
+        // Рисовать крупный пиксель
+        for (int i = 0; i < 4; i++) {
+
+            int offset  = 2*(y*_window_width + x);
+                offset += (i>>1)*_window_width + (i&1);
 
             ( (Uint32*)_screen_surface->pixels )[ offset ] = cl;
         }
