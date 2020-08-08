@@ -14,6 +14,7 @@ CPU::CPU() {
     pc = 0x0000;
     sp = 0x0000;
 
+    emustop = 1;
     width   = 1024;
     height  = 768;
 
@@ -28,6 +29,7 @@ CPU::CPU() {
     cycles      = 0;
     iff0        = 0;
     iff1        = 0;
+    halt        = 0;
 }
 
 void CPU::load(const char* fn, int addr) {
@@ -277,6 +279,7 @@ void CPU::step() {
 
     switch (opcode) {
 
+        // Базовый набор команд ----------------------------------------
         case 0x00: /* NOP          */ break;
         case 0x01: /* LD BC, ##    */ put_bc(fetchw());     break;
         case 0x02: /* LD (BC), A   */ write(bc(), a);       break;
@@ -348,5 +351,115 @@ void CPU::step() {
         case 0x3D: /* DEC A        */ a = alu_sub(a, 1);    break;
         case 0x3E: /* LD A, #      */ a = fetch();          break;
         case 0x3F: /* CCF          */ set_carry(!(f&1));    break;
+
+        // Перемещения между регистрами --------------------------------
+        case 0x40: /* LD B, B      */        break;
+        case 0x41: /* LD B, C      */ b = c; break;
+        case 0x42: /* LD B, D      */ b = d; break;
+        case 0x43: /* LD B, E      */ b = e; break;
+        case 0x44: /* LD B, H      */ b = h; break;
+        case 0x45: /* LD B, L      */ b = l; break;
+        case 0x46: /* LD B, (HL)   */ b = read(hl()); break;
+        case 0x47: /* LD B, A      */ b = a; break;
+
+        case 0x48: /* LD C, B      */ c = b; break;
+        case 0x49: /* LD C, C      */        break;
+        case 0x4A: /* LD C, D      */ c = d; break;
+        case 0x4B: /* LD C, E      */ c = e; break;
+        case 0x4C: /* LD C, H      */ c = h; break;
+        case 0x4D: /* LD C, L      */ c = l; break;
+        case 0x4E: /* LD C, (HL)   */ c = read(hl()); break;
+        case 0x4F: /* LD C, A      */ c = a; break;
+
+        case 0x50: /* LD D, B      */ d = b; break;
+        case 0x51: /* LD D, C      */ d = c; break;
+        case 0x52: /* LD D, D      */        break;
+        case 0x53: /* LD D, E      */ d = e; break;
+        case 0x54: /* LD D, H      */ d = h; break;
+        case 0x55: /* LD D, L      */ d = l; break;
+        case 0x56: /* LD D, (HL)   */ d = read(hl()); break;
+        case 0x57: /* LD D, A      */ d = a; break;
+
+        case 0x58: /* LD E, B      */ e = b; break;
+        case 0x59: /* LD E, C      */ e = c; break;
+        case 0x5A: /* LD E, D      */ e = d; break;
+        case 0x5B: /* LD E, E      */        break;
+        case 0x5C: /* LD E, H      */ e = h; break;
+        case 0x5D: /* LD E, L      */ e = l; break;
+        case 0x5E: /* LD E, (HL)   */ e = read(hl()); break;
+        case 0x5F: /* LD E, A      */ e = a; break;
+
+        case 0x60: /* LD H, B      */ h = b; break;
+        case 0x61: /* LD H, C      */ h = c; break;
+        case 0x62: /* LD H, D      */ h = d; break;
+        case 0x63: /* LD H, E      */ h = e; break;
+        case 0x64: /* LD H, H      */        break;
+        case 0x65: /* LD H, L      */ h = l; break;
+        case 0x66: /* LD H, (HL)   */ h = read(hl()); break;
+        case 0x67: /* LD H, A      */ h = a; break;
+
+        case 0x68: /* LD L, B      */ l = b; break;
+        case 0x69: /* LD L, C      */ l = c; break;
+        case 0x6A: /* LD L, D      */ l = d; break;
+        case 0x6B: /* LD L, E      */ l = e; break;
+        case 0x6C: /* LD L, H      */ l = h; break;
+        case 0x6D: /* LD L, L      */        break;
+        case 0x6E: /* LD L, (HL)   */ l = read(hl()); break;
+        case 0x6F: /* LD L, A      */ l = a; break;
+
+        case 0x70: /* LD (HL), B   */ write(hl(), b); break;
+        case 0x71: /* LD (HL), C   */ write(hl(), c); break;
+        case 0x72: /* LD (HL), D   */ write(hl(), d); break;
+        case 0x73: /* LD (HL), E   */ write(hl(), e); break;
+        case 0x74: /* LD (HL), H   */ write(hl(), h); break;
+        case 0x75: /* LD (HL), L   */ write(hl(), l); break;
+        case 0x76: /* HALT         */ halt = 1; break;
+        case 0x77: /* LD (HL), A   */ write(hl(), a); break;
+
+        case 0x78: /* LD A, B      */ a = b; break;
+        case 0x79: /* LD A, C      */ a = c; break;
+        case 0x7A: /* LD A, D      */ a = d; break;
+        case 0x7B: /* LD A, E      */ a = e; break;
+        case 0x7C: /* LD A, H      */ a = h; break;
+        case 0x7D: /* LD A, L      */ a = l; break;
+        case 0x7E: /* LD A, (HL)   */ a = read(hl()); break;
+        case 0x7F: /* LD A, A      */ break;
+
+        // Арифметико-логика -------------------------------------------
+        case 0x80: /* ADD A, B     */ a = alu_add(a, b); break;
+        case 0x81: /* ADD A, C     */ a = alu_add(a, c); break;
+        case 0x82: /* ADD A, D     */ a = alu_add(a, d); break;
+        case 0x83: /* ADD A, E     */ a = alu_add(a, e); break;
+        case 0x84: /* ADD A, H     */ a = alu_add(a, h); break;
+        case 0x85: /* ADD A, L     */ a = alu_add(a, l); break;
+        case 0x86: /* ADD A, (HL)  */ a = alu_add(a, read(hl())); break;
+        case 0x87: /* ADD A, A     */ a = alu_add(a, a); break;
+
+        case 0x88: /* ADC A, B     */ a = alu_adc(a, b); break;
+        case 0x89: /* ADC A, C     */ a = alu_adc(a, c); break;
+        case 0x8A: /* ADC A, D     */ a = alu_adc(a, d); break;
+        case 0x8B: /* ADC A, E     */ a = alu_adc(a, e); break;
+        case 0x8C: /* ADC A, H     */ a = alu_adc(a, h); break;
+        case 0x8D: /* ADC A, L     */ a = alu_adc(a, l); break;
+        case 0x8E: /* ADC A, (HL)  */ a = alu_adc(a, read(hl())); break;
+        case 0x8F: /* ADC A, A     */ a = alu_adc(a, a); break;
+
+        case 0x90: /* SUB A, B     */ a = alu_sub(a, b); break;
+        case 0x91: /* SUB A, C     */ a = alu_sub(a, c); break;
+        case 0x92: /* SUB A, D     */ a = alu_sub(a, d); break;
+        case 0x93: /* SUB A, E     */ a = alu_sub(a, e); break;
+        case 0x94: /* SUB A, H     */ a = alu_sub(a, h); break;
+        case 0x95: /* SUB A, L     */ a = alu_sub(a, l); break;
+        case 0x96: /* SUB A, (HL)  */ a = alu_sub(a, read(hl())); break;
+        case 0x97: /* SUB A, A     */ a = alu_sub(a, a); break;
+
+        case 0x98: /* SBC A, B     */ a = alu_sbc(a, b); break;
+        case 0x99: /* SBC A, C     */ a = alu_sbc(a, c); break;
+        case 0x9A: /* SBC A, D     */ a = alu_sbc(a, d); break;
+        case 0x9B: /* SBC A, E     */ a = alu_sbc(a, e); break;
+        case 0x9C: /* SBC A, H     */ a = alu_sbc(a, h); break;
+        case 0x9D: /* SBC A, L     */ a = alu_sbc(a, l); break;
+        case 0x9E: /* SBC A, (HL)  */ a = alu_sbc(a, read(hl())); break;
+        case 0x9F: /* SBC A, A     */ a = alu_sbc(a, a); break;
     }
 }

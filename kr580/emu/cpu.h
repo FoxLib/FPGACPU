@@ -35,6 +35,7 @@ protected:
     uint32_t    cycles;
 
     // Дизассемблер
+    int         emustop;
     int         width, height, color_fore, color_back;
     int         ds_ad;
     int         enable_halt;
