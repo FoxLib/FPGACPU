@@ -278,7 +278,7 @@ void CPU::disasm_repaint() {
     cls();
 
     // Начать отрисовку сверху вниз
-    for (i = 0; i < 36; i++) {
+    for (i = 0; i < 37; i++) {
 
         int dsy  = i + 1;
         int size = this->disasm_line(ds_current);
@@ -345,7 +345,7 @@ void CPU::disasm_repaint() {
     }
 
     // В последней строке будет новая страница
-    ds_rowdis[36] = ds_current;
+    ds_rowdis[37] = ds_current;
 
     // Проверка на "вылет"
     // Сдвиг старта на текущий курсор
@@ -382,20 +382,21 @@ void CPU::disasm_repaint() {
     sprintf(tmp, "IFF1:  %01X", iff1);  print(51, 16, tmp);
 
     // Вывести дамп памяти
-    for (i = 0; i < 15; i++) {
+    for (i = 0; i < 13; i++) {
 
         for (k = 0; k < 8; k++) {
 
             sprintf(tmp, "%02X", read(8*i+k+ds_dumpaddr));
             color(k % 2 ? 0x40c040 : 0xc0f0c0, 0);
-            print(47 + 2*k, i + 23, tmp);
+            print(47 + 2*k, i + 24, tmp);
         }
 
         color(0x909090, 0);
         sprintf(tmp, "%04X", ds_dumpaddr + 8*i);
-        print(42, i + 23, tmp);
+        print(42, i + 24, tmp);
     }
-    color(0xf0f0f0, 0); print(42, 22, "ADDR  0 1 2 3 4 5 6 7");
+    color(0x808080, 0); print(42, 22, "     8 9 A B C D E F");
+    color(0xf0f0f0, 0); print(42, 23, "ADDR  0 1 2 3 4 5 6 7");
 
     // Прерывание
     color(0xffff00, 0); print(42, 18, "F2");
@@ -410,7 +411,7 @@ void CPU::disasm_repaint() {
     color(0x00ffff, 0); print(45, 20, "Run");
 
     // Переключить экраны
-    color(0xffff00, 0); print(50, 18, "F5");
+    color(0xffff00, 0); print(50, 18, "F4");
     color(0x00ffff, 0); print(53, 18, "Swi");
 
     // Один шаг с заходом
@@ -422,13 +423,13 @@ void CPU::disasm_repaint() {
     color(0x00ffff, 0); print(53, 20, "Over");
 
     // Некоторые индикаторы
-    color(0x808080, 0); sprintf(tmp, "TStates: %d", cycles); print(4, 37, tmp);
+    color(0x808080, 0); sprintf(tmp, "TStates: %d", cycles); print(45, 37, tmp);
 
     // Halted
     color(halt ? 0xffff00 : 0x707070, 0);
-    print(1, 37, "H");
+    print(42, 37, "H");
 
     // Enabled Halt
     color(enable_halt ? 0xffff00 : 0x707070, 0);
-    print(2, 37, "E");
+    print(43, 37, "E");
 }
