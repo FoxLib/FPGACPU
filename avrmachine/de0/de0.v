@@ -150,7 +150,7 @@ fontrom UnitFontRom
 );
 
 // ---------------------------------------------------------------------
-// Процессор
+// Интерфейсы памяти
 // ---------------------------------------------------------------------
 
 // Разрешение на запись в память
@@ -175,22 +175,21 @@ wire [ 7:0] din = w_sram ? din_sram :
                   w_font ? din_font :
                   w_gram ? din_gram :
                            din_extram;
-
-wire [ 7:0] wb;
 wire        w;
+wire [ 7:0] wb;
 wire [ 7:0] bank;
 
 // 128Kb памяти программ
-flash UnitFlashMemory
-(
+mem_flash UnitFlashMemory(
+
     .clock      (clk),
     .address_a  (pc),
     .q_a        (ir),
 );
 
 // 64 Kb общей памяти
-sram UnitSRAM
-(
+mem_sram UnitSRAM(
+
     .clock      (clk),
     .address_a  (address),
     .q_a        (din_sram),
@@ -203,8 +202,8 @@ sram UnitSRAM
 );
 
 // Расширенная память 64K [и видеоадаптер 640x400x2, 320x200x8]
-extram UnitExtendRAM64
-(
+mem_extend UnitExtendRAM64(
+
     .clock      (clk),
     .address_a  ({bank[3:0], address[11:0]}),
     .q_a        (din_extram),
@@ -217,8 +216,8 @@ extram UnitExtendRAM64
 );
 
 // Память видеоадаптера, графический 32к
-gram UnitGVideoRAM32
-(
+mem_graphics UnitGVideoRAM32(
+
     .clock      (clk),
     .address_a  ({bank[2:0], address[11:0]}),
     .q_a        (din_gram),
@@ -230,36 +229,42 @@ gram UnitGVideoRAM32
     .q_b        (gm_data),
 );
 
-cpu UnitAVRCPU
-(
-    .clock      (clk25 & locked),
-    .pc         (pc),
-    .ir         (ir),
-    .address    (address),
-    .din_raw    (din),
-    .wb         (wb),
-    .w          (w),
-    .bank       (bank),
-    .vmode      (vmode),
+// ---------------------------------------------------------------------
+// Интерфейс процессора
+// ---------------------------------------------------------------------
+
+cpu UnitAVRCPU(
+
+    .clock          (clk25 & locked),
+    .pc             (pc),
+    .ir             (ir),
+    .address        (address),
+    .din_raw        (din),
+    .wb             (wb),
+    .w              (w),
+
+    // Банк памяти и видеорежим
+    .bank           (bank),
+    .vmode          (vmode),
 
     // Keyboard
-    .kb_ch      (kb_ch),
-    .kb_tr      (kb_tr),
-    .kb_hit     (kb_hit),
+    .kb_ch          (kb_ch),
+    .kb_tr          (kb_tr),
+    .kb_hit         (kb_hit),
 
     // Cursor
-    .cursor_x   (cursor_x),
-    .cursor_y   (cursor_y),
-    .mouse_x    (mouse_x),
-    .mouse_y    (mouse_y),
-    .mouse_cmd  (mouse_cmd),
+    .cursor_x       (cursor_x),
+    .cursor_y       (cursor_y),
+    .mouse_x        (mouse_x),
+    .mouse_y        (mouse_y),
+    .mouse_cmd      (mouse_cmd),
 
     // SPI
-    .spi_sent   (spi_sent),
-    .spi_cmd    (spi_cmd),
-    .spi_din    (spi_din),
-    .spi_out    (spi_out),
-    .spi_st     (spi_st),
+    .spi_sent       (spi_sent),
+    .spi_cmd        (spi_cmd),
+    .spi_din        (spi_din),
+    .spi_out        (spi_out),
+    .spi_st         (spi_st),
 
     // SDRAM
     .sdram_address  (sdram_address),
@@ -269,47 +274,35 @@ cpu UnitAVRCPU
     .sdram_control  (sdram_control)     // bit 0: WE
 );
 
+// ---------------------------------------------------------------------
 // Контроллер клавиатуры PS/2
 // ---------------------------------------------------------------------
 
 reg         kbd_reset        = 1'b0;
-reg [7:0]   ps2_command      = 1'b0;
-reg         ps2_command_send = 1'b0;
-wire        ps2_command_was_sent;
-wire        ps2_error_communication_timed_out;
 wire [7:0]  ps2_data;
 wire        ps2_data_clk;
 reg         kb_unpressed   = 1'b0;
-wire [7:0]  keyb_xt;
 reg         kb_tr = 1'b0;
 reg  [7:0]  kb_ch = 8'h00;
+wire [7:0]  keyb_ascii;
 
-PS2_Controller Keyboard
+ps2keyboard KeyboardInterface
 (
-	/* Вход */
+    /* Физический интерфейс */
     .CLOCK_50       (clk50),
-	.reset          (kbd_reset),
-	.the_command    (ps2_command),
-	.send_command   (ps2_command_send),
-
-	/* Ввод-вывод */
-	.PS2_CLK        (PS2_CLK),
- 	.PS2_DAT        (PS2_DAT),
-
-	/* Статус команды */
-	.command_was_sent               (ps2_command_was_sent),
-	.error_communication_timed_out  (ps2_error_communication_timed_out),
+    .PS2_CLK        (PS2_CLK),
+    .PS2_DAT        (PS2_DAT),
 
     /* Выход полученных */
-	.received_data      (ps2_data),
-	.received_data_en   (ps2_data_clk)
+    .received_data      (ps2_data),
+    .received_data_en   (ps2_data_clk)
 );
 
 // Преобразование AT-кода
-ps2_at2xt UnitPS2XT
+ps2at2ascii UnitPS2XT
 (
-    .keyb_at    (ps2_data),
-    .keyb_xt    (keyb_xt),
+    .at (ps2_data),
+    .xt (keyb_ascii),
 );
 
 // Новые данные присутствуют
@@ -323,8 +316,8 @@ always @(posedge clk50) begin
 
         end else begin
 
-            // Если старший бит равен 1, то это специальный код
-            kb_ch <= keyb_xt[7] ? keyb_xt[7:0] : {kb_unpressed, keyb_xt[6:0]};
+            // 4 старших бита = E0..EF (спецкоды)
+            kb_ch <= keyb_ascii[7:4] == 4'b1110 ? keyb_ascii[7:0] : {kb_unpressed, keyb_ascii[6:0]};
             kb_tr <= (kb_tr ^ kb_hit ^ 1'b1); // kb_hit установить в 1
             kb_unpressed <= 1'b0;
 
@@ -334,6 +327,7 @@ always @(posedge clk50) begin
 
 end
 
+// ---------------------------------------------------------------------
 // Контроллер SPI
 // ---------------------------------------------------------------------
 
@@ -363,22 +357,21 @@ spi UnitSPI(
 );
 
 // ---------------------------------------------------------------------
-// Мышь
+// "Мышь"
 // ---------------------------------------------------------------------
 
-reg [8:0] mouse_x = 0;
-reg [7:0] mouse_y = 0;
-reg [1:0] mouse_cmd = 0;
-
+reg [8:0]  mouse_x = 0;
+reg [7:0]  mouse_y = 0;
+reg [1:0]  mouse_cmd = 0;
 reg [18:0] mouse_cnt;
 
 always @(posedge clk50) begin
 
     if (mouse_cnt == 0) begin
 
-        if (KEY[3] == 0 && mouse_x > 0)   mouse_x <= mouse_x - 1;
+        if (KEY[3] == 0 && mouse_x >   0) mouse_x <= mouse_x - 1;
         if (KEY[0] == 0 && mouse_x < 319) mouse_x <= mouse_x + 1;
-        if (KEY[2] == 0 && mouse_y > 0)   mouse_y <= mouse_y - 1;
+        if (KEY[2] == 0 && mouse_y >   0) mouse_y <= mouse_y - 1;
         if (KEY[1] == 0 && mouse_y < 200) mouse_y <= mouse_y + 1;
 
         mouse_cmd <= ~RESET_N;
@@ -393,12 +386,12 @@ end
 // SDRAM
 // ---------------------------------------------------------------------
 
+wire        o_ready;
 wire [31:0] sdram_address;
 wire [ 7:0] sdram_i_data;
 wire [ 7:0] sdram_o_data;
 wire [ 7:0] sdram_control;
 wire [ 7:0] sdram_status = {6'h0, o_ready, sdram_control[0]};
-wire        o_ready;
 
 sdram UnitSDRAM
 (
@@ -414,15 +407,15 @@ sdram UnitSDRAM
     .o_ready        (o_ready),              // Готовность данных (=1 Готово)
 
     // Физический интерфейс DRAM
-    .dram_clk       (DRAM_CLK),       // Тактовая частота памяти
-    .dram_ba        (DRAM_BA),        // 4 банка
-    .dram_addr      (DRAM_ADDR),      // Максимальный адрес 2^13=8192
-    .dram_dq        (DRAM_DQ),        // Ввод-вывод
-    .dram_cas       (DRAM_CAS_N),     // CAS
-    .dram_ras       (DRAM_RAS_N),     // RAS
-    .dram_we        (DRAM_WE_N),      // WE
-    .dram_ldqm      (DRAM_LDQM),      // Маска для младшего байта
-    .dram_udqm      (DRAM_UDQM)       // Маска для старшего байта
+    .dram_clk       (DRAM_CLK),         // Тактовая частота памяти
+    .dram_ba        (DRAM_BA),          // 4 банка
+    .dram_addr      (DRAM_ADDR),        // Максимальный адрес 2^13=8192
+    .dram_dq        (DRAM_DQ),          // Ввод-вывод
+    .dram_cas       (DRAM_CAS_N),       // CAS
+    .dram_ras       (DRAM_RAS_N),       // RAS
+    .dram_we        (DRAM_WE_N),        // WE
+    .dram_ldqm      (DRAM_LDQM),        // Маска для младшего байта
+    .dram_udqm      (DRAM_UDQM)         // Маска для старшего байта
 );
 
 endmodule

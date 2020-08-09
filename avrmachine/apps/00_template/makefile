@@ -9,7 +9,7 @@ all:
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
 	rm main.elf
 	php ../../de0/hexer.php main.bin > ../../de0/avr.hex
-	php ../../de0/mifer.php main.bin > ../../de0/flash.mif
+	php ../../de0/mifer.php main.bin > ../../de0/mem_flash.mif
 	cd ../../de0 && make
 	avr main.bin
 

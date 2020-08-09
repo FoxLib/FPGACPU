@@ -1,7 +1,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module extram (
+module mem_flash (
     clock,
     address_a, address_b,
     data_a,    data_b,
@@ -9,15 +9,15 @@ module extram (
     q_a,       q_b
 );
 
-input    [15:0] address_a;
-input    [15:0] address_b;
-input           clock;
-input    [7:0]  data_a;
-input    [7:0]  data_b;
-input           wren_a;
-input           wren_b;
-output   [7:0]  q_a;
-output   [7:0]  q_b;
+input    [15:0]  address_a;
+input    [15:0]  address_b;
+input            clock;
+input    [15:0]  data_a;
+input    [15:0]  data_b;
+input            wren_a;
+input            wren_b;
+output   [15:0]  q_a;
+output   [15:0]  q_b;
 
 `ifndef ALTERA_RESERVED_QIS
 // synopsys translate_off
@@ -29,10 +29,10 @@ output   [7:0]  q_b;
 // synopsys translate_on
 `endif
 
-    wire [7:0] sub_wire0;
-    wire [7:0] sub_wire1;
-    wire [7:0] q_a = sub_wire0[7:0];
-    wire [7:0] q_b = sub_wire1[7:0];
+    wire [15:0] sub_wire0;
+    wire [15:0] sub_wire1;
+    wire [15:0] q_a = sub_wire0[15:0];
+    wire [15:0] q_b = sub_wire1[15:0];
 
 altsyncram altsyncram_component (
     .address_a  (address_a),
@@ -68,7 +68,7 @@ defparam
     altsyncram_component.clock_enable_output_a = "BYPASS",
     altsyncram_component.clock_enable_output_b = "BYPASS",
     altsyncram_component.indata_reg_b = "CLOCK0",
-    altsyncram_component.init_file = "extram.mif",
+    altsyncram_component.init_file = "mem_flash.mif",
     altsyncram_component.intended_device_family = "Cyclone V",
     altsyncram_component.lpm_type = "altsyncram",
     altsyncram_component.numwords_a = 65536,
@@ -85,10 +85,10 @@ defparam
     altsyncram_component.read_during_write_mode_port_b = "NEW_DATA_NO_NBE_READ",
     altsyncram_component.widthad_a = 16,
     altsyncram_component.widthad_b = 16,
-    altsyncram_component.width_a = 8,
-    altsyncram_component.width_b = 8,
+    altsyncram_component.width_a = 16,
+    altsyncram_component.width_b = 16,
     altsyncram_component.width_byteena_a = 1,
     altsyncram_component.width_byteena_b = 1,
     altsyncram_component.wrcontrol_wraddress_reg_b = "CLOCK0";
-        
+
 endmodule

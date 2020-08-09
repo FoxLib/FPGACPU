@@ -1,7 +1,7 @@
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
-module sram (
+module mem_sram (
     clock,
     address_a, address_b,
     data_a,    data_b,
@@ -68,7 +68,7 @@ defparam
     altsyncram_component.clock_enable_output_a = "BYPASS",
     altsyncram_component.clock_enable_output_b = "BYPASS",
     altsyncram_component.indata_reg_b = "CLOCK0",
-    altsyncram_component.init_file = "sram.mif",
+    altsyncram_component.init_file = "mem_sram.mif",
     altsyncram_component.intended_device_family = "Cyclone V",
     altsyncram_component.lpm_type = "altsyncram",
     altsyncram_component.numwords_a = 65536,
@@ -90,5 +90,5 @@ defparam
     altsyncram_component.width_byteena_a = 1,
     altsyncram_component.width_byteena_b = 1,
     altsyncram_component.wrcontrol_wraddress_reg_b = "CLOCK0";
-        
+
 endmodule
