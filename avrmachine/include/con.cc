@@ -47,13 +47,13 @@ public:
 
         heap(vm, 0xF000);
 
-        cursor(0, 0);
-        color(cl);
-
-        for (int i = 0; i < 2000; i++) {
-            vm[2*i+0] = 0;
-            vm[2*i+1] = cl;
+        for (int i = 0; i < 4000; i += 2) {
+            vm[i+0] = 0;
+            vm[i+1] = cl;
         }
+
+        cursor(0, 0);
+        cursor_cl = cl;
     }
 
     // Печать символа на экране
