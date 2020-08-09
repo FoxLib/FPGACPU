@@ -4,6 +4,15 @@
 #define SD_BUSY         1
 #define SD_TIMEOUT      2
 
+// Список команд SPI
+enum SPI_Commands {
+
+    SPI_CMD_INIT    = 0,
+    SPI_CMD_SEND    = 1,
+    SPI_CMD_CE0     = 2,
+    SPI_CMD_CE1     = 3
+};
+
 enum SD_Commands {
 
     SD_CMD0     = 0,    // Сброс

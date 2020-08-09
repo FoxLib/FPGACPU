@@ -76,6 +76,7 @@ always @(*) begin
         /* ENT */ 8'h5A: xt = 8'h0D; /* ENTER */
         /* F11 */ 8'h78: xt = 8'h0E;
         /* F12 */ 8'h07: xt = 8'h0F;
+
         /* CAP */ 8'h58: xt = 8'h10; /* CAPS LOCK */
         /* LSH */ 8'h12: xt = 8'h11; /* LEFT SHIFT */
         /* LCT */ 8'h14: xt = 8'h12; /* LEFT CTRL */

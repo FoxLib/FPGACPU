@@ -1,11 +1,18 @@
 #include <avrio.cc>
+#include <kb.cc>
+
+KB kb;
 
 int main() {
 
     heap(vm, 0xf000);
 
-    for (int i = 0; i < 4000; i++)
-        vm[i] = i;
+    int i = 0;
+    for(;;) {
 
-    for(;;);
+        byte k = kb.getch();
+
+        vm[i++] = k;
+        vm[i++] = 0x17;
+    }
 }

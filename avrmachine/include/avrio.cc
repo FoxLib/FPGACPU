@@ -72,55 +72,6 @@ enum VideoModes {
     VM_320x200x4    = 3
 };
 
-enum SPICommands {
-
-    SPI_CMD_INIT    = 0,
-    SPI_CMD_SEND    = 1,
-    SPI_CMD_CE0     = 2,
-    SPI_CMD_CE1     = 3
-};
-
-enum SDRAMStatus {
-
-    SDRAM_WE        = 1,
-    SDRAM_READY     = 2
-};
-
-enum KBASCII {
-
-    key_LSHIFT      = 0x00,
-    key_LALT        = 0x00,
-    key_LCTRL       = 0x00,
-    key_UP          = 0x00,
-    key_DN          = 0x00,
-    key_LF          = 0x00,
-    key_RT          = 0x00,
-    key_BS          = 0x00,
-    key_TAB         = 0x00,
-    key_ENTER       = 0x00,
-    key_HOME        = 0x00,
-    key_END         = 0x00,
-    key_PGUP        = 0x00,
-    key_PGDN        = 0x00,
-    key_DEL         = 0x00,
-    key_F1          = 0x00,
-    key_F2          = 0x00,
-    key_F3          = 0x00,
-    key_F4          = 0x00,
-    key_F5          = 0x00,
-    key_F6          = 0x00,
-    key_F7          = 0x00,
-    key_F8          = 0x00,
-    key_F9          = 0x00,
-    key_F10         = 0x00,
-    key_F11         = 0x00,
-    key_F12         = 0x00,
-    key_ESC         = 0x00,
-    key_INS         = 0x00,
-    key_NL          = 0x00,
-    key_SPECIAL     = 0x00,         // Особая клавиша
-};
-
 // Чтение из порта
 inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 
