@@ -107,17 +107,17 @@ wire [14:0] gm_address;
 wire [ 7:0] gm_data;
 
 // Видеоадаптер
-vga UnitVGATextDisplay
-(
-    .CLK25  (clk25),
-    .vmode  (vmode),
+vga UnitVGATextDisplay(
+
+    .CLK25      (clk25),
+    .vmode      (vmode),
 
     // Физический интерфейс
-    .VGA_R  (VGA_R),
-    .VGA_G  (VGA_G),
-    .VGA_B  (VGA_B),
-    .VGA_HS (VGA_HS),
-    .VGA_VS (VGA_VS),
+    .VGA_R      (VGA_R),
+    .VGA_G      (VGA_G),
+    .VGA_B      (VGA_B),
+    .VGA_HS     (VGA_HS),
+    .VGA_VS     (VGA_VS),
 
     // Адреса таблиц шрифтов
     .font_addr  (font_addr),
@@ -135,8 +135,8 @@ vga UnitVGATextDisplay
 );
 
 // Знакогенератор 4k
-fontrom UnitFontRom
-(
+fontrom UnitFontRom(
+
     // Чтение из памяти
     .clock     (clk),
     .address_a (font_addr),
@@ -232,7 +232,6 @@ mem_graphics UnitGVideoRAM32(
 // ---------------------------------------------------------------------
 // Интерфейс процессора
 // ---------------------------------------------------------------------
-
 cpu UnitAVRCPU(
 
     .clock          (clk25 & locked),
@@ -277,7 +276,6 @@ cpu UnitAVRCPU(
 // ---------------------------------------------------------------------
 // Контроллер клавиатуры PS/2
 // ---------------------------------------------------------------------
-
 reg         kbd_reset        = 1'b0;
 wire [7:0]  ps2_data;
 wire        ps2_data_clk;

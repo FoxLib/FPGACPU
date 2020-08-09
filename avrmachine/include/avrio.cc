@@ -4,7 +4,7 @@
 #include <avr/pgmspace.h>
 
 // Ссылка на пустой адрес
-#define NULL    ((void*)0)
+#define NULL    ((void*) 0)
 #define brk     asm volatile("sleep"); // break
 
 // Базовые типы данных
@@ -14,33 +14,44 @@
 #define ulong       unsigned long
 #define dword       unsigned long
 
-// Описания всех портов
-enum Ports_IDS {
+// Объявление указателя на память (имя x, адрес a)
+#define heap(x, a)  byte* x = (byte*) a
+#define bank(x)     outp(BANK_LO, x)
 
+// Описания всех портов
+enum InputOutputPort {
+
+    // Банкинг
     BANK_LO         = 0x00, // RW
     BANK_HI         = 0x01, // RW
 
+    // Клавиатура
     KB_DATA         = 0x02, // R
     KB_HIT          = 0x03, // R
 
+    // Текстовый курсор
     CURSOR_X        = 0x04, // RW
     CURSOR_Y        = 0x05, // RW
 
+    // Конфигурация таймера
     TIMER_LO        = 0x06, // R
     TIMER_HI        = 0x07, // R
     TIMER_HI2       = 0x0F, // R
     TIMER_HI3       = 0x10, // R
     TIMER_INTR      = 0x16, // W Прерывание таймера
 
+    // SPI SD
     SPI_DATA        = 0x08, // W
     SPI_CMD         = 0x09, // W
     SPI_STATUS      = 0x09, // R
 
+    // Эмулятор мыши
     MOUSE_X_LO      = 0x0A, // R
     MOUSE_Y_LO      = 0x0B, // R
     MOUSE_STATUS    = 0x0C, // R
     MOUSE_X_HI      = 0x0E, // R
 
+    // Видеорежим
     VIDEOMODE       = 0x0D, // RW
 
     // Управление SDRAM
@@ -53,7 +64,7 @@ enum Ports_IDS {
 };
 
 // Список видеорежимов
-enum Video_Modes {
+enum VideoModes {
 
     VM_80x25        = 0,
     VM_320x200x8    = 1,
@@ -61,7 +72,7 @@ enum Video_Modes {
     VM_320x200x4    = 3
 };
 
-enum SPI_Commands {
+enum SPICommands {
 
     SPI_CMD_INIT    = 0,
     SPI_CMD_SEND    = 1,
@@ -69,13 +80,13 @@ enum SPI_Commands {
     SPI_CMD_CE1     = 3
 };
 
-enum SDRAM_Status {
+enum SDRAMStatus {
 
     SDRAM_WE        = 1,
     SDRAM_READY     = 2
 };
 
-enum KEYB_Ascii {
+enum KBASCII {
 
     key_LSHIFT      = 0x00,
     key_LALT        = 0x00,
@@ -110,38 +121,10 @@ enum KEYB_Ascii {
     key_SPECIAL     = 0x00,         // Особая клавиша
 };
 
-// Значение таймера [15:0] или [31:0]
-#define TIMERW ((word) inp(TIMER_LO) + ((word) inp(TIMER_HI)<<8))
-#define TIMERD ((dword)inp(TIMER_LO) + ((dword)inp(TIMER_HI)<<8) + ((dword)inp(TIMER_HI2)<<16))
-
-// Объявление указателя на память (имя x, адрес a)
-#define heap(x, a)  byte* x = (byte*) a
-#define bank(x)     outp(BANK_LO, x)
-
 // Чтение из порта
 inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 
 // Запись в порт
 inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
-
-// Положение мыши
-inline int get_mouse_x()    { return inp(0xA) | (inp(0xE) << 8); }
-inline int get_mouse_y()    { return inp(0xB); }
-inline int get_mouse_st()   { return inp(0xC); }
-
-// Принять байт SPI
-inline byte SPI_get() {
-
-    outp(SPI_DATA, 0xFF);
-    outp(SPI_CMD,  SPI_CMD_SEND);
-    return inp(SPI_DATA);
-}
-
-// Отправить байт SPI
-inline void SPI_put(byte data) {
-
-    outp(SPI_DATA, data);
-    outp(SPI_CMD,  SPI_CMD_SEND);
-}
 
 #endif
