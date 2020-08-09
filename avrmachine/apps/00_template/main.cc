@@ -1,18 +1,17 @@
 #include <avrio.cc>
 #include <kb.cc>
+#include <con.cc>
 
-KB kb;
+KB  kb;
+CON d;
 
 int main() {
 
-    heap(vm, 0xf000);
+    d.init();
+    d.cls(0x07);
+    d.cursor(2, 1);
 
-    int i = 0;
-    for(;;) {
+    d.print("Hello");
+    d.print(542.321, 2);
 
-        int k = kb.getch();
-
-        vm[i++] = k;
-        vm[i++] = 0x17;
-    }
 }
