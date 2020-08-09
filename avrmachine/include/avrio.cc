@@ -8,11 +8,11 @@
 #define brk     asm volatile("sleep"); // break
 
 // Базовые типы данных
-#define byte        unsigned char
-#define uint        unsigned int
-#define word        unsigned int
-#define ulong       unsigned long
-#define dword       unsigned long
+#define byte    unsigned char
+#define uint    unsigned int
+#define word    unsigned int
+#define ulong   unsigned long
+#define dword   unsigned long
 
 // Объявление указателя на память (имя x, адрес a)
 #define heap(x, a)  byte* x = (byte*) a

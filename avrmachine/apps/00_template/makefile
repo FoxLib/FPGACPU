@@ -1,6 +1,11 @@
-DEVICE = atmega103
-CLOCK  = 25000000
-COMPILE = avr-gcc -I../../classlib -I../../include -Wall -Wno-unused-but-set-variable -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=0x80efff,--defsym=__heap_end=0x80efff
+DEVICE  = atmega103
+CLOCK   = 25000000
+LIBRARY = -I../../include
+AV		= ../../av/avr
+WARNING = -Wall -Wno-unused-but-set-variable
+STACK   = 0x80efff
+HEAPEND = 0x80efff
+COMPILE = avr-gcc $(LIBRARY) $(WARNING) -Os -DF_CPU=$(CLOCK) -mmcu=$(DEVICE) -fdata-sections -Wl,--gc-sections,--defsym=__stack=$(STACK),--defsym=__heap_end=$(HEAPEND)
 
 all:
 	$(COMPILE) main.cc -o main.elf

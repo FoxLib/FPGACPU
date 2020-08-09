@@ -284,8 +284,8 @@ reg         kb_tr = 1'b0;
 reg  [7:0]  kb_ch = 8'h00;
 wire [7:0]  keyb_ascii;
 
-ps2keyboard KeyboardInterface
-(
+ps2keyboard KeyboardInterface(
+
     /* Физический интерфейс */
     .CLOCK_50       (clk50),
     .PS2_CLK        (PS2_CLK),
@@ -297,8 +297,7 @@ ps2keyboard KeyboardInterface
 );
 
 // Преобразование AT-кода
-ps2at2ascii UnitPS2XT
-(
+ps2at2ascii UnitPS2XT(
     .at (ps2_data),
     .xt (keyb_ascii),
 );
