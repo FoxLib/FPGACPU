@@ -573,7 +573,6 @@ int APP::step() {
 
         // ------------ РАСШИРЕНИЯ -------------------------------------
 
-        /*
         // Логические операции между (Z) и Rd
         case LAC:
 
@@ -601,8 +600,9 @@ int APP::step() {
             put(p, get_rd());
             put_rd(r);
             break;
-        */
 
+        case IJMP:  pc = 2 * (get_Z()); cycles = 2; break;
+        case EIJMP: pc = 2 * (get_Z() + (sram[0x5B] << 16)); cycles = 2; break;
         case JMP:
 
             pc = 2 * ((get_jmp() << 16) | fetch());
@@ -614,6 +614,13 @@ int APP::step() {
             push16((pc + 2) >> 1);
             pc = 2 * ((get_jmp() << 16) | fetch());
             cycles = 4;
+            break;
+
+        case ICALL:
+
+            push16(pc >> 1);
+            pc = 2*get_Z();
+            cycles = 3;
             break;
 
         default:

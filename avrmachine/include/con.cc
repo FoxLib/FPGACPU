@@ -112,7 +112,33 @@ public:
         return i;
     }
 
-   void print(long num)         { i2a(num); print(buf); }
-   void print(float num, int n) { f2a(num, n); print(buf); }
+    // Печать строки, форматированной в UTF8
+    int putf8(const char* s) {
 
+        int i = 0, n = 0;
+        while (s[i]) {
+
+            byte ch = s[i++];
+
+            if (ch == 0xD0) { // Главный набор
+
+                ch = s[i++];
+                ch = (ch == 0x81 ? 0xF0 : ch - 0x10);
+
+            } else if (ch == 0xD1) { // Вторичный набор
+
+                ch = s[i++];
+                ch = (ch == 0x91 ? 0xF1 : ch + (ch < 0xB0 ? 0x60 : 0x10));
+            }
+
+            printb(ch);
+            n++;
+        }
+
+        return n;
+    }
+
+    // Печать чисел
+    int print(long num)         { i2a(num); return print(buf); }
+    int print(float num, int n) { f2a(num, n); return print(buf); }
 };

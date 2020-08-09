@@ -9,9 +9,5 @@ int main() {
 
     d.init();
     d.cls(0x07);
-    d.cursor(2, 1);
-
-    d.print("Hello");
-    d.print(542.321, 2);
-
+    d.putf8("Привет мир!");
 }
