@@ -1,6 +1,8 @@
 #ifndef __AVRIO_HFILE
 #define __AVRIO_HFILE
 
+#include <avr/pgmspace.h>
+
 // Ссылка на пустой адрес
 #define NULL    ((void*)0)
 #define brk     asm volatile("sleep"); // break
@@ -13,7 +15,7 @@
 #define dword       unsigned long
 
 // Описания всех портов
-enum PortsID {
+enum Ports_IDS {
 
     BANK_LO         = 0x00, // RW
     BANK_HI         = 0x01, // RW
@@ -51,7 +53,7 @@ enum PortsID {
 };
 
 // Список видеорежимов
-enum VideoModes {
+enum Video_Modes {
 
     VM_80x25        = 0,
     VM_320x200x8    = 1,
@@ -73,19 +75,54 @@ enum SDRAM_Status {
     SDRAM_READY     = 2
 };
 
+enum KEYB_Ascii {
+
+    key_LSHIFT      = 0x00,
+    key_LALT        = 0x00,
+    key_LCTRL       = 0x00,
+    key_UP          = 0x00,
+    key_DN          = 0x00,
+    key_LF          = 0x00,
+    key_RT          = 0x00,
+    key_BS          = 0x00,
+    key_TAB         = 0x00,
+    key_ENTER       = 0x00,
+    key_HOME        = 0x00,
+    key_END         = 0x00,
+    key_PGUP        = 0x00,
+    key_PGDN        = 0x00,
+    key_DEL         = 0x00,
+    key_F1          = 0x00,
+    key_F2          = 0x00,
+    key_F3          = 0x00,
+    key_F4          = 0x00,
+    key_F5          = 0x00,
+    key_F6          = 0x00,
+    key_F7          = 0x00,
+    key_F8          = 0x00,
+    key_F9          = 0x00,
+    key_F10         = 0x00,
+    key_F11         = 0x00,
+    key_F12         = 0x00,
+    key_ESC         = 0x00,
+    key_INS         = 0x00,
+    key_NL          = 0x00,
+    key_SPECIAL     = 0x00,         // Особая клавиша
+};
+
 // Значение таймера [15:0] или [31:0]
 #define TIMERW ((word) inp(TIMER_LO) + ((word) inp(TIMER_HI)<<8))
 #define TIMERD ((dword)inp(TIMER_LO) + ((dword)inp(TIMER_HI)<<8) + ((dword)inp(TIMER_HI2)<<16))
 
+// Объявление указателя на память (имя x, адрес a)
+#define heap(x, a)  byte* x = (byte*) a
+#define bank(x)     outp(BANK_LO, x)
+
 // Чтение из порта
-inline byte inp(int port) {
-    return ((volatile byte*)0x20)[port];
-}
+inline byte inp(int port) { return ((volatile byte*)0x20)[port]; }
 
 // Запись в порт
-inline void outp(int port, unsigned char val) {
-    ((volatile unsigned char*)0x20)[port] = val;
-}
+inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[port] = val; }
 
 // Положение мыши
 inline int get_mouse_x()    { return inp(0xA) | (inp(0xE) << 8); }
@@ -106,9 +143,5 @@ inline void SPI_put(byte data) {
     outp(SPI_DATA, data);
     outp(SPI_CMD,  SPI_CMD_SEND);
 }
-
-// Объявление указателя на память (имя x, адрес a)
-#define heap(x, a)  byte* x = (byte*) a
-#define bank(x)     outp(BANK_LO, x)
 
 #endif
