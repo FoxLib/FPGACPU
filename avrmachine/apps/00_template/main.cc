@@ -10,7 +10,7 @@ int main() {
     int i = 0;
     for(;;) {
 
-        byte k = kb.getch();
+        int k = kb.getch();
 
         vm[i++] = k;
         vm[i++] = 0x17;

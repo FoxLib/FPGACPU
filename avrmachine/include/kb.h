@@ -1,3 +1,14 @@
+#define KbShiftUpCount 21
+
+const byte KbShiftUp[KbShiftUpCount][2] PROGMEM = {
+    {'1', '!'}, {'2', '@'}, {'3', '#'}, {'4', '$'},
+    {'5', '%'}, {'6', '^'}, {'7', '&'}, {'8', '*'},
+    {'9', '('}, {'0', ')'}, {'-', '_'}, {'=', '+'},
+    {'`', '~'}, {'[', '{'},  {']', '}'}, {'\'', '"'},
+    {';', ':'}, {'\\', '|'}, {',', '<'}, {'.', '>'},
+    {'/', '?'},
+};
+
 enum KBASCII {
 
     // Физические кнопки
@@ -30,13 +41,13 @@ enum KBASCII {
     key_ESC         = 0x1B,     // Escape
 
     // Виртуальные
-    key_UP          = 0x00,
-    key_DN          = 0x00,
-    key_LF          = 0x00,
-    key_RT          = 0x00,
-    key_HOME        = 0x00,
-    key_END         = 0x00,
-    key_PGUP        = 0x00,
-    key_PGDN        = 0x00,
-    key_DEL         = 0x00,
+    key_UP          = -1,
+    key_DN          = -2,
+    key_LF          = -3,
+    key_RT          = -4,
+    key_HOME        = -5,
+    key_END         = -6,
+    key_PGUP        = -7,
+    key_PGDN        = -8,
+    key_DEL         = -9,
 };
