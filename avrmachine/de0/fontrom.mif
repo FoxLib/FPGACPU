@@ -1,16 +1,17 @@
--- Copyright (C) 1991-2010 Altera Corporation
+-- Copyright (C) 1991-2015 Altera Corporation. All rights reserved.
 -- Your use of Altera Corporation's design tools, logic functions 
 -- and other software and tools, and its AMPP partner logic 
 -- functions, and any output files from any of the foregoing 
 -- (including device programming or simulation files), and any 
 -- associated documentation or information are expressly subject 
 -- to the terms and conditions of the Altera Program License 
--- Subscription Agreement, Altera MegaCore Function License 
--- Agreement, or other applicable license agreement, including, 
--- without limitation, that your use is for the sole purpose of 
--- programming logic devices manufactured by Altera and sold by 
--- Altera or its authorized distributors.  Please refer to the 
--- applicable agreement for further details.
+-- Subscription Agreement, the Altera Quartus Prime License Agreement,
+-- the Altera MegaCore Function License Agreement, or other 
+-- applicable license agreement, including, without limitation, 
+-- that your use is for the sole purpose of programming logic 
+-- devices manufactured by Altera and sold by Altera or its 
+-- authorized distributors.  Please refer to the applicable 
+-- agreement for further details.
 
 bin2mif project
 WIDTH=8;
@@ -1380,19 +1381,28 @@ CONTENT BEGIN
 	0EFA  :   6C;
 	0EFB  :   CC;
 	0EFC  :   CE;
-	[0EFD..0F03]  :   00;
-	0F04  :   FE;
-	[0F05..0F06]  :   00;
-	0F07  :   FE;
-	[0F08..0F09]  :   00;
-	0F0A  :   FE;
-	[0F0B..0F13]  :   00;
-	[0F14..0F15]  :   18;
-	0F16  :   7E;
-	[0F17..0F18]  :   18;
-	[0F19..0F1A]  :   00;
-	0F1B  :   FF;
-	[0F1C..0F22]  :   00;
+	[0EFD..0EFF]  :   00;
+	0F00  :   66;
+	0F01  :   00;
+	0F02  :   FE;
+	[0F03..0F04]  :   66;
+	0F05  :   62;
+	0F06  :   68;
+	0F07  :   78;
+	0F08  :   68;
+	0F09  :   62;
+	[0F0A..0F0B]  :   66;
+	0F0C  :   FE;
+	[0F0D..0F12]  :   00;
+	0F13  :   66;
+	0F14  :   00;
+	0F15  :   7C;
+	[0F16..0F17]  :   C6;
+	0F18  :   FE;
+	[0F19..0F1A]  :   C0;
+	0F1B  :   C6;
+	0F1C  :   7C;
+	[0F1D..0F22]  :   00;
 	0F23  :   30;
 	0F24  :   18;
 	0F25  :   0C;
