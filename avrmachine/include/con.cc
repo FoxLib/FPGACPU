@@ -39,7 +39,12 @@ public:
     void show(byte visible) {
 
         cursor_show = visible;
-        cursor(cursor_x, visible ? cursor_y : 25);
+
+        if (visible) {
+            cursor(cursor_x, cursor_y);
+        } else {
+            outp(CURSOR_Y, 25);
+        }
     }
 
     // Очистка экрана
@@ -60,6 +65,10 @@ public:
     void prn(byte x, byte y, char ch) {
 
         heap(vm, 0xF000);
+
+        if (x >= 80 && y >= 25)
+            return;
+
         int   z = (x<<1) + (y<<7) + (y<<5);
 
         vm[z]   = ch;
@@ -136,6 +145,22 @@ public:
         }
 
         return n;
+    }
+
+    // Рисование рамки
+    void frame(byte x, byte y, byte w, byte h, byte thick) {
+
+        byte x2 = x+w, y2 = y+h;
+        byte lfrt = thick ? 0xBA : 0xB3;
+        byte tpdn = thick ? 0xCD : 0xC4;
+
+        for (int i = y+1; i < y2; i++) { prn(x, i, lfrt); prn(x2, i, lfrt); }
+        for (int i = x+1; i < x2; i++) { prn(i, y, tpdn); prn(i, y2, tpdn); }
+
+        prn(x,  y,  thick ? 0xC9 : 0xDA);
+        prn(x,  y2, thick ? 0xC8 : 0xC0);
+        prn(x2, y,  thick ? 0xBB : 0xBF);
+        prn(x2, y2, thick ? 0xBC : 0xD9);
     }
 
     // Печать чисел
