@@ -29,4 +29,6 @@ reg [15:0] PC = 16'h0000;   // Регистр счетчика команд
 reg [ 2:0] alu      = 3'h0;
 reg [ 8:0] alu_res  = 8'h0;
 reg [ 7:0] alu_flag = 8'h0;
-reg [ 7:0] src      = 8'h0;
+
+wire [ 7:0] dst     = A;
+wire [ 7:0] src     = 0;

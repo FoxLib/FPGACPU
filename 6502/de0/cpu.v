@@ -16,14 +16,14 @@ always @(*) begin
 
     case (alu)
 
-        alu_ora: alu_res = A | src;
-        alu_and: alu_res = A & src;
-        alu_eor: alu_res = A ^ src;
-        alu_adc: alu_res = A + src + P[flag_carry];
-        alu_sta,
+        alu_ora: alu_res = dst | src;
+        alu_and: alu_res = dst & src;
+        alu_eor: alu_res = dst ^ src;
+        alu_adc: alu_res = dst + src + P[flag_carry];
+        alu_sta: alu_res = dst;
         alu_lda: alu_res = src;
-        alu_cmp: alu_res = A - src;
-        alu_sbc: alu_res = A - src - (~P[flag_carry]);
+        alu_cmp: alu_res = dst - src;
+        alu_sbc: alu_res = dst - src - (~P[flag_carry]);
 
     endcase
 
