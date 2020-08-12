@@ -1,0 +1,27 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Wed Aug 12 03:21:20 2020
+[*]
+[dumpfile] "/disk/dev/fpga/6502/de0/main.vcd"
+[dumpfile_mtime] "Wed Aug 12 03:20:29 2020"
+[dumpfile_size] 42342
+[savefile] "/disk/dev/fpga/6502/de0/main.gtkw"
+[timestart] 0
+[size] 1920 1031
+[pos] -1 -1
+*-6.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 243
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 299
+@28
+main.clk
+main.clk25
+@22
+main.i_data[7:0]
+main.o_address[15:0]
+main.o_data[7:0]
+@28
+main.wren
+[pattern_trace] 1
+[pattern_trace] 0
