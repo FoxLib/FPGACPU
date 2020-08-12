@@ -1,12 +1,22 @@
 parameter
-    alu_ora = 3'b000,
-    alu_and = 3'b001,
-    alu_eor = 3'b010,
-    alu_adc = 3'b011,
-    alu_sta = 3'b100,
-    alu_lda = 3'b101,
-    alu_cmp = 3'b110,
-    alu_sbc = 3'b111;
+
+    alu_ora = 4'b0000,
+    alu_and = 4'b0001,
+    alu_eor = 4'b0010,
+    alu_adc = 4'b0011,
+    alu_sta = 4'b0100,
+    alu_lda = 4'b0101,
+    alu_cmp = 4'b0110,
+    alu_sbc = 4'b0111,
+
+    alu_asl = 4'b1000,
+    alu_rol = 4'b1001,
+    alu_lsr = 4'b1010,
+    alu_ror = 4'b1011,
+    alu_bit = 4'b1100,
+    alu_flg = 4'b1101,
+    alu_dec = 4'b1110,
+    alu_inc = 4'b1111;
 
 parameter
     flag_carry = 0;
@@ -25,10 +35,5 @@ reg [15:0] PC = 16'h0000;   // Регистр счетчика команд
 // ---------------------------------------------------------------------
 // Состояние процессора
 // ---------------------------------------------------------------------
-
-reg [ 2:0] alu      = 3'h0;
-reg [ 8:0] alu_res  = 8'h0;
-reg [ 7:0] alu_flag = 8'h0;
-
-wire [ 7:0] dst     = A;
-wire [ 7:0] src     = 0;
+reg [ 7:0] opcode   = 0;
+reg [ 3:0] cycle    = 0;
