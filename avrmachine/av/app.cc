@@ -137,19 +137,24 @@ void APP::infinite() {
 
     while (1) {
 
+        int has_user_event = 0;
+            require_disp_update = 0;
+
         while (SDL_PollEvent(& event)) {
 
             switch (event.type) {
 
                 // Если нажато на крестик, то приложение будет закрыто
-                case SDL_QUIT:
+                case SDL_QUIT: {
                     return;
+                }
 
-                case SDL_MOUSEMOTION:
+                case SDL_MOUSEMOTION: {
 
                     mouse_x = event.motion.x;
                     mouse_y = event.motion.y;
                     break;
+                }
 
                 // Нажата мышь
                 case SDL_MOUSEBUTTONDOWN: {
@@ -371,8 +376,8 @@ void APP::infinite() {
                 // Вызывается по таймеру
                 case SDL_USEREVENT: {
 
+                    has_user_event = 1;
                     timer = (timer + 20);
-                    require_disp_update = 0;
 
                     flash_id++;
                     if (flash_id > 10) { flash_id = 0; flash ^= 1; require_disp_update = 1; }
@@ -421,13 +426,17 @@ void APP::infinite() {
 
                     require_halt = 0;
 
-                    // Запрос обновления экрана в режиме экрана (flash)
-                    if (require_disp_update && !ds_debugger && videomode == 0) { display_update(); }
-
-                    flip();
                     break;
                 }
             }
+        }
+
+        if (has_user_event) {
+
+            // Запрос обновления экрана в режиме экрана (flash)
+            if (require_disp_update && !ds_debugger && videomode == 0) display_update();
+
+            flip();
         }
 
         SDL_Delay(1);

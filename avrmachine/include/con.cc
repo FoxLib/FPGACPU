@@ -64,11 +64,10 @@ public:
     // Печать символа на экране
     void prn(byte x, byte y, char ch) {
 
-        heap(vm, 0xF000);
-
         if (x >= 80 && y >= 25)
             return;
 
+        heap(vm, 0xF000);
         int   z = (x<<1) + (y<<7) + (y<<5);
 
         vm[z]   = ch;
