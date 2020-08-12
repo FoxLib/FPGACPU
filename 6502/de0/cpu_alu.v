@@ -10,10 +10,10 @@ reg  [ 7:0] alu_flag = 8'h0;
 // ---------------------------------------------------------------------
 
 // Статусы ALU
+wire cin   =   P[0];
 wire zero  = ~|alu_res[7:0];    // Флаг нуля
 wire sign  =   alu_res[7];      // Знак
-wire carry =  alu_res[8];
-wire cin   =  P[0];
+wire carry =   alu_res[8];
 
 // Флаг переполнения
 wire adc_o = (dst[7] ^ src[7] ^ 1'b1) & (dst[7] ^ alu_res[7]);

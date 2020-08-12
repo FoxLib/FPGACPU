@@ -130,7 +130,7 @@ always @(posedge CLK) begin
 
         MS   <= `RST;
         WREQ <= 1'b0;
-        {AS, AM} <= 2'b00;       
+        {AS, AM} <= 2'b00;
 
     end
 
@@ -143,7 +143,7 @@ always @(posedge CLK) begin
             // Останов процессора для отладки
             if (DIN == 8'h02 /* KIL */) begin
 
-                AM <= 1'b0; 
+                AM <= 1'b0;
                 AS <= 1'b0;
 
             end else begin
@@ -158,7 +158,7 @@ always @(posedge CLK) begin
 
                     opcode <= 8'h00; // BRK / NMI
                     IRQ    <= 2'b01; // $FFFA
-                    ISBRK  <= 1'b0; 
+                    ISBRK  <= 1'b0;
                     MS     <= `IMP;
                     HOP    <= 1'b0;
                     LN     <= 0;
@@ -170,22 +170,23 @@ always @(posedge CLK) begin
                     IRQ    <= 2'b11; /* Для BRK -> $FFFE */
                     PC     <= PCINC; /* PC++ */
                     ISBRK  <= DIN == 8'h00;
+                    HOP    <= 1'b1;
 
                     casex (DIN)
 
-                        8'bxxx_000_x1: begin MS <= `NDX; HOP <= 1'b1; end // Indirect, X
+                        8'bxxx_000_x1: begin MS <= `NDX; end // Indirect, X
                         8'bxxx_010_x1, // Immediate
-                        8'b1xx_000_x0: begin MS <= `IMM; HOP <= 1'b1; end
-                        8'bxxx_100_x1: begin MS <= `NDY; HOP <= 1'b1; end // Indirect, Y
-                        8'bxxx_110_x1: begin MS <= `ABY; HOP <= 1'b1; end // Absolute, Y
-                        8'bxxx_001_xx: begin MS <= `ZP;  HOP <= 1'b1; end // ZeroPage
+                        8'b1xx_000_x0: begin MS <= `IMM; end
+                        8'bxxx_100_x1: begin MS <= `NDY; end // Indirect, Y
+                        8'bxxx_110_x1: begin MS <= `ABY; end // Absolute, Y
+                        8'bxxx_001_xx: begin MS <= `ZP;  end // ZeroPage
                         8'bxxx_011_xx, // Absolute
-                        8'b001_000_00: begin MS <= `ABS; HOP <= 1'b1; end
-                        8'b10x_101_1x: begin MS <= `ZPY; HOP <= 1'b1; end // ZeroPage, Y
-                        8'bxxx_101_xx: begin MS <= `ZPX; HOP <= 1'b1; end // ZeroPage, X
-                        8'b10x_111_1x: begin MS <= `ABY; HOP <= 1'b1; end // Absolute, Y
-                        8'bxxx_111_xx: begin MS <= `ABX; HOP <= 1'b1; end // Absolute, X
-                        8'bxxx_100_00: begin MS <= `REL; HOP <= 1'b1; end // Relative
+                        8'b001_000_00: begin MS <= `ABS; end
+                        8'b10x_101_1x: begin MS <= `ZPY; end // ZeroPage, Y
+                        8'bxxx_101_xx: begin MS <= `ZPX; end // ZeroPage, X
+                        8'b10x_111_1x: begin MS <= `ABY; end // Absolute, Y
+                        8'bxxx_111_xx: begin MS <= `ABX; end // Absolute, X
+                        8'bxxx_100_00: begin MS <= `REL; end // Relative
                         8'b0xx_010_10: begin MS <= `ACC; HOP <= 1'b0; end // Accumulator
                         default:       begin MS <= `IMP; HOP <= 1'b0; end
 
@@ -369,9 +370,9 @@ always @(posedge CLK) begin
 
     /* Отключение записи для DMA */
     else begin
-    
+
         WREQ <= 1'b0;
-    
+
     end
 end
 
@@ -515,13 +516,13 @@ end
 always @(posedge CLK) begin
 
     if (RESET) begin
-        
+
         A <= 8'h00;
         X <= 8'h00;
         Y <= 8'h00;
         S <= 8'h00;
         P <= 8'h00;
-        
+
     end
     else begin
 
@@ -539,7 +540,7 @@ always @(posedge CLK) begin
 
         /* Записать в регистр S результат */
         if (SW) S <= AR;
-    
+
     end
 
 end

@@ -1,0 +1,71 @@
+<pre>
+<p>| <strong>Directive</strong>     | <strong>From</strong>     | <strong>Compat</strong>     | <strong>Type</strong>     | <strong>Description</strong> |
+|:--------------|:---------|:-----------|:---------|:----------------
+| .add          | 0.4.1    | -          | Output   | Add constant value to output
+| .align        | 0.4.3    | -          | Output   | Align to power of 2 boundary
+| .bel          | 0.5.0    | -          | Data     | Big-endian longwords (4 bytes)
+| .belong       | 0.5.0    | -          | Data     | Big-endian longwords (4 bytes)
+| .bes          | 0.5.1    | -          | Data     | Big-endian words (2 bytes)
+| .beshort      | 0.5.1    | -          | Data     | Big-endian words (2 bytes)
+| .block        | 0.3      | LG         | Data     | Reserve a block of memory, don't initialise it
+| .by           | 0.5.0    | -          | Data     | Bytes (8-bit)
+| .byt          | 0.1      | all        | Data     | Bytes (8-bit)
+| .byte         | 0.1      | all        | Data     | Bytes (8-bit)
+| .cpu          | 0.5.0    | -          | CPU      |
+| .cset         | 0.1      | -          | Text     | Select charset translation
+| .dby          | 0.5.1    | LG         | Data     | Big-endian words (2 bytes)
+| .dbyte        | 0.5.1    | LG         | Data     | Big-endian words (2 bytes)
+| .echo         | 0.1<code>*</code>     | -          | Control  | Output text to terminal
+| .els          | 0.5.0    | LG         | Control  |
+| .else         | 0.5.0    | LG         | Control  |
+| .endif        | 0.5.0    | -          | Control  |
+| .endloc       | 0.3      | -          | Labels   | End local label block
+| .eor          | 0.4.1    | TA         | Output   | Exclusive-OR output with value
+| .file         | 0.4.3<code>*</code>   | LG         | Control  | Transfer control to assembly file
+| .if           | 0.5.0    |            | Control  |
+| .ifend        | 0.5.0    | LG         | Control  |
+| .ifeq         | 0.5.0    | LG         | Control  |
+| .ifequ        | 0.5.0    | LG         | Control  |
+| .ifeven       | -        | LG         | Control  |
+| .ifmi         | 0.5.0    | LG         | Control  |
+| .ifneg        | 0.5.0    | LG         | Control  |
+| .ifneq        | 0.5.0    | LG         | Control  |
+| .ifodd        | 0.5.0    | LG         | Control  |
+| .ifpl         | 0.5.0    | LG         | Control  |
+| .ifpos        | 0.5.0    | LG         | Control  |
+| .inc          | 0.1      | LG         | Control  | Include assembly file
+| .inc          | 0.4.1    | LG         | Control  | Include assembly file
+| .incbin       | 0.4.1    | -          | Output   | Output binary file into output stream
+| .include      | 0.1      | JCL        | Control  | Include assembly file
+| .incp00       | 0.4.1    | -          | Output   | Output PC64 P00 file into output stream
+| .incprg       | 0.4.1    | -          | Output   | Output Commodore PRG file into output stream
+| .lel          | 0.5.0    | -          | Data     | Little-endian longwords (4 bytes)
+| .lelong       | 0.5.0    | -          | Data     | Little-endian longwords (4 bytes)
+| .les          | 0.5.0    | -          | Data     | Little-endian words (2 bytes)
+| .leshort      | 0.5.0    | -          | Data     | Little-endian words (2 bytes)
+| .lib          | 0.5.0    | LG         | Control  | Include assembly file
+| .local        | 0.3      | -          | Labels   | Begin local label block
+| .long         | 0.5.0    | -          | Data     | Longwords (4 bytes)
+| .noundoc      | 0.1      | -          | CPU      | Disallow use of undocument opcodes
+| .nul          | 0.5.0    | JCL        | Text     | Null-terminated string
+| .null         | 0.4.3<code>*</code>   | JCL        | Text     | Null-terminated string
+| .org          | 0.1      | LG         | Assembly | Set origin position
+| .pad          | 0.3      | LG         | Data     | Reserve space, pad with NOPs
+| .print        | 0.5.1    | LG         | Control  | Output text to terminal
+| .shi          | 0.5.0    | JCL        | Text     | String with last byte OR'd with $80
+| .shift        | 0.4.3<code>*</code>   | JCL        | Text     | String with last byte OR'd with $80
+| .tas          | 0.5.0    | C64ASM     | Text     | Output text in ASCII
+| .tasc         | 0.1      | C64ASM     | Text     | Output text in ASCII
+| .text         | 0.5.0    | -          | Text     | Output text in current charset
+| .text         | 0.1      | -          | Text     | Output text in current charset
+| .tpe          | 0.1      | C64ASM     | Text     | Output text in PETSCII
+| .tpet         | 0.1      | C64ASM     | Text     | Output text in PETSCII
+| .tscrl        | 0.1      | C64ASM     | Text     | Output lower case screen text
+| .tscru        | 0.1      | C64ASM     | Text     | Output upper case screen text
+| .txt          | 0.1      | -          | Text     | Output text in current charset
+| .undoc        | 0.1      | -          | CPU      | Allow use of undocumented opcodes
+| .wd           | 0.5.0    | -          | Data     | Longwords (4 bytes)
+| .wor          | 0.4.3    | all        | Data     | Words (2 bytes)
+| .word         | 0.4.3    | all        | Data     | Words (2 bytes)
+| .ver          | 0.4.3    | -          | Control  | Prevent assembly when known incompatibilities are present
+</pre>
