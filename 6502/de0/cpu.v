@@ -23,12 +23,21 @@ always @(posedge clock) begin
         // Исполнение инструкции
         EXE: begin
 
-            read <= 1'b0;           // Сброс такта чтения адреса
+            read <= 1'b0;       // Сброс такта чтения адреса
+            bus  <= 1'b0;       // Переключить снова на PC
+
+            casex (opcode)
+
+                // Арифметико-логические операции базовые
+                8'b100_xxx_01: /* STA */ begin wren <= 1'b0;     end
+                8'b110_xxx_01: /* CMP */ begin P    <= alu_flag; end
+                8'bxxx_xxx_01: /* ALU */ begin P    <= alu_flag; A <= alu_res[7:0]; end
+
+            endcase
 
         end
 
     endcase
-
 
 end
 

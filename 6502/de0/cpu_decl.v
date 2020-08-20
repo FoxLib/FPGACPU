@@ -34,7 +34,14 @@ parameter
 
 parameter
 
-    JMP_ABS    = 8'h4C;
+    JMP_ABS     = 8'h4C;
+
+parameter
+
+    srcdin      = 0, dsta = 0,
+    srcx        = 1, dstx = 1,
+    srcy        = 2, dsty = 2,
+    srcz        = 3, dsts = 3;
 
 // ---------------------------------------------------------------------
 // Регистры
@@ -56,6 +63,8 @@ reg        implied      = 1'b0;     // Если 0, у инструкции не�
 reg        read_en      = 1'b0;     // Разрешение чтения из памяти
 reg        bus          = 1'b0;     // bus=0 (pc) bus=1 (cursor)
 reg [15:0] cursor       = 0;        // Текущий курсор
+reg [ 1:0] src_id       = 0;        // 0=i_data, 1=X, 2=Y
+reg [ 1:0] dst_id       = 0;        // 0=A, 1=X, 2=Y, 3=S
 
 // ---------------------------------------------------------------------
 // Алиасы
@@ -81,3 +90,9 @@ wire is_latency = cout
             || ({opcode[7],   opcode[2:0]} == 4'b0__110); // ASL|ROR|LSR|ROL
 
 wire [4:0]  lat_state = is_latency ? LAT : EXE;
+
+// Признак того, что сейчас выполняется последний цикл считывания
+wire        sta_en = (cstate == NDX+2) | (cstate == NDY+2)
+                   | (cstate == ABS+1) | (cstate == ABX+1) | (cstate == ABY+1)
+                   | (cstate == ZP)    | (cstate == ZPX)   | (cstate == ZPY);
+

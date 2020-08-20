@@ -3,8 +3,11 @@ INI: begin
 
     opcode  <= i_data;  // Записать опкод
     implied <= 1'b0;    // Операнд не Implied по умолчанию
-    read_en <= 1'b1;    // Читать все из памяти (кроме STA)
     cstate  <= EXE;     // По умолчанию следующий статус EXE
+    src_id  <= srcdin;  // Источник операнда - память
+    wren    <= 1'b0;    // Отключение записи в память
+    read_en <= 1'b1;    // Читать все из памяти (кроме STA)
+    o_data  <= A;       // Запись аккумулятора в память
 
     // Разобрать метод адресации
     casex (i_data)
@@ -26,8 +29,15 @@ INI: begin
 
     endcase
 
-    // Все методы адресации разрешить читать из PPU, кроме STA
-    casex (i_data) 8'b100_xxx_01, 8'b100_xx1_x0: read_en = 1'b0; endcase
+    // Подготовка цикла исполнения опкода
+    casex (i_data)
+
+        8'b100_xx_110: /* STX */ begin read_en <= 1'b0; o_data <= X; end
+        8'b100_xx_100: /* STY */ begin read_en <= 1'b0; o_data <= Y; end
+        8'b100_xxx_01: /* STA */ begin read_en <= 1'b0; end
+        8'bxxx_xxx_01: /* ALU */ begin alu     <= i_data[7:5]; end
+
+    endcase
 
 end
 
@@ -40,7 +50,7 @@ end
 // ---------------------------------------------------------------------
 NDX:   begin cstate <= cpunext; cursor <= i_data_x[7:0];   bus  <= 1'b1;    end
 NDX+1: begin cstate <= cpunext; cursor <= nextcursor[7:0]; tmp  <= i_data;  end
-NDX+2: begin cstate <= LAT;     cursor <= {i_data, tmp};   read <= read_en; end
+NDX+2: begin cstate <= LAT;     cursor <= {i_data, tmp};   read <= read_en; wren <= ~read_en; end
 
 // INDIRECT, Y ($00),Y
 // ---------------------------------------------------------------------
@@ -50,7 +60,7 @@ NDX+2: begin cstate <= LAT;     cursor <= {i_data, tmp};   read <= read_en; end
 // ---------------------------------------------------------------------
 NDY:   begin cstate <= cpunext;   cursor <= i_data;               bus  <= 1'b1; end
 NDY+1: begin cstate <= cpunext;   cursor <= nextcursor[7:0];      tmp  <= i_data_y[7:0]; cout <= i_data_y[8]; end
-NDY+2: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; read <= read_en; end
+NDY+2: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; read <= read_en;       wren <= ~read_en; end
 
 // ZP, ZPX, ZPY
 // ---------------------------------------------------------------------
@@ -61,9 +71,9 @@ NDY+2: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; read <= read_e
 //  uint8* m = (uint8*) 0
 //  uint8  o = m[(адрес + 0|X|Y) & 255]
 // ---------------------------------------------------------------------
-ZP:    begin cstate <= EXE; cursor <= i_data;        bus <= 1'b1; read <= read_en; end
-ZPX:   begin cstate <= LAT; cursor <= i_data_x[7:0]; bus <= 1'b1; read <= read_en; end
-ZPY:   begin cstate <= LAT; cursor <= i_data_y[7:0]; bus <= 1'b1; read <= read_en; end
+ZP:    begin cstate <= EXE; cursor <= i_data;        bus <= 1'b1; read <= read_en; wren <= ~read_en; end
+ZPX:   begin cstate <= LAT; cursor <= i_data_x[7:0]; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
+ZPY:   begin cstate <= LAT; cursor <= i_data_y[7:0]; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
 
 // ABSOLUTE
 // ---------------------------------------------------------------------
@@ -77,19 +87,19 @@ ABS+1: begin // Либо отправляется на jmp (abs), либо ис�
 
     if (opcode == JMP_ABS)
          begin cstate <= INI; pc     <= {i_data, tmp}; end
-    else begin cstate <= EXE; cursor <= {i_data, tmp}; bus <= 1'b1; read <= read_en; end
+    else begin cstate <= EXE; cursor <= {i_data, tmp}; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
 
 end
 
 // ABSOLUTE,X
 // ---------------------------------------------------------------------
 ABX:   begin cstate <= cpunext;   tmp    <= i_data_x[7:0];        pc  <= pc + 1; cout <= i_data_x[8]; end
-ABX+1: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en;     end
+ABX+1: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en; wren <= ~read_en;  end
 
 // ABSOLUTE,Y
 // ---------------------------------------------------------------------
 ABY:   begin cstate <= cpunext;   tmp    <= i_data_y[7:0];        pc  <= pc + 1; cout <= i_data_y[8]; end
-ABY+1: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en;     end
+ABY+1: begin cstate <= lat_state; cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en; wren <= ~read_en;  end
 
 // Задержка для симуляции тактов в 6502
-LAT:   cstate <= EXE;
+LAT:   begin cstate <= EXE; wren <= 1'b0; end

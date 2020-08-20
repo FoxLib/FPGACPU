@@ -7,6 +7,16 @@ wire [ 7:0] src; // Данные
 reg  [ 8:0] alu_res  = 8'h0;
 reg  [ 7:0] alu_flag = 8'h0;
 
+assign dst = dst_id == dsta ? A :
+             dst_id == dstx ? X :
+             dst_id == dsty ? Y : S;
+
+// Источник операндов
+assign src = src_id == srcdin ? i_data :
+             src_id == srcx   ? X :
+             src_id == srcy   ? Y :
+                                8'hFF;
+
 // ---------------------------------------------------------------------
 
 // Статусы ALU
