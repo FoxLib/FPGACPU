@@ -10,12 +10,10 @@
 // Аудиобуфер
 void audio_buffer(void* udata, unsigned char* stream, int len) {
 
-    int vol = 32;
-
     // Выдача данных
     for (int i = 0; i < 882; i++) {
 
-        int v = au_data_buffer[882*au_sdl_frame + i] ? vol : -vol;
+        int v = au_data_buffer[882*au_sdl_frame + i];
         stream[i] = v; // L+R
     }
 
@@ -32,8 +30,8 @@ void audio_buffer(void* udata, unsigned char* stream, int len) {
 // Инициализация и включение окна
 z80::z80(const char* caption) {
 
-    width  = 832;
-    height = 640;
+    width  = 1024;
+    height = 768 + 8; // "Бордюр"
 
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
     SDL_EnableUNICODE(1);
@@ -63,19 +61,19 @@ z80::z80(const char* caption) {
     color_fore = 0xffffff;
     color_back = 0;
 
-    border = 7;
-    marque = 1;
-    cycles = 0;
-    ticker = 0;
+    border  = 0;
+    marque  = 1;
+    cycles  = 0;
+    ticker  = 0;
     tstates = 0;
 
-    ds_start = 0;
-    ds_cursor = 0;
+    ds_start    = 0;
+    ds_cursor   = 0;
 
     // Процессор не запущен
-    started = 0;
-    rq_stop = 0;
-    rq_start = 0;
+    started     = 0;
+    rq_stop     = 0;
+    rq_start    = 0;
     enable_halt = 1;
 
     ds_viewmode = 0;
@@ -83,13 +81,13 @@ z80::z80(const char* caption) {
     bp_step_over = 0;
 
     // Регистры процессора
-    halt = 0;
-    reg.i = 0x00;
-    reg.r = 0x00;
-    reg.f = 0;
+    halt    = 0;
+    reg.i   = 0x00;
+    reg.r   = 0x00;
+    reg.f   = 0;
 
-    iff0 = 0;
-    iff1 = 0;
+    iff0    = 0;
+    iff1    = 0;
     delay_di = 0;
     delay_ei = 0;
 
@@ -405,7 +403,7 @@ void z80::handle() {
                                 // Определить переход
                                 if (auid != auip) {
 
-                                    au_data_buffer[ 882*au_z80_frame + au_z80_id ] = audio_out;
+                                    au_data_buffer[ 882*au_z80_frame + au_z80_id ] = (audio_out ? AUDIO_VOLUME : 0);
 
                                     auip = auid;
                                     au_z80_id++;
@@ -419,31 +417,6 @@ void z80::handle() {
                                     #ifdef DEBUGLOG
                                     fprintf(fp, "%d = %d\n", auid, audio_out);
                                     #endif
-                                }
-
-                                // Аппаратная реализация "плавающих полос" на бордере
-                                for (j = 0; j < cstates; j++) {
-
-                                    bx = 3*bdx; by = 3*bdy;
-
-                                    // Первичная проверка
-                                    if (bx <= 32 || bx >= 796 || by <= 32 || by > 604) {
-
-                                        // Рисование точки
-                                        for (a = 0; a < 3; a++)
-                                        for (b = 0; b < 3; b++) {
-
-                                            bx = 3*bdx + a;
-                                            by = 3*bdy + b;
-
-                                            if (bx < 32 || bx >= 800 || by < 32 || by >= 608) {
-                                                pset(bx, by, get_color(border));
-                                            }
-                                        }
-                                    }
-
-                                    // К следующей точке
-                                    bdx++; if (bdx > 277) { bdx = 0; bdy++; }
                                 }
 
                                 // Остановка на HALT (если разрешен)
@@ -472,14 +445,12 @@ void z80::handle() {
                         // Обновление только в режиме показа экрана
                         if (ds_viewmode == 1) {
 
-                            // В случае если остановка процессора, то обновлять border все равно
-                            if (halt == 1 && started) update_border();
-
                             repaint();
+                            update_border();
                         }
 
                         // На остановке очистить весь буфер
-                        if (halt || ds_viewmode == 0) { for (i = 0; i < 16*882; i++) au_data_buffer[i] = audio_out; }
+                        if (halt || ds_viewmode == 0) { for (i = 0; i < 16*882; i++) au_data_buffer[i] = 0; }
                     }
 
                     // Обнуление запросов на старт и стоп
@@ -671,19 +642,12 @@ int z80::get_color(int color) {
 void z80::update_border() {
 
     int i, j;
-
-    // Левая и правая граница
-    for (i = 0; i < height; i++)
-    for (j = 0; j < 32; j++) {
-        pset(j, i, get_color(border));
-        pset(j+768+32, i, get_color(border));
-    }
+    int cl = get_color(border);
 
     // Верхняя и нижняя граница
-    for (j = 32; j < width - 32; j++)
-    for (i = 0; i < 32; i++) {
-        pset(j, i, get_color(border));
-        pset(j, i+576+32, get_color(border));
+    for (j = 0; j < width; j++)
+    for (i = 0; i < 8; i++) {
+        pset(j, i + 768, get_color(border));
     }
 }
 
@@ -708,9 +672,9 @@ void z80::update_video_byte(int addr) {
             int cx    = 8*x + k;
             int color = get_video_pixel(cx, y);
 
-            for (int i = 0; i < 3; i++)
-            for (int j = 0; j < 3; j++)
-                pset(32+3*cx+j, 32+3*y+i, color);
+            for (int i = 0; i < 4; i++)
+            for (int j = 0; j < 4; j++)
+                pset(4*cx+j, 4*y+i, color);
         }
     }
     // Обновление атрибутов
@@ -721,9 +685,9 @@ void z80::update_video_byte(int addr) {
         int x = (addr & 31) * 8;
         int y = (addr >> 5) * 8;
 
-        for (int i = 0; i < 24; i++)
-        for (int j = 0; j < 24; j++) {
-            pset(32+3*x+j, 32+3*y+i, get_video_pixel(x+j/3, y+i/3));
+        for (int i = 0; i < 32; i++)
+        for (int j = 0; j < 32; j++) {
+            pset(4*x + j, 4*y + i, get_video_pixel(x + (j/4), y + (i/4)));
         }
     }
 }
@@ -736,9 +700,9 @@ int z80::get_video_pixel(int x, int y) {
 
     // Вычисление видеоадреса
     int ad = (x>>3)
-     |  ((y & 7) << 8)       // Y[0..2] в биты 8..10
-     | (((y>>3) & 7) << 5)   // Y[3..5] в биты 5..7
-     | (((y>>6) & 3) << 11); // Y[6..7] в биты 11..12
+         |  ((y & 7) << 8)       // Y[0..2] в биты 8..10
+         | (((y>>3) & 7) << 5)   // Y[3..5] в биты 5..7
+         | (((y>>6) & 3) << 11); // Y[6..7] в биты 11..12
 
     int ch = mem[ 0x4000 + ad ];
     int at = mem[ 0x5800 + (x>>3) | ((y & 0xF8) << 2) ];
@@ -753,30 +717,24 @@ int z80::get_video_pixel(int x, int y) {
     return get_color((ch & (1 << (7-k))) ? fr : bg);
 }
 
-// Обновить полностью весь дисплей (кратность 3x3 точки)
+// Обновить полностью весь дисплей
 void z80::redraw() {
 
     int i, j;
 
-    for (i = 0; i < 640; i++)
-    for (j = 0; j < 832; j++) {
+    for (i = 0; i < 768+8; i++)
+    for (j = 0; j < 1024; j++) {
 
-        if (j >= 32 && j < 800 && i >= 32 && i < 608) {
+        if (i < 768) {
 
-            int x = (j - 32) / 3,
-                y = (i - 32) / 3;
-
+            int x = (j/4), y = (i/4);
             pset(j, i, get_video_pixel(x, y));
-
         }
         // Здесь бордер можно перерисовывать только в режиме отладки
         else if (started == 0) {
             pset(j, i, get_color(border));
         }
-
     }
-
-    flip();
 }
 
 // Общий репаинт

@@ -772,6 +772,8 @@ void z80::do_out(int port, int data) {
 
         border    = data & 7;
         audio_out = (data & 0x10) ^ ((data & 0x08)<<1) ? 1 : 0;
+
+        update_border();
     }
 }
 

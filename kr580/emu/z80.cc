@@ -22,29 +22,21 @@ uint event_timer(uint interval, void *param) {
 
 int main(int argc, char** argv) {
 
-    z80* zx = new z80("ZX Spectrum Emulator");
+    z80* zx = new z80("Z80-совместимый процессор");
 
     // Инициализацировать таймер
     SDL_AddTimer(20, event_timer, NULL);
 
     // Загрузка ROM
     if (argc > 1) {
-
-        // Загрузка ROM
         if (strstr(argv[1], ".z80")) {
-
             zx->loadbin("rom48.bin", 0);
             zx->loadz80(argv[1]);
-
         } else {
-            zx->loadbin("screen.bin", 0x4000);
             zx->loadbin(argv[1], 0);
         }
-
     } else {
-
         zx->enable_halt = 0;
-        zx->loadbin("rom48.bin", 0);
     }
 
     zx->repaint();

@@ -4,6 +4,8 @@
 #define DSVM_DISASM  0
 #define DSVM_ZXSPECT 1
 
+#define AUDIO_VOLUME 32
+
 enum FLAGS_BIT {
 
     FLAG_S = 0x80,
@@ -70,7 +72,7 @@ protected:
     int border;
     int marque;
     int ticker;
-    int rows[8];    
+    int rows[8];
 
     /** Дизассемблер */
     int color_fore;
@@ -106,7 +108,7 @@ protected:
     char ds_opcode[16];
     char ds_operand[32];
     char ds_prefix[16];
-    int  ds_rowdis[48];     // Адреса в строках
+    int  ds_rowdis[64];     // Адреса в строках
     int  bp_rows[256];      // Точки прерываний
     int  bp_count;
     int  ds_start;          // Верхний адрес
@@ -152,7 +154,7 @@ public:
     void zx_kbd(int kp, int mode);
 
     void stop_cpu();
-    void start_cpu();   
+    void start_cpu();
 
     /** DISASM.CC */
     void ixy_disp(int prefix);

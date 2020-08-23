@@ -1,4 +1,6 @@
 
+        ld      a, 2
+        out     ($fe), a
         ld      c, $38 + $07
         call    CLS
         jr      $
