@@ -1,16 +1,25 @@
 CC=g++
-SDL=`sdl-config --cflags --libs`
-LIBS=-lSDL
-WARN=-Wall -Wno-strict-overflow -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable
-CFLAGS=-Icore -I. $(SDL) -O3 $(WARN)
-OBJ=disasm.o ui.o cpu.o kr580.o
+LB=basic.o disasm.o cpu.o z80.o
+SDL=`sdl-config --cflags --libs` -g -Wno-unused-result -Os
 
-all: $(OBJ)
-	$(CC) $(CFLAGS) $(OBJ) $(LIBS) -o kr580
-	./kr580 test/main.bin
+all: $(LB)
+	$(CC) $(LB) -lSDL -o z80
+	./z80
+	
+build: $(LB)
+	$(CC) $(LB) -lSDL -o z80
 
-%.o: %.cc kr580.h
-	$(CC) $(CFLAGS) $(LIBS) $< -c -o $@
+z80.o: z80.cc z80.h
+	$(CC) $(SDL) -c z80.cc -o z80.o
+
+basic.o: basic.cc z80.h
+	$(CC) $(SDL) -c basic.cc -o basic.o
+
+cpu.o: cpu.cc z80.h
+	$(CC) $(SDL) -c cpu.cc -o cpu.o
+
+disasm.o: disasm.cc disasm.h z80.h 
+	$(CC) $(SDL) -c disasm.cc -o disasm.o
 
 clean:
-	rm *.o kr580
+	rm -f *.o

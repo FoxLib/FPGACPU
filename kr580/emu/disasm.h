@@ -37,18 +37,24 @@ const char* ds_mnemonics[256] = {
     /* F8 */    "ret",   "ld",  "jp",   "ei",   "call", "$",    "cp",   "rst"
 };
 
-const char* ds_reg8[8] = {
+const char* ds_reg8[3*8] = {
     "b", "c", "d", "e", "h",   "l",   "(hl)", "a",
+    "b", "c", "d", "e", "ixh", "ixl", "$",    "a",
+    "b", "c", "d", "e", "iyh", "iyl", "$",    "a"
 };
 
-const char* ds_reg16[4] = {
+const char* ds_reg16[3*4] = {
 
     "bc", "de", "hl", "sp",
+    "bc", "de", "ix", "sp",
+    "bc", "de", "iy", "sp"
 };
 
-const char* ds_reg16af[4] = {
+const char* ds_reg16af[3*4] = {
 
     "bc", "de", "hl", "af",
+    "bc", "de", "ix", "af",
+    "bc", "de", "iy", "af"
 };
 
 const char* ds_cc[8] = {
