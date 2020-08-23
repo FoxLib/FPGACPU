@@ -3,6 +3,8 @@ all:
 	vvp main.qqq >> /dev/null
 vcd:
 	gtkwave main.vcd
+wave:
+	gtkwave main.gtkw
 mif:
 	date
 	quartus_cdb de0 -c de0 --update_mif

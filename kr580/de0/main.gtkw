@@ -1,20 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Oct 17 15:01:59 2018
+[*] Sun Aug 23 14:12:35 2020
 [*]
-[dumpfile] "/home/fox/de0/projects/01_KP580/main.vcd"
-[dumpfile_mtime] "Wed Oct 17 15:00:05 2018"
-[dumpfile_size] 86123
-[savefile] "/home/fox/de0/projects/01_KP580/main.gtkw"
+[dumpfile] "/disk/fox/dev/fpgacpu/kr580/de0/main.vcd"
+[dumpfile_mtime] "Sun Aug 23 14:08:52 2020"
+[dumpfile_size] 75544
+[savefile] "/disk/fox/dev/fpgacpu/kr580/de0/main.gtkw"
 [timestart] 0
-[size] 1920 942
+[size] 1920 1029
 [pos] -1 -1
-*-6.000000 260 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-8.000000 260 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
-[sst_width] 217
+[sst_width] 243
 [signals_width] 225
 [sst_expanded] 1
-[sst_vpaned_height] 275
+[sst_vpaned_height] 307
 @28
 main.clk
 main.clock_cpu
@@ -25,7 +25,6 @@ main.cpu.pc[15:0]
 main.cpu.pin_a[15:0]
 [color] 2
 main.cpu.pin_i[7:0]
-@23
 main.cpu.pin_o[7:0]
 @28
 [color] 7
@@ -47,7 +46,7 @@ main.cpu.opcode[7:0]
 -group_end
 @22
 main.cpu.cursor[15:0]
-@800200
+@c00200
 -REG
 @22
 [color] 5
@@ -82,7 +81,6 @@ main.cpu.f[7:0]
 (7)main.cpu.f[7:0]
 @1401200
 -group_end
-@1000200
 -REG
 @28
 main.cpu.reg_b
@@ -92,8 +90,9 @@ main.cpu.reg_n[2:0]
 main.cpu.reg_r8[7:0]
 main.cpu.reg_l[7:0]
 main.cpu.reg_u[7:0]
-@800200
+@c00201
 -ALU
+@c00200
 -Port
 @22
 main.cpu.pin_pa[7:0]
@@ -101,7 +100,7 @@ main.cpu.pin_pi[7:0]
 main.cpu.pin_po[7:0]
 @28
 main.cpu.pin_pw
-@1000200
+@1401200
 -Port
 @22
 [color] 7
@@ -126,7 +125,7 @@ main.cpu.alu_f[7:0]
 (7)main.cpu.alu_f[7:0]
 @1401200
 -group_end
-@1000200
+@1401201
 -ALU
 @28
 main.cpu.ei

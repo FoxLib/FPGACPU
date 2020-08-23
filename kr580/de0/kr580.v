@@ -77,17 +77,19 @@ assign pin_a = alt_a ? cursor : pc;
 reg  [ 3:0] t       = 0;        // Это t-state
 reg         halt    = 0;        // Процессор остановлен
 reg         ei      = 0;        // Enabled Interrupt
+reg         ei_     = 0;        // Это необходимо для EI+RET конструкции
 reg  [15:0] cursor  = 0;
 reg         alt_a   = 1'b0;     // =0 pc  =1 cursor
 
 /* Регистры общего назначения */
-reg  [15:0] bc = 16'h0076;
+reg  [15:0] bc = 16'h0000;
 reg  [15:0] de = 16'h0000;
-reg  [15:0] hl = 16'hAFC7;
+reg  [15:0] hl = 16'h0000;
 reg  [15:0] pc = 16'h0000;
 reg  [15:0] sp = 16'h0000;
-reg  [ 7:0] a  = 8'hEF;
-reg  [ 7:0] f  = 8'h00;
+reg  [ 7:0] a  = 8'h00;
+reg  [ 7:0] f  = 8'b01000000;
+                //  SZ A P C
 
 /* Сохраненный опкод */
 wire [ 7:0] opcode          = t ? opcode_latch : (pend_int ? 8'hFF : pin_i);
@@ -107,6 +109,8 @@ reg         ex_de_hl;
 
 /* Определение условий */
 wire        reg_hl  = (reg_n == 3'b110);
+wire [15:0] signext = {{8{pin_i[7]}}, pin_i[7:0]};
+wire [3:0]  cc      = {f[`CARRY], ~f[`CARRY], f[`ZERO], ~f[`ZERO]};
 wire        ccc     = (opcode[5:4] == 2'b00) & (f[`ZERO]   == opcode[3]) | // NZ, Z,
                       (opcode[5:4] == 2'b01) & (f[`CARRY]  == opcode[3]) | // NC, C,
                       (opcode[5:4] == 2'b10) & (f[`PARITY] == opcode[3]) | // PO, PE
@@ -145,7 +149,9 @@ always @(posedge pin_clk) begin
             opcode_latch <= pend_int ? 8'hFF : pin_i; /* RST $38 */
             pend_int     <= 1'b0;
 
-            // @todo ei <= ei_;
+            if (pend_int) // Отключить другие прерывания
+            begin ei <= 0; ei_ <= 0; end
+            else  ei <= ei_;
 
         end
 
@@ -158,9 +164,44 @@ always @(posedge pin_clk) begin
         halt     <= 1'b0;
         ex_de_hl <= 1'b0;
 
-        // @TODO Добавить DJNZ, JR...
-
         casex (opcode)
+
+            // 1 NOP
+            8'b00_000_000: pc <= pc + 1;
+
+            // 1/2 DJNZ *
+            8'b00_010_000: case (t)
+
+                0: begin
+
+                    reg_b <= `TRUE;
+                    reg_n <= `REG_B;
+                    reg_l <= bc[15:8] - 1;
+
+                    if (bc[15:8] == 8'h01) pc <= pc + 2;
+                    else begin t <= 1;     pc <= pc + 1; end
+
+                end
+                1: begin t <= 0; pc <= pc + 1 + signext; end
+
+            endcase
+
+            // 2 JR *
+            8'b00_011_000: case (t)
+
+                0: begin t <= 1; pc <= pc + 1; end
+                1: begin t <= 0; pc <= pc + 1 + signext; end
+
+            endcase
+
+            // 1|2 JR cc, *
+            8'b00_1xx_000: case (t)
+
+                0: begin if (cc[ opcode[4:3] ]) begin pc <= pc + 1; t <= 1; end
+                                           else begin pc <= pc + 2; end end
+                1: begin t <= 0; pc <= pc + 1 + signext; end
+
+            endcase
 
             // 3 LD r, i16
             8'b00_xx0_001: case (t)
@@ -427,7 +468,7 @@ always @(posedge pin_clk) begin
             /* 1 DI, EI */
             8'b11_11x_011: case (t)
 
-                0: begin pc <= pc + 1; ei <= opcode[3]; end
+                0: begin pc <= pc + 1; ei_ <= opcode[3]; end
 
             endcase
 

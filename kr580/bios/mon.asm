@@ -1,17 +1,19 @@
 
-        ld      sp, $FFFE
+        ld      c, $38 + $07
         call    CLS
+        jr      $
 
+; Процедура очистки экрана, в регистре C атрибут
 CLS:    ld      hl, $4000
         ld      b, $00
 L1:     ld      (hl), b
         inc     l
-        jp      nz, L1
+        jr      nz, L1
         inc     h
         ld      a, h
         cp      $5B
         ret     z
         cp      $58
-        jp      nz, L1
-        ld      b, $38
-        jp      L1
+        jr      nz, L1
+        ld      b, c
+        jr      L1
