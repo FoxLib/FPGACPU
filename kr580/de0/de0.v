@@ -136,7 +136,7 @@ kr580 u3(
     .pin_pi     (pin_pi),
     .pin_po     (pin_po),
     .pin_pw     (pin_pw),
-    
+
     /* Interrupt */
     .pin_intr   (pin_intr)
 );
@@ -146,6 +146,10 @@ kr580 u3(
 
 wire [12:0] video_addr;
 wire [ 7:0] video_data;
+reg  [ 2:0] video_border = 3'b000;
+
+// Сигнал на обновление бордюра
+always @(posedge clk25) begin if (pin_pa == 8'hFE && pin_pw) video_border <= pin_po[2:0]; end
 
 z80vid u4(
 
@@ -157,7 +161,7 @@ z80vid u4(
     .vs         (VGA_VS),
     .video_addr (video_addr),
     .video_data (video_data),
-    .border     (3'b111)
+    .border     (video_border)
 
 );
 

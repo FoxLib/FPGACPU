@@ -1,21 +1,40 @@
+rst0:   di
+        ld      a, $00
+        out     ($FE), a
+        jp      start
 
-        ld      a, 2
-        out     ($fe), a
-        ld      c, $38 + $07
+include "inc.display.asm"
+
+; ----------------------------------------------------------------------
+; Старт операционной системы
+; ----------------------------------------------------------------------
+
+start:  ld      c, $07
         call    CLS
+
+        ld      a, 'A'
+
+        ; Расчет позиции для шрифта
+        sub     a, $20
+        ld      h, 0
+        ld      l, a
+        ld      bc, fonts
+        add     hl, hl
+        add     hl, hl
+        add     hl, hl
+        add     hl, bc
+        ex      de, hl
+
+        ; Отрисовка
+        ld      hl, $4000
+        ld      b, 8
+M1:     ld      a, (de)
+        ld      (hl), a
+        inc     de
+        inc     h
+        djnz    M1
+
         jr      $
 
-; Процедура очистки экрана, в регистре C атрибут
-CLS:    ld      hl, $4000
-        ld      b, $00
-L1:     ld      (hl), b
-        inc     l
-        jr      nz, L1
-        inc     h
-        ld      a, h
-        cp      $5B
-        ret     z
-        cp      $58
-        jr      nz, L1
-        ld      b, c
-        jr      L1
+fonts:
+incbin  "font.fnt"
