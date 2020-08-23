@@ -6,8 +6,8 @@ INI: begin
     cstate  <= EXE;     // По умолчанию следующий статус EXE
     src_id  <= srcdin;  // Источник операнда - память
     wren    <= 1'b0;    // Отключение записи в память
-    read_en <= 1'b1;    // Читать все из памяти (кроме STA)
-    o_data  <= A;       // Запись аккумулятора в память
+    read_en <= 1'b1;    // Читать все из памяти (кроме STA|STX|STY)
+    o_data  <= 0;       // Ничего не писать
 
     // Разобрать метод адресации
     casex (i_data)
@@ -32,9 +32,9 @@ INI: begin
     // Подготовка цикла исполнения опкода
     casex (i_data)
 
-        8'b100_xx_110: /* STX */ begin read_en <= 1'b0; o_data <= X; end
         8'b100_xx_100: /* STY */ begin read_en <= 1'b0; o_data <= Y; end
-        8'b100_xxx_01: /* STA */ begin read_en <= 1'b0; end
+        8'b100_xx_110: /* STX */ begin read_en <= 1'b0; o_data <= X; end
+        8'b100_xxx_01: /* STA */ begin read_en <= 1'b0; o_data <= A; end
         8'bxxx_xxx_01: /* ALU */ begin alu     <= i_data[7:5]; end
 
     endcase
