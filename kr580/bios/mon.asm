@@ -24,7 +24,13 @@ M1:     ld      a, (de)
         inc     h
         djnz    M1
 
-        jr      $
+
+        ld      hl, $4020
+M2:
+        in      a, ($fe)
+        ld      (hl), a
+
+        jr      M2
 
 fonts:
 incbin  "font.fnt"

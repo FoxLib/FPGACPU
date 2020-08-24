@@ -737,16 +737,8 @@ int z80::ioread(int port) {
     int result = 0xFF;
 
     // Чтение из порта
-    if ((port & 0xff) == 0xfe) {
-
-        for (int i = 0; i < 8; i++) {
-
-            // Активирована строка
-            if ((port & (1 << (8 + i))) == 0) {
-                result &= rows[i];
-            }
-        }
-    }
+    if (port == 0xFE) result = port_kbd;
+    if (port == 0xFF) result = port_kbc;
 
     return result & 0xff;
 }

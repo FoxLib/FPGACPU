@@ -179,7 +179,7 @@ wire [7:0]  keyb_ascii;
 ps2keyboard KeyboardInterface(
 
     /* Физический интерфейс */
-    .CLOCK_50       (clk50),
+    .CLOCK_50       (CLOCK_50),
     .PS2_CLK        (PS2_CLK),
     .PS2_DAT        (PS2_DAT),
 
@@ -195,7 +195,7 @@ ps2at2ascii UnitPS2XT(
 );
 
 // Новые данные присутствуют
-always @(posedge clk50) begin
+always @(posedge CLOCK_50) begin
 
     if (ps2_data_clk) begin
 
