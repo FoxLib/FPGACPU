@@ -117,7 +117,7 @@ wire [15:0] pin_a;
 wire [ 7:0] pin_i;
 wire [ 7:0] pin_o;
 wire [ 7:0] pin_pa;
-wire [ 7:0] pin_pi;
+reg  [ 7:0] pin_pi;
 wire [ 7:0] pin_po;
 wire        pin_pw;
 wire        pin_intr;
@@ -164,5 +164,71 @@ z80vid u4(
     .border     (video_border)
 
 );
+
+// Клавиатура
+// ---------------------------------------------------------------------
+
+reg         kbd_reset       = 1'b0;
+wire [7:0]  ps2_data;
+wire        ps2_data_clk;
+reg         kb_up           = 1'b0;
+reg  [7:0]  kb_ch           = 8'h00; // Последняя клавиша
+reg  [7:0]  kb_cn           = 8'h00; // Количество нажатий
+wire [7:0]  keyb_ascii;
+
+ps2keyboard KeyboardInterface(
+
+    /* Физический интерфейс */
+    .CLOCK_50       (clk50),
+    .PS2_CLK        (PS2_CLK),
+    .PS2_DAT        (PS2_DAT),
+
+    /* Выход полученных */
+    .received_data      (ps2_data),
+    .received_data_en   (ps2_data_clk)
+);
+
+// Преобразование AT-кода
+ps2at2ascii UnitPS2XT(
+    .at (ps2_data),
+    .xt (keyb_ascii),
+);
+
+// Новые данные присутствуют
+always @(posedge clk50) begin
+
+    if (ps2_data_clk) begin
+
+        // Признак отпущенной клавиши
+        if (ps2_data == 8'hF0) begin
+            kb_up <= 1'b1;
+
+        end else begin
+
+            // 4 старших бита = E0..EF (спецкоды)
+            kb_ch <= keyb_ascii[7:4] == 4'b1110 ? keyb_ascii[7:0] : {kb_up, keyb_ascii[6:0]};
+            kb_cn <= kb_cn + 1'b1;
+            kb_up <= 1'b0;
+
+        end
+
+    end
+
+end
+
+// Маршрутизация портов
+// ---------------------------------------------------------------------
+
+always @(posedge clk25) begin
+
+    case (pin_pa)
+
+        8'hFE: pin_pi <= kb_ch;
+        8'hFF: pin_pi <= kb_cn;
+        default: pin_pi <= 8'hFF;
+
+    endcase
+
+end
 
 endmodule

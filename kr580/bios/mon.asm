@@ -13,17 +13,7 @@ start:  ld      c, $07
         call    CLS
 
         ld      a, 'A'
-
-        ; Расчет позиции для шрифта
-        sub     a, $20
-        ld      h, 0
-        ld      l, a
-        ld      bc, fonts
-        add     hl, hl
-        add     hl, hl
-        add     hl, hl
-        add     hl, bc
-        ex      de, hl
+        call    CPAD
 
         ; Отрисовка
         ld      hl, $4000

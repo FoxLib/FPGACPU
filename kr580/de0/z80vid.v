@@ -26,11 +26,11 @@ parameter horiz_whole   = 800;
 
 // Тайминги для вертикальной развертки (400)
 //                              // 400  480
-parameter vert_visible = 480;   // 400  480
-parameter vert_back    = 33;    // 35   33
+parameter vert_visible = 400;   // 400  480
+parameter vert_back    = 35;    // 35   33
 parameter vert_sync    = 2;     // 2    2
-parameter vert_front   = 10;    // 12   10
-parameter vert_whole   = 525;   // 449  525
+parameter vert_front   = 12;    // 12   10
+parameter vert_whole   = 449;   // 449  525
 
 // 640 (видимая область) + 16 (задний порожек) + 96 (синхронизация) + 48 (задний порожек)
 assign hs = x >= (horiz_visible + horiz_front) && x < (horiz_visible + horiz_front + horiz_sync);
@@ -46,7 +46,7 @@ reg [7:0] tmp_current_char;
 
 // Чтобы правильно начинались данные, нужно их выровнять
 wire [7:0] X = x[9:1] - 24;
-wire [7:0] Y = y[9:1] - 24;
+wire [7:0] Y = y[9:1] - 4;
 
 // Получаем текущий бит
 wire current_bit = current_char[ 7 ^ X[2:0] ];
@@ -149,7 +149,7 @@ always @(posedge clk) begin
     // Мы находимся в видимой области рисования
     if (x < horiz_visible && y < vert_visible) begin
 
-        if (x >= 64 && x < (64 + 512) && y >= 48 && y < (48 + 384)) begin
+        if (x >= 64 && x < (64 + 512) && y >= 8 && y < (8 + 384)) begin
 
             // Цвет вычисляется выше и зависит от
             // 1. Атрибута
