@@ -737,8 +737,13 @@ int z80::ioread(int port) {
     int result = 0xFF;
 
     // Чтение из порта
-    if (port == 0xFE) result = port_kbd;
-    if (port == 0xFF) result = port_kbc;
+    switch (port) {
+
+        case 0xF0: result = spi_data; break;    // Данные с порта
+        case 0xF1: result = 0x01;     break;    // Порт всегда готов
+        case 0xFE: result = port_kbd; break;
+        case 0xFF: result = port_kbc; break;
+    }
 
     return result & 0xff;
 }
@@ -760,12 +765,19 @@ int z80::do_in(int port) {
 // Вывод
 void z80::do_out(int port, int data) {
 
-    if ((port & 0xFF) == 0xFE) {
+    switch (port) {
 
-        border    = data & 7;
-        audio_out = (data & 0x10) ^ ((data & 0x08)<<1) ? 1 : 0;
+        case 0xF0: spi_write_data(data); break;
+        case 0xF1: spi_write_cmd(data); break;
+        // 0xF2: -- защелка, обязательна --
 
-        update_border();
+        case 0xFE:
+
+            border    = data & 7;
+            audio_out = (data & 0x10) ^ ((data & 0x08)<<1) ? 1 : 0;
+
+            update_border();
+            break;
     }
 }
 

@@ -119,6 +119,19 @@ protected:
     int ticker;
     int rows[8];
 
+    /** Интерфейс SPI */
+    int spi_phase;
+    int spi_arg;
+    int spi_crc;
+    int spi_command;
+    int spi_status;
+    int spi_st;         // Статус
+    int spi_data;
+    int spi_lba;
+    int spi_resp;
+    unsigned char spi_sector[512];
+    FILE* spi_file;
+
     /** Дизассемблер */
     int color_fore;
     int color_back;
@@ -211,6 +224,10 @@ public:
     int  ds_fetch_rel();
     int  disasm_line(int addr);
     void disasm_repaint();
+
+    /** SPI.CC */
+    void    spi_write_data(unsigned char data);
+    void    spi_write_cmd(unsigned char data);
 
     /** CPU.CC */
     void inc_r();
