@@ -3,37 +3,37 @@ rst0:   di
         out     ($FE), a
         jp      start
 
+; Печать символа A в режиме телетайпа
+rst8:   push    af
+        call    prnt
+        pop     af
+        ret
+        defb    0, 0
+
 include "inc.display.asm"
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
 ; ----------------------------------------------------------------------
 
-start:  ld      c, $07
-        call    CLS
-
-        ld      a, 'A'
-        call    CPAD
-
-        ; Отрисовка
+start:
+        ld      de, pi
         ld      hl, $4000
-        ld      b, 8
-M1:     ld      a, (de)
+
+L1:     ld      a, (de)
         ld      (hl), a
         inc     de
+        inc     l
+        jr      nz, L1
         inc     h
-        djnz    M1
+        ld      a, h
+        cp      $5b
+        jr      nz, L1
 
+        jr      $
 
-M2:     ld      hl, $4020
-        ld      a, $ff
-        in      a, ($fe)
-        ld      (hl), a
-        inc     h
-        ld      a, $0f
-        in      a, ($ff)
-        ld      (hl), a
-        jr      M2
+pi:
+        incbin  "pi2.bin"
 
 fonts:
-incbin  "font.fnt"
+        incbin  "font.fnt"

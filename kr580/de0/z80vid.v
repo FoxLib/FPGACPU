@@ -61,10 +61,10 @@ wire [2:0] src_color = flashed_bit ? current_attr[2:0] : current_attr[5:3];
 // Вычисляем цвет. Если бит 3=1, то цвет яркий, иначе обычного оттенка (половинной яркости)
 wire [11:0] color = {
 
-// Если current_attr[6] = 1, то переходим в повышенную яркость (в 2 раза)
-/* Красный цвет - это бит 1 */ src_color[1] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01,
-/* Зеленый цвет - это бит 2 */ src_color[2] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01,
-/* Синий цвет   - это бит 0 */ src_color[0] ? (current_attr[6] ? 4'hF : 4'h7) : 4'h01
+    // Если current_attr[6] = 1, то переходим в повышенную яркость (в 2 раза)
+    /* Красный цвет - это бит 1 */ src_color[1] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01,
+    /* Зеленый цвет - это бит 2 */ src_color[2] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01,
+    /* Синий цвет   - это бит 0 */ src_color[0] ? (current_attr[6] ? 4'hF : 4'hC) : 4'h01
 
 };
 
@@ -80,7 +80,7 @@ reg [23:0] timer;
 
 always @(posedge clk) begin
 
-    if (timer == 24'd3125000) begin /* полсекунды */
+    if (timer == 24'd12500000) begin /* полсекунды */
         timer <= 1'b0;
         flash <= flash ^ 1'b1; // мигать каждые 0.5 секунд
     end else begin

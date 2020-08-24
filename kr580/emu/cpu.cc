@@ -16,10 +16,7 @@ void z80::write_byte(int addr, int data) {
     data &= 0xff;
     addr &= 0xffff;
 
-    // Запись реальна не в ROM
-    if (addr >= 0x4000) {
-        mem[addr] = data;
-    }
+    mem[addr] = data;
 
     if (addr >= 0x4000 && addr < 0x5b00) {
         update_video_byte(addr);

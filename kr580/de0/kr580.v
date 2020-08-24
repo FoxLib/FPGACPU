@@ -355,7 +355,7 @@ always @(posedge pin_clk) begin
             /* 2 RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF */
             8'b00_xxx_111: case (t)
 
-                0: begin t <= 1; pc <= pc + 1; alu_m <= {1'b1, opcode[5:3]}; end
+                0: begin t <= 1; pc <= pc + 1; op1 <= a; alu_m <= {1'b1, opcode[5:3]}; end
                 1: begin t <= 0; reg_b <= 1; reg_l <= alu_r; reg_n <= `REG_A; f <= alu_f; end
 
             endcase
