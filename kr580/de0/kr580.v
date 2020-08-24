@@ -621,7 +621,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
                 /* 1 */ 1'b1,
-                /* C */ alu_r[8]
+                /* C */ 1'b0
 
             };
 
@@ -640,7 +640,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
                 /* 1 */ 1'b1,
-                /* C */ alu_r[8]
+                /* C */ 1'b0
 
             };
 
@@ -659,7 +659,7 @@ always @* begin
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
                 /* 1 */ 1'b1,
-                /* C */ alu_r[8]
+                /* C */ 1'b0
 
             };
 
