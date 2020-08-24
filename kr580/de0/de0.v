@@ -216,6 +216,53 @@ always @(posedge CLOCK_50) begin
 
 end
 
+
+// ---------------------------------------------------------------------
+// Контроллер SPI
+// ---------------------------------------------------------------------
+
+reg         spi_sent;       // Такт SPI
+reg  [1:0]  spi_cmd;        // Команда
+reg  [7:0]  spi_out;        // Отправка данных
+wire [1:0]  spi_st;         // Статус SPI
+wire [7:0]  spi_din;        // Приняты данные
+
+// Сигналы для SPI
+always @(posedge clk25) begin
+
+    if (pin_pw) begin
+
+        case (pin_pa)
+
+            8'hF0: spi_out  <= pin_po[7:0];
+            8'hF1: spi_cmd  <= pin_po[1:0];
+            8'hF2: spi_sent <= pin_po[  0];
+
+        endcase
+
+    end
+
+end
+
+spi UnitSPI(
+
+    // 50 Mhz
+    .clock50    (CLOCK_50),
+
+    // Физический интерфейс
+    .spi_cs     (SD_DATA[3]),  // Выбор чипа
+    .spi_sclk   (SD_CLK),      // Тактовая частота
+    .spi_miso   (SD_DATA[0]),  // Входящие данные
+    .spi_mosi   (SD_CMD),      // Исходящие
+
+    // Интерфейс
+    .spi_sent   (spi_sent),    // =1 Сообщение отослано на spi
+    .spi_cmd    (spi_cmd),     // Команда
+    .spi_din    (spi_din),     // Принятое сообщение
+    .spi_out    (spi_out),     // Сообщение на отправку
+    .spi_st     (spi_st)       // Статус bit 0: timeout (1); bit 1: chip select 0/1
+);
+
 // Маршрутизация портов
 // ---------------------------------------------------------------------
 
@@ -223,8 +270,10 @@ always @(*) begin
 
     case (pin_pa)
 
-        8'hFE: pin_pi = kb_ch;
-        8'hFF: pin_pi = kb_cn;
+        8'hF0: pin_pi = spi_din;        // Принятые данные SPI
+        8'hF1: pin_pi = spi_st;         // Статус SPI
+        8'hFE: pin_pi = kb_ch;          // Принятые данные KBD
+        8'hFF: pin_pi = kb_cn;          // Счетчик клавиш
         default: pin_pi = 8'hFF;
 
     endcase
