@@ -219,13 +219,13 @@ end
 // Маршрутизация портов
 // ---------------------------------------------------------------------
 
-always @(posedge clk25) begin
+always @(*) begin
 
     case (pin_pa)
 
-        8'hFE: pin_pi <= kb_ch;
-        8'hFF: pin_pi <= kb_cn;
-        default: pin_pi <= 8'hFF;
+        8'hFE: pin_pi = kb_ch;
+        8'hFF: pin_pi = kb_cn;
+        default: pin_pi = 8'hFF;
 
     endcase
 

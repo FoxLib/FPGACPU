@@ -25,11 +25,14 @@ M1:     ld      a, (de)
         djnz    M1
 
 
-        ld      hl, $4020
-M2:
+M2:     ld      hl, $4020
+        ld      a, $ff
         in      a, ($fe)
         ld      (hl), a
-
+        inc     h
+        ld      a, $0f
+        in      a, ($ff)
+        ld      (hl), a
         jr      M2
 
 fonts:
