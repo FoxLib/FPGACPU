@@ -13,6 +13,7 @@ rst8:   push    af
 include "inc.display.asm"
 include "inc.math.asm"
 include "inc.stdio.asm"
+include "inc.spi.asm"
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
@@ -22,18 +23,13 @@ start:
         ld      a, $07
         call    cls
 
-        ; ... копирнуть ...
-        ld      de, 12345
-        exx
-        ld      de, 65535
-        exx
+        call    sdinit
 
-        call    pintb
-        call    prns
-
-        exx
-        call    pintb
-        call    prns
+        ld      d, b
+        ld      a, (sd_type)
+        ld      e, a
+        call    itoa
+        call    print
 
         jr      $
 

@@ -737,7 +737,7 @@ int z80::ioread(int port) {
     switch (port) {
 
         case 0xF0: result = spi_data; break;    // Данные с порта
-        case 0xF1: result = 0x01;     break;    // Порт всегда готов
+        case 0xF1: result = 0x00;     break;    // Порт всегда готов BSY=0
         case 0xFE: result = port_kbd; break;
         case 0xFF: result = port_kbc; break;
     }
@@ -762,7 +762,7 @@ int z80::do_in(int port) {
 // Вывод
 void z80::do_out(int port, int data) {
 
-    switch (port) {
+    switch (port & 0xFF) {
 
         case 0xF0: spi_write_data(data); break;
         case 0xF1: spi_write_cmd(data); break;

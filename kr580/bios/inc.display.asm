@@ -145,12 +145,12 @@ p3m1:   ld      (cursor_xy), hl
 ; Печать строки из DE в режиме телетайпа
 ; ----------------------------------------------------------------------
 
-prns:   ld      a, (de)
+print:  ld      a, (de)
         inc     de
         and     a
         ret     z
         call    prnc
-        jr      prns
+        jr      print
 
 ; ШРИФТЫ
 fonts:  incbin  "font.fnt"
