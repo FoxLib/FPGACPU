@@ -22,11 +22,15 @@ include "inc.spi.asm"
 start:
         ld      a, $07
         call    cls
-
         call    sdinit
 
-        ld      d, b
-        ld      a, (sd_type)
+;halt
+        ld      hl, 0x0000
+        ld      de, 0x0000
+        ld      bc, 0x4000
+        call    spiread
+
+        ld      d, 0
         ld      e, a
         call    itoa
         call    print

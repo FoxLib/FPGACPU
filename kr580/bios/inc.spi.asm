@@ -4,6 +4,7 @@
 ;   #1 Нет ответа от команды
 ;   #2 От команды не получен BSY=0
 ;   #3 Неправильный ответ от IDLE инициализации
+;   #4 Ошибка чтения/записи
 ;
 ; ТИП КАРТЫ
 ; =========
@@ -14,6 +15,8 @@
 ;   #3 SDHC
 
 sd_type:    defb    0               ; Тип карты
+sd_lba:     defb    0, 0, 0, 0
+sd_start:   defb    0, 0            ; Куда писать
 
 ; ----------------------------------------------------------------------
 ; Отослать команду A на SPI и ожидать пока устройство не закончит работу
@@ -48,6 +51,12 @@ spiput:     push    af
             out     ($f0), a        ; Выставить данные
             ld      a, 1
             call    spicmd          ; Отослать команду
+            pop     af
+            ret
+
+spidis:     push    af              ; Отключение чипа
+            ld      a, 3
+            call    spicmd
             pop     af
             ret
 
@@ -148,9 +157,11 @@ sdinit:
             call    spicmd
 
             ; Тест на возможность войти в IDLE (CMD0, ARG=0)
-            ld      a,  0
-            ld      hl, 0
-            ld      de, 0
+            xor     a
+            ld      h, a
+            ld      l, a
+            ld      d, a
+            ld      e, a
             call    spicommand
             and     a
             jp      nz, _siend          ; Статус должен быть 0
@@ -231,14 +242,69 @@ S10:        ; Проверка наличия SDHC
             call    spiget              ; Удалить остатки
             call    spiget
             call    spiget
-            ld      a, 3            ; Это SDHC
+            ld      a, 3                ; Это SDHC
             ld      (sd_type), a
 S11:        xor     a
-            jr      _siend          ; Все ОК
+            jr      _siend              ; Все ОК
 _sierr2:    ld      a, 3
-_siend:     ; Выход с ошибкой или без. Отключить чип.
-            push    af
-            ld      a, 3
-            call    spicmd
-            pop     af
+_siend:     call    spidis              ; Отсоединить чип
             ret
+
+; ----------------------------------------------------------------------
+; Чтение сектора с устройства, номер (HL:DE) по адресу BC
+; ----------------------------------------------------------------------
+
+spiread:    push    hl
+            ld      h, b
+            ld      l, c
+            ld      (sd_start), hl
+            pop     hl
+
+            ; Проверка на таймаут
+            in      a, ($f1)
+            and     $02
+            jr      z, S12
+
+            ; Запуск переинициализации диска
+            push    de
+            push    hl
+            call    sdinit
+            pop     hl
+            pop     de
+            and     a
+            jr      nz, _err1
+
+            ; Отослать команду поиска блока
+S12:        ld      a, 17       ; SD_CMD17
+            call    spicommand
+            and     a
+            jr      nz, _err1   ; Ошибка?
+
+            ; Ожидание ответа от SD
+            ld      bc, 4096
+S13:        call    spiget
+            cp      $ff
+            jr      nz, S14
+            dec     bc
+            ld      a, b
+            or      c
+            jr      nz, S13
+            jr      _err2           ; Ответа не дождались
+S14:        cp      $fe
+            jr      nz, _err2       ; Ответ не $FE
+
+            ; Чтение данных
+            ld      hl, (sd_start)
+            ld      bc, 512
+S15:        call    spiget
+            ld      (hl), a
+            inc     hl
+            dec     bc
+            ld      a, b
+            or      c
+            jr      nz, S15
+            jr      _err1
+_err2:      ld      a, 4
+_err1:      call    spidis
+            ret
+
