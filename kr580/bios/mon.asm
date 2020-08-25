@@ -24,9 +24,8 @@ start:
         call    cls
         call    sdinit
 
-;halt
         ld      hl, 0x0000
-        ld      de, 0x0000
+        ld      de, 0x0002
         ld      bc, 0x4000
         call    spiread
 
