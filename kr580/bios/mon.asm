@@ -19,11 +19,9 @@ include "inc.math.asm"
 
 start:
 
-        halt
         ld      de, $8000
         ld      bc, 15
-        call    div16
-        halt
+        ;call    div16u
 
 ; ---------------------------------------------
 
