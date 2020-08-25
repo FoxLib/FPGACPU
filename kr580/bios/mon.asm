@@ -12,36 +12,19 @@ rst8:   push    af
 
 include "inc.display.asm"
 include "inc.math.asm"
+include "inc.stdio.asm"
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
 ; ----------------------------------------------------------------------
 
 start:
+        ld      a, $07
+        call    cls
 
-        ld      de, $8000
-        ld      bc, 15
-        ;call    div16u
-
-; ---------------------------------------------
-
-        ld      de, pi
-        ld      hl, $4000
-
-L1:     ld      a, (de)
-        ld      (hl), a
-        inc     de
-        inc     l
-        jr      nz, L1
-        inc     h
-        ld      a, h
-        cp      $5b
-        jr      nz, L1
-
+        ld      de, 12345
+        call    pintb
+        call    prns
         jr      $
 
-pi:
-        incbin  "pi2.bin"
-
-fonts:
-        incbin  "font.fnt"
+; ---------------------------------------------

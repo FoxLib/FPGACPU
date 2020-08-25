@@ -151,3 +151,6 @@ prns:   ld      a, (de)
         ret     z
         call    prnt
         jr      prns
+
+; ШРИФТЫ
+fonts:  incbin  "font.fnt"
