@@ -58,9 +58,6 @@ module kr580(
 `define REG_HL      2
 `define REG_SP      3
 
-`define FALSE       1'b0
-`define TRUE        1'b1
-
 initial begin
 
     pin_enw = 0;
@@ -82,13 +79,13 @@ reg  [15:0] cursor  = 0;
 reg         alt_a   = 1'b0;     // =0 pc  =1 cursor
 
 /* Регистры общего назначения */
-reg  [15:0] bc = 16'h0000;
-reg  [15:0] de = 16'h0000;
-reg  [15:0] hl = 16'h0000;
+reg  [15:0] bc = 16'h0000;      reg [15:0] bc_ = 16'h0000;
+reg  [15:0] de = 16'h0000;      reg [15:0] de_ = 16'h0000;
+reg  [15:0] hl = 16'h0000;      reg [15:0] hl_ = 16'h0000;
 reg  [15:0] pc = 16'h0000;
 reg  [15:0] sp = 16'h0000;
-reg  [ 7:0] a  = 8'h00;
-reg  [ 7:0] f  = 8'b01000000;
+reg  [ 7:0] a  = 8'h00;         reg [ 7:0] a_ = 8'h00;
+reg  [ 7:0] f  = 8'b01000000;   reg [ 7:0] f_ = 8'h00;
                 //  SZ A P C
 
 /* Сохраненный опкод */
@@ -103,8 +100,12 @@ reg         reg_w = 1'b0;       // Сигнал на запись 16 битно�
 reg  [ 2:0] reg_n = 3'h0;       // Номер регистра
 reg  [ 7:0] reg_l = 8'h00;      // Что писать
 reg  [ 7:0] reg_u = 8'h00;      // Что писать
+reg  [ 7:0] reg_f = 8'h00;      // Сохранение флага
 reg  [ 7:0] reg_r8;             // reg_r8  = regs8 [ reg_n ]
 reg  [15:0] reg_r16;            // reg_r16 = regs16[ reg_n ]
+reg         fw;                 // Писать флаги
+reg         exx;
+reg         ex_af;
 reg         ex_de_hl;
 
 /* Определение условий */
@@ -162,19 +163,27 @@ always @(posedge pin_clk) begin
         pin_enw  <= 1'b0;
         pin_pw   <= 1'b0;
         halt     <= 1'b0;
+        fw       <= 1'b0;
+        exx      <= 1'b0;
         ex_de_hl <= 1'b0;
+        ex_af    <= 1'b0;
 
         casex (opcode)
 
             // 1 NOP
             8'b00_000_000: pc <= pc + 1;
 
+            // 1 EX AF, AF'
+            // 1 EXX
+            8'b00_001_000: begin pc <= pc + 1; ex_af <= 1'b1; end
+            8'b11_011_001: begin pc <= pc + 1; exx   <= 1'b1; end
+
             // 1/2 DJNZ *
             8'b00_010_000: case (t)
 
                 0: begin
 
-                    reg_b <= `TRUE;
+                    reg_b <= 1'b1;
                     reg_n <= `REG_B;
                     reg_l <= bc[15:8] - 1;
 
@@ -208,7 +217,7 @@ always @(posedge pin_clk) begin
 
                 0: begin pc <= pc + 1; t <= 1; reg_n <= opcode[5:4]; end
                 1: begin pc <= pc + 1; t <= 2; reg_l <= pin_i; end
-                2: begin pc <= pc + 1; t <= 0; reg_u <= pin_i; reg_w <= `TRUE; end
+                2: begin pc <= pc + 1; t <= 0; reg_u <= pin_i; reg_w <= 1'b1; end
 
             endcase
 
@@ -220,6 +229,7 @@ always @(posedge pin_clk) begin
                     pc        <= pc + 1;
                 end
                 1: begin t <= 2;
+                    reg_f     <= f;
                     reg_n     <= {opcode[5:4], 1'b0};
                     op1       <= hl[ 7:0];
                     op2       <= reg_r8;
@@ -229,18 +239,20 @@ always @(posedge pin_clk) begin
                     op1       <= hl[15:8];
                     op2       <= reg_r8;
                     reg_n     <= `REG_L;
-                    reg_b     <= `TRUE;
+                    reg_b     <= 1'b1;
                     reg_l     <= alu_r[7:0];
-                    f[`CARRY] <= alu_f[`CARRY];
                     alu_m     <= `ALU_ADC;
+                    reg_f[0]  <= alu_f[`CARRY];
+                    fw        <= 1'b1;
                 end
                 3: begin t <= 0;
                     reg_n     <= `REG_H;
                     reg_l     <= alu_r[7:0];
-                    reg_b     <= `TRUE;
-                    f[`AUX]   <= alu_f[`AUX];
-                    f[`CARRY] <= alu_f[`CARRY];
-                    f[`SIGN]  <= alu_f[`SIGN];
+                    reg_b     <= 1'b1;
+                    fw        <= 1'b1;
+                    reg_f[`AUX]   <= alu_f[`AUX];
+                    reg_f[`CARRY] <= alu_f[`CARRY];
+                    reg_f[`SIGN]  <= alu_f[`SIGN];
                 end
 
             endcase
@@ -335,10 +347,11 @@ always @(posedge pin_clk) begin
                 2: begin t <= 3;
                     pin_enw <=  reg_hl;
                     reg_b   <= ~reg_hl;
+                    reg_f   <= alu_f;
                     reg_l   <= alu_r;
                     pin_o   <= alu_r;
-                    f       <= alu_f;
-                    alt_a   <= 1; end
+                    fw      <= 1'b1;
+                    alt_a   <= 1'b1; end
                 3: begin t <= 0; end
 
             endcase
@@ -356,7 +369,7 @@ always @(posedge pin_clk) begin
             8'b00_xxx_111: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; op1 <= a; alu_m <= {1'b1, opcode[5:3]}; end
-                1: begin t <= 0; reg_b <= 1; reg_l <= alu_r; reg_n <= `REG_A; f <= alu_f; end
+                1: begin t <= 0; reg_b <= 1; reg_l <= alu_r; reg_n <= `REG_A; fw <= 1'b1; reg_f <= alu_f; end
 
             endcase
 
@@ -376,7 +389,7 @@ always @(posedge pin_clk) begin
 
                 0: begin t <= 1; op1   <= a; pc <= pc + 1; reg_n <= opcode[2:0]; alt_a <= 1; cursor <= hl; end
                 1: begin t <= 2; op2   <= reg_hl ? pin_i : reg_r8; alu_m <= opcode[5:3]; end
-                2: begin t <= 0; reg_b <= (alu_m != 3'b111); reg_n <= `REG_A; reg_l <= alu_r; f <= alu_f; end
+                2: begin t <= 0; reg_b <= (alu_m != 3'b111); reg_n <= `REG_A; reg_l <= alu_r; fw <= 1'b1; reg_f <= alu_f; end
 
             endcase
 
@@ -398,7 +411,7 @@ always @(posedge pin_clk) begin
                 2: begin t <= 3; cursor <= cursor + 1;              reg_u <= pin_i;
 
                          if (opcode[5:4] == 2'b11) /* POP AF */
-                              begin reg_n <= `REG_A;      reg_b <= 1; reg_l <= pin_i; f <= reg_l; end
+                              begin reg_n <= `REG_A;      reg_b <= 1; reg_l <= pin_i; fw <= 1'b1; reg_f <= reg_l; end
                          else begin reg_n <= opcode[5:4]; reg_w <= 1; end
                 end
                 3: begin t <= 0; reg_n <= `REG_SP; reg_w <= 1; {reg_u, reg_l} <= cursor; end
@@ -501,7 +514,7 @@ always @(posedge pin_clk) begin
 
                 0: begin t <= 1; pc <= pc + 1; alu_m <= opcode[5:3]; op1 <= a; end
                 1: begin t <= 2; pc <= pc + 1; op2 <= pin_i; end
-                2: begin t <= 0; reg_l <= alu_r; f <= alu_f; reg_n <= `REG_A; reg_b <= (alu_m != 3'b111); end
+                2: begin t <= 0; reg_l <= alu_r; fw <= 1'b1; reg_f <= alu_f; reg_n <= `REG_A; reg_b <= (alu_m != 3'b111); end
 
             endcase
 
@@ -873,14 +886,10 @@ end
 // Запись в регистры
 always @(negedge pin_clk) begin
 
-    if (ex_de_hl) begin
-
-        de <= hl;
-        hl <= de;
-
-    end
-    else
-    if (reg_w) begin
+    if   (ex_de_hl) begin de <= hl; hl <= de; end
+    else if (ex_af) begin {a, f} <= {a_, f_}; {a_, f_} <= {a, f}; end
+    else if (exx)   begin {bc, de, hl} <= {bc_, de_, hl_}; {bc_, de_, hl_} <= {bc, de, hl}; end
+    else if (reg_w) begin
 
         case (reg_n)
 
@@ -892,8 +901,7 @@ always @(negedge pin_clk) begin
         endcase
 
     end
-    else
-    if (reg_b) begin
+    else if (reg_b) begin
 
         case (reg_n)
 
@@ -909,6 +917,9 @@ always @(negedge pin_clk) begin
         endcase
 
     end
+
+    // Сохранение флагов
+    if (fw) f <= reg_f;
 
 end
 

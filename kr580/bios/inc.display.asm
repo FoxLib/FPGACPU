@@ -109,7 +109,7 @@ setat:  push    af
 ; Печать символа A в режиме телетайпа с прокруткой вверх
 ; ----------------------------------------------------------------------
 
-prnt:   push    bc
+prnc:   push    bc
         push    de
         push    hl
 
@@ -149,7 +149,7 @@ prns:   ld      a, (de)
         inc     de
         and     a
         ret     z
-        call    prnt
+        call    prnc
         jr      prns
 
 ; ШРИФТЫ

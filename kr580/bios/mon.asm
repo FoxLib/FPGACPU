@@ -5,7 +5,7 @@ rst0:   di
 
 ; Печать символа A в режиме телетайпа
 rst8:   push    af
-        call    prnt
+        call    prnc
         pop     af
         ret
         defb    0, 0
@@ -22,9 +22,19 @@ start:
         ld      a, $07
         call    cls
 
+        ; ... копирнуть ...
         ld      de, 12345
+        exx
+        ld      de, 65535
+        exx
+
         call    pintb
         call    prns
+
+        exx
+        call    pintb
+        call    prns
+
         jr      $
 
 ; ---------------------------------------------
