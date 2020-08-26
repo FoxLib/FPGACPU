@@ -154,18 +154,52 @@ print:      ld      a, (de)
 
 ; ----------------------------------------------------------------------
 ; Обработчик прерывания RST #10
+; ----------------------------------------------------------------------
 ; $00 Положение курсора Y,X => HL
 ; $01 Установить курсор HL => Y,X
+; $02 CLS(B=color)
+; $03 Печать строки DE
+; $04 Конвертация числа DE -> строка DE
+; $05 Чтение сектора HL:DE в  BC
+; $06 Запись сектора HL:DE из BC
+; $07 16-битное деление DE на BC, DE-рез-т, HL-остаток
 ; ----------------------------------------------------------------------
 
-rst10:      and     a
+rst10:      cp      $08
+            jr      nc, rst10n1         ; Просмотреть [08..0F]
+            and     a
             jr      z, r10_getxy        ; 00 Get cursor Y,X
             dec     a
-            jr      z, r10_setxy        ; 02 Set cursor X
+            jr      z, r10_setxy        ; 01 Set cursor X
+            dec     a
+            jr      z, r10_cls          ; 02 CLS, B-color
+            dec     a
+            jr      z, r10_print        ; 03 Печать из DE
+            dec     a
+            jr      z, r10_itoa         ; 04 char* itoa(int)
+            dec     a
+            jr      z, r10_read         ; 05 READ
+            dec     a
+            jr      z, r10_write        ; 06 WRITE
+            call    div16u              ; 07 DIVIDE
+rst10n1:    sub     $08
             ret
+
+; Запуск процедур API
 r10_getxy:  ld      hl, (cursor_xy)
             ret
 r10_setxy:  ld      (cursor_xy), hl
+            ret
+r10_cls:    ld      a, b
+            call    cls
+            ret
+r10_print:  call    print
+            ret
+r10_itoa:   call    itoa
+            ret
+r10_read:   call    read
+            ret
+r10_write:  call    write
             ret
 
 ; ШРИФТЫ

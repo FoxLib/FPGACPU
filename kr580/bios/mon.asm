@@ -1,32 +1,43 @@
-reset:  di
-        ld      a, $00
-        out     ($FE), a
-        jp      start
+; RST #00   Сброс
+            di
+            ld      a, $00
+            out     ($FE), a
+            jp      start
 
-; RST #08       Печать символа A в режиме телетайпа
-        push    af
-        call    prnc
-        pop     af
-        ret
-        defb    0, 0
+; RST #08   Печать символа A в режиме телетайпа
+            push    af
+            call    prnc
+            pop     af
+            ret
+            defb    0, 0
 
-; RST #10
-        jp      rst10
-        defb    0, 0, 0, 0, 0
+; RST #10   Управление вводом-выводом, рисование
+            jp      rst10
+            defb    0, 0, 0, 0, 0
 
-; rst10 ввод-вывод, курсор, рисование
-; rst18 дисковая подсистема
+; ----------------------------------------------------------------------
+; Модули ядра
+; ----------------------------------------------------------------------
 
-include "inc.display.asm"
-include "inc.math.asm"
-include "inc.stdio.asm"
-include "inc.spi.asm"
+            include "inc.display.asm"
+            include "inc.math.asm"
+            include "inc.stdio.asm"
+            include "inc.spi.asm"
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
 ; ----------------------------------------------------------------------
 
 start:
-            ld      a, $07 + $08
+            ld      a, $07
             call    cls
+
+            ld      a, 4
+            ld      de, 505
+            rst     $10
+            ld      a, 3
+            rst     $10
+
             jr      $
+
+m:  defb "Meow", 0
