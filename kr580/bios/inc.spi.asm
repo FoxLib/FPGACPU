@@ -5,6 +5,7 @@
 ;   #2 От команды не получен BSY=0
 ;   #3 Неправильный ответ от IDLE инициализации
 ;   #4 Ошибка чтения/записи
+;   #5 Сектор не записан
 ;
 ; ТИП КАРТЫ
 ; =========
@@ -251,12 +252,17 @@ _siend:     call    spidis              ; Отсоединить чип
             ret
 
 ; ----------------------------------------------------------------------
-; Реинициализация при таймауте
+; Реинициализация при таймауте Read/Write
 ; ----------------------------------------------------------------------
 
-sdreinit:   in      a, ($f1)    ; Проверка на таймаут
+sdreinit:   push    hl
+            ld      h, b
+            ld      l, c
+            ld      (sd_start), hl
+            pop     hl
+            in      a, ($f1)    ; Проверка на таймаут
             and     $02
-            ret     z
+            ret     z           ; Таймаут не вышел, все ОК
             push    de
             push    hl
             call    sdinit
@@ -269,19 +275,17 @@ sdreinit:   in      a, ($f1)    ; Проверка на таймаут
 ; ----------------------------------------------------------------------
 
 spiread:    push    hl
-            ld      h, b
-            ld      l, c
-            ld      (sd_start), hl
-            pop     hl
+            push    de
+            push    bc
             call    sdreinit
             and     a
             jr      nz, _err1
 
             ; Отослать команду поиска блока
-S12:        ld      a, 17           ; SD_CMD17
+            ld      a, 17           ; SD_CMD17
             call    spicommand
             and     a
-            jr      nz, _err1       ; Ошибка?
+            jr      nz, _err1
 
             ; Ожидание ответа от SD
             ld      bc, 4096
@@ -306,8 +310,86 @@ S15:        call    spiget
             ld      a, b
             or      c
             jr      nz, S15
-            jr      _err1
+            jr      _err1           ; Завершено
 _err2:      ld      a, 4
 _err1:      call    spidis
+            pop     bc
+            pop     de
+            pop     hl
             ret
 
+; ----------------------------------------------------------------------
+; Запись сектора на устройство, номер (HL:DE) по адресу BC
+; ----------------------------------------------------------------------
+spiwrite:   push    hl
+            push    de
+            push    bc
+            call    sdreinit
+            and     a
+            jr      nz, _err1
+
+            ; Отослать команду поиска блока
+            ld      a, 24           ; SD_CMD24
+            call    spicommand
+            and     a
+            jr      nz, _err1
+
+            ; Старт записи
+            ld      a, 0xFE
+            call    spiput
+
+            ; Запись данных
+            ld      bc, 512
+            ld      hl, (sd_start)
+S16:        ld      a, (hl)
+            call    spiput
+            inc     hl
+            dec     bc
+            ld      a, b
+            or      c
+            jr      nz, S16
+
+            ; CRC Dummy и статус ответа
+            ld      a, 0xFF
+            call    spiput
+            call    spiput
+            call    spiget
+            and     $1f
+            cp      $05
+            jr      nz, _err2
+
+            ; Ждем, пока не появится что-то кроме $FF с входа
+            ld      bc, 4096
+S17:        call    spiget
+            cp      $FF
+            jr      nz, S18
+            dec     bc
+            ld      a, b
+            or      c
+            jr      nz, S17
+            ld      a, 5
+            jr      _err1
+
+S18:        ; Выполнить запрос на проверку целостности
+            ld      h, 0
+            ld      l, h
+            ld      d, l
+            ld      e, l
+            ld      a, 13
+
+            ; Должен быть ответ 0
+            call    spicommand  ; SD_CMD13
+            and     a
+            jr      nz, _err2
+            ld      a, b
+            and     a
+            jr      nz, _err2
+
+            ; Читать второй байт, должен быть 0
+            call    spiget
+            and     a
+            jr      nz, _err2
+
+            ; Все в порядке
+            xor     a
+            jr      _err1

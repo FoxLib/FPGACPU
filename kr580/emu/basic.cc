@@ -404,9 +404,14 @@ void z80::handle() {
 
                         if (started == 0) { do_interrupt(); ds_cursor = reg.pc; halt = 0; repaint(); }
                     }
+                    // Переключить возможность HALT
                     else if (ds_viewmode == 0 && kp == 26) { enable_halt = 1 - enable_halt; repaint(); }
-                    // F8 Step over
-                    else if (kp == 74) { if (started) { rq_stop = 1; } else { rq_start = 1; bp_step_over = 1; bp_step_sp = reg.sp; bp_step_pc = reg.pc; } }
+                    // F8 Step over (должен работать только на CALL, RST!)
+                    else if (kp == 74) {
+
+                        if (started) { rq_stop = 1; }
+                        else { rq_start = 1; bp_step_over = 1; bp_step_sp = reg.sp; bp_step_pc = reg.pc; }
+                    }
                     // F9 запуск
                     else if (kp == 75) { if (started) { rq_stop = 1; } else { rq_start = 1; } }
                     // Клавиша "вниз" в режиме дизассемблера
@@ -543,6 +548,9 @@ void z80::handle() {
 
                                 // Остановка на HALT (если разрешен)
                                 if (halt) {
+
+                                    // В любом случае сбросить Halt
+                                    halt = 0;
 
                                     // Выход в дизассемблер
                                     if (enable_halt) { stop_cpu(); break; }

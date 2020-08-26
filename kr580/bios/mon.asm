@@ -25,10 +25,16 @@ start:
         call    sdinit
 
         ld      hl, 0x0000
-        ld      de, 0x0002
+        ld      de, 0x0000
         ld      bc, 0x4000
         call    spiread
 
+        ld      a, ($41FF)
+        inc     a
+        ld      ($41FF), a
+        call    spiwrite
+
+        ld      a, ($41FF)
         ld      d, 0
         ld      e, a
         call    itoa
