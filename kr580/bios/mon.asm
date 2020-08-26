@@ -1,14 +1,17 @@
-rst0:   di
+rst00:  di
         ld      a, $00
         out     ($FE), a
         jp      start
 
 ; Печать символа A в режиме телетайпа
-rst8:   push    af
+rst08:  push    af
         call    prnc
         pop     af
         ret
         defb    0, 0
+
+; rst10 ввод-вывод, курсор, рисование
+; rst18 дисковая подсистема
 
 include "inc.display.asm"
 include "inc.math.asm"
@@ -20,26 +23,42 @@ include "inc.spi.asm"
 ; ----------------------------------------------------------------------
 
 start:
-        ld      a, $07
-        call    cls
-        call    sdinit
+            ld      a, $07 + $08
+            call    cls
 
-        ld      hl, 0x0000
-        ld      de, 0x0000
-        ld      bc, 0x4000
-        call    spiread
+            ; Перерисовать панели
+            ld      hl, $8283
+            ld      d,  $80
+            call    bar
 
-        ld      a, ($41FF)
-        inc     a
-        ld      ($41FF), a
-        call    spiwrite
+            ld      b, 44
+M3:         ld      a, $81
+            rst     $08
+            ld      a, (cursor_xy)
+            add     a, 14
+            ld      (cursor_xy), a
+            ld      a, $81
+            rst     $08
+            djnz    M3
 
-        ld      a, ($41FF)
-        ld      d, 0
-        ld      e, a
-        call    itoa
-        call    print
-
-        jr      $
+            ld      hl, $8485
+            ld      d,  $80
+            call    bar
+            jr      $
+; ---
+bar:        push    bc
+            ld      c, 2
+M2:         ld      a, h ; 0x82
+            rst     $08
+            ld      b, 14
+            ld      a, d ; 0x80
+M1:         rst     $08
+            djnz    M1
+            ld      a, l ; 0x83
+            rst     $08
+            dec     c
+            jr      nz, M2
+            pop     bc
+            ret
 
 ; ---------------------------------------------
