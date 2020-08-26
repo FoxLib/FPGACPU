@@ -6,160 +6,178 @@ cursor_attr:    defb    0               ; Текущий цветовой атр
 ; Процедура очистки экрана, в регистре A атрибут
 ; ----------------------------------------------------------------------
 
-cls:    ld      hl, $4000
-        ld      b, $00
-        ld      c, a
-        ld      (cursor_attr), a
-p1m1:   ld      (hl), b
-        inc     l
-        jr      nz, p1m1
-        inc     h
-        ld      a, h
-        cp      $5B
-        ret     z
-        cp      $58
-        jr      nz, p1m1
-        ld      b, c
-        jr      p1m1
+cls:        ld      hl, $4000
+            ld      b, $00
+            ld      c, a
+            ld      (cursor_attr), a
+p1m1:       ld      (hl), b
+            inc     l
+            jr      nz, p1m1
+            inc     h
+            ld      a, h
+            cp      $5B
+            ret     z
+            cp      $58
+            jr      nz, p1m1
+            ld      b, c
+            jr      p1m1
 
 ; ----------------------------------------------------------------------
 ; Печать символа A, позиция B=Y, C=X
 ; ----------------------------------------------------------------------
 
-prn:    push    hl
-        push    de
-        push    bc
+prn:        push    hl
+            push    de
+            push    bc
 
-        ; Вычисление позиции символа в таблице символов
-        sub     a, $20
-        ld      h, 0
-        ld      l, a
-        add     hl, hl
-        add     hl, hl
-        add     hl, hl
-        ld      de, fonts
-        add     hl, de
-        ex      de, hl
+            ; Вычисление позиции символа в таблице символов
+            sub     a, $20
+            ld      h, 0
+            ld      l, a
+            add     hl, hl
+            add     hl, hl
+            add     hl, hl
+            ld      de, fonts
+            add     hl, de
+            ex      de, hl
 
-        ; Расчет позиции HL
-        ld      a, c
-        and     0x1F
-        ld      l, a    ; L = X & 31
-        ld      a, b
-        and     0x07    ; Нужно ограничить 3 битами
-        rrca            ; Легче дойти с [0..2] до позиции [5..7]
-        rrca            ; Если вращать направо
-        rrca            ; ... три раза
-        or      l       ; Объединив с 0..4 уже готовыми ранее
-        ld      l, a    ; Загрузить новый результат в L
-        ld      a, b    ; Т.к. Y[3..5] уже на месте
-        and     0x18    ; Его двигать даже не надо
-        or      0x40    ; Ставим видеоадрес $4000
-        ld      h, a    ; И загружаем результат
+            ; Расчет позиции HL
+            ld      a, c
+            and     0x1F
+            ld      l, a    ; L = X & 31
+            ld      a, b
+            and     0x07    ; Нужно ограничить 3 битами
+            rrca            ; Легче дойти с [0..2] до позиции [5..7]
+            rrca            ; Если вращать направо
+            rrca            ; ... три раза
+            or      l       ; Объединив с 0..4 уже готовыми ранее
+            ld      l, a    ; Загрузить новый результат в L
+            ld      a, b    ; Т.к. Y[3..5] уже на месте
+            and     0x18    ; Его двигать даже не надо
+            or      0x40    ; Ставим видеоадрес $4000
+            ld      h, a    ; И загружаем результат
 
-        ; Рисование
-        ld      b, 8
-p2m1:   ld      a, (de)
-        ld      (hl), a
-        inc     de
-        inc     h
-        djnz    p2m1
+            ; Рисование
+            ld      b, 8
+p2m1:       ld      a, (de)
+            ld      (hl), a
+            inc     de
+            inc     h
+            djnz    p2m1
 
-        pop     bc
-        pop     de
-        pop     hl
-        ret
+            pop     bc
+            pop     de
+            pop     hl
+            ret
 
 ; ----------------------------------------------------------------------
 ; Вычисление 32*Y + X -> HL, AF затронуто
 ; ----------------------------------------------------------------------
 
-attrpl: push    de
-        ld      hl, (cursor_xy)
-        ld      e, l
-        ld      l, h
-        ld      d, 0
-        ld      h, 0
-        add     hl, hl
-        add     hl, hl
-        add     hl, hl
-        add     hl, hl
-        add     hl, hl      ; 32*Y
-        add     hl, de      ; HL = 32*Y + X
-        ld      a, h
-        add     $58
-        ld      h, a
-        pop     de
-        ret
+attrpl:     push    de
+            ld      hl, (cursor_xy)
+            ld      e, l
+            ld      l, h
+            ld      d, 0
+            ld      h, 0
+            add     hl, hl
+            add     hl, hl
+            add     hl, hl
+            add     hl, hl
+            add     hl, hl      ; 32*Y
+            add     hl, de      ; HL = 32*Y + X
+            ld      a, h
+            add     $58
+            ld      h, a
+            pop     de
+            ret
 
 ; ----------------------------------------------------------------------
 ; Ставится атрибут в позицию курсора
 ; ----------------------------------------------------------------------
 
-setat:  push    af
-        push    hl
-        call    attrpl
-        ld      a, (cursor_attr)
-        ld      (hl), a
-        pop     hl
-        pop     af
-        ret
+setat:      push    af
+            push    hl
+            call    attrpl
+            ld      a, (cursor_attr)
+            ld      (hl), a
+            pop     hl
+            pop     af
+            ret
 
 ; ----------------------------------------------------------------------
 ; Печать символа A в режиме телетайпа с прокруткой вверх
 ; ----------------------------------------------------------------------
 
-prnc:   push    bc
-        push    de
-        push    hl
+prnc:       push    bc
+            push    de
+            push    hl
 
-        ; Текущая позиция курсора
-        ld      hl, (cursor_xy) ; Текущий курсор -> BC
-        ld      b, h
-        ld      c, l
-        cp      13              ; ENTER?
-        jr      z, p3m2
+            ; Текущая позиция курсора
+            ld      hl, (cursor_xy) ; Текущий курсор -> BC
+            ld      b, h
+            ld      c, l
+            cp      13              ; ENTER?
+            jr      z, p3m2
 
-        call    setat           ; Установка атрибута
-        call    prn             ; Печать символа
+            call    setat           ; Установка атрибута
+            call    prn             ; Печать символа
 
-        inc     l
-        ld      a, l
-        cp      $20
-        jr      nz, p3m1        ; Достиг правого края
-p3m2:   ld      l, $00
-        inc     h
-        ld      a, h
-        cp      $18             ; Достиг нижней границы
-        jr      nz, p3m1
+            inc     l
+            ld      a, l
+            cp      $20
+            jr      nz, p3m1        ; Достиг правого края
+p3m2:       ld      l, $00
+            inc     h
+            ld      a, h
+            cp      $18             ; Достиг нижней границы
+            jr      nz, p3m1
 
-            ; @todo scroll up
+                ; @todo scroll up
 
-p3m1:   ld      (cursor_xy), hl
-        pop     hl
-        pop     de
-        pop     bc
-        ret
+p3m1:       ld      (cursor_xy), hl
+            pop     hl
+            pop     de
+            pop     bc
+            ret
 
 ; ----------------------------------------------------------------------
 ; Печать строки из DE в режиме телетайпа
 ; ----------------------------------------------------------------------
 
-print:  ld      a, (de)
-        inc     de
-        and     a
-        ret     z
-        call    prnc
-        jr      print
+print:      ld      a, (de)
+            inc     de
+            and     a
+            ret     z
+            call    prnc
+            jr      print
+
+; ----------------------------------------------------------------------
+; Обработчик прерывания RST #10
+; $00 Положение курсора Y,X => HL
+; $01 Установить курсор HL => Y,X
+; ----------------------------------------------------------------------
+
+rst10:      and     a
+            jr      z, r10_getxy        ; 00 Get cursor Y,X
+            dec     a
+            jr      z, r10_setxy        ; 02 Set cursor X
+            ret
+r10_getxy:  ld      hl, (cursor_xy)
+            ret
+r10_setxy:  ld      (cursor_xy), hl
+            ret
 
 ; ШРИФТЫ
-fonts:  incbin  "font.fnt"
-defb    $00, $00, $ff, $00, $ff, $00, $00, $00 ; $80 =
-defb    $28, $28, $28, $28, $28, $28, $28, $28 ; $81 |
-defb    $00, $00, $3f, $20, $2f, $28, $28, $28 ; $82 |-
-defb    $00, $00, $f8, $08, $e8, $28, $28, $28 ; $83 -|
-defb    $28, $28, $2f, $20, $3f, $00, $00, $00 ; $84 |-
-defb    $28, $28, $e8, $08, $f8, $00, $00, $00 ; $85 -|
+fonts:      incbin  "font.fnt"
+
+; Псевдографика
+defb        $00, $00, $ff, $00, $ff, $00, $00, $00 ; $80 =
+defb        $28, $28, $28, $28, $28, $28, $28, $28 ; $81 |
+defb        $00, $00, $3f, $20, $2f, $28, $28, $28 ; $82 |-
+defb        $00, $00, $f8, $08, $e8, $28, $28, $28 ; $83 -|
+defb        $28, $28, $2f, $20, $3f, $00, $00, $00 ; $84 |-
+defb        $28, $28, $e8, $08, $f8, $00, $00, $00 ; $85 -|
 
 ; 0010 1000
 ; 0010 1000

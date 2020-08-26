@@ -1,7 +1,6 @@
 
             org     $5B00
 
-
 ; ========== NORTON COMMANDER ======
 
             ; Перерисовать панели
@@ -13,15 +12,14 @@
 M3:         ld      a, $81
             rst     $08
 
-            ; ld    a, $00 ; GET CURSOR X
-            ; rst $10
-            ; add   a, 14
-            ; ld   a, $01 ; SETCURSOR X
-            ; rst $10
+            ld      a, $00  ; Передвинуть курсор
+            rst     $10
+            ld      a, l
+            add     14
+            ld      l, a
+            ld      a, 1
+            rst     $10
 
-            ;ld      a, (cursor_xy)         ; Get Cursor X
-            ;add     a, 14
-            ;ld      (cursor_xy), a
             ld      a, $81
             rst     $08
             djnz    M3
@@ -30,7 +28,8 @@ M3:         ld      a, $81
             ld      d,  $80
             call    bar
             jr      $
-; ---
+
+; -------------------
 bar:        push    bc
             ld      c, 2
 M2:         ld      a, h ; 0x82
