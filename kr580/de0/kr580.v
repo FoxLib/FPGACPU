@@ -58,6 +58,9 @@ module kr580(
 `define REG_HL      2
 `define REG_SP      3
 
+`define LDI         1
+`define LDD         2
+
 initial begin
 
     pin_enw = 0;
@@ -72,6 +75,7 @@ assign pin_a = alt_a ? cursor : pc;
 
 /* Управляющие регистры */
 reg  [ 3:0] t       = 0;        // Это t-state
+reg  [ 2:0] m       = 0;        // Это m-state для префиксов
 reg         halt    = 0;        // Процессор остановлен
 reg         ei      = 0;        // Enabled Interrupt
 reg         ei_     = 0;        // Это необходимо для EI+RET конструкции
@@ -93,6 +97,7 @@ wire [ 7:0] opcode          = t ? opcode_latch : (pend_int ? 8'hFF : pin_i);
 reg  [ 7:0] opcode_latch    = 8'h00;
 reg         prev_intr       = 1'b0;
 reg         pend_int        = 1'b0;
+reg  [ 7:0] ed              = 8'h00;
 
 /* Управление записью в регистры */
 reg         reg_b = 1'b0;       // Сигнал на запись 8 битного регистра
@@ -103,6 +108,7 @@ reg  [ 7:0] reg_u = 8'h00;      // Что писать
 reg  [ 7:0] reg_f = 8'h00;      // Сохранение флага
 reg  [ 7:0] reg_r8;             // reg_r8  = regs8 [ reg_n ]
 reg  [15:0] reg_r16;            // reg_r16 = regs16[ reg_n ]
+reg  [ 1:0] reg_ldir;           // 1=DE++, HL++; 2=DE--, HL--;
 reg         fw;                 // Писать флаги
 reg         exx;
 reg         ex_af;
@@ -167,6 +173,7 @@ always @(posedge pin_clk) begin
         exx      <= 1'b0;
         ex_de_hl <= 1'b0;
         ex_af    <= 1'b0;
+        reg_ldir <= 1'b0;
 
         casex (opcode)
 
@@ -528,6 +535,53 @@ always @(posedge pin_clk) begin
 
             endcase
 
+            /* 3+ Префикс EDh */
+            8'b11_101_101: case (t)
+
+                0: begin t <= 1; pc <= pc + 1; m  <= 0; end
+                1: begin t <= 2; pc <= pc + 1; ed <= pin_i; end
+                2: begin m <= m + 1;
+
+                    casex (ed)
+
+                        // 5 LD(I|IR|D|DR)
+                        8'b101x_x000: case (m)
+
+                            0: begin cursor <= hl; alt_a <= 1'b1; end
+                            1: begin cursor <= de; alt_a <= 1'b1;
+                                     pin_enw  <= 1'b1;
+                                     pin_o    <= pin_i;
+                                     op1      <= pin_i;
+                                     reg_ldir <= ed[3] ? `LDD : `LDI;
+                            end
+                            2: begin t <= 0;
+
+                                if (ed[4] && bc) pc <= pc - 2;
+
+                                // Обновление флагов после LD(I|IR|D|DR)
+                                fw    <= 1;
+                                reg_f <= {
+
+                                    /* S */ f[`SIGN],
+                                    /* Z */ f[`ZERO],
+                                    /* 0 */ ldi_xy[1],
+                                    /* H */ 1'b0,
+                                    /* 0 */ ldi_xy[3],
+                                    /* V */ |bc[15:0],
+                                    /* 1 */ 1'b0,
+                                    /* C */ f[`CARRY]
+                                };
+
+                            end
+
+                        endcase
+
+                    endcase
+
+                end
+
+            endcase
+
         endcase
 
     end
@@ -540,6 +594,8 @@ end
 wire flag_sign =   alu_r[7];    // Знак
 wire flag_zero = ~|alu_r[7:0];  // Нуль
 wire flag_prty = ~^alu_r[7:0];  // Четность
+
+wire [5:0] ldi_xy = a + op1;
 
 always @* begin
 
@@ -886,7 +942,9 @@ end
 // Запись в регистры
 always @(negedge pin_clk) begin
 
-    if   (ex_de_hl) begin de <= hl; hl <= de; end
+    if      (ex_de_hl)         begin de <= hl;     hl <= de; end
+    else if (reg_ldir == `LDI) begin de <= de + 1; hl <= hl + 1; bc <= bc - 1; end
+    else if (reg_ldir == `LDD) begin de <= de - 1; hl <= hl - 1; bc <= bc - 1; end
     else if (ex_af) begin {a, f} <= {a_, f_}; {a_, f_} <= {a, f}; end
     else if (exx)   begin {bc, de, hl} <= {bc_, de_, hl_}; {bc_, de_, hl_} <= {bc, de, hl}; end
     else if (reg_w) begin

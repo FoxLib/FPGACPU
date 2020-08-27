@@ -48,6 +48,8 @@ start:      ld      sp, $8000
             defb    api_setcursor
             ld      a, 0x82
             rst     $08
+            ld      a, 0x82
+            rst     $08
     ; ----------------
 
 jr $
