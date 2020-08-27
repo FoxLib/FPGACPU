@@ -6,8 +6,10 @@ cursor_attr:    defb    0               ; Текущий цветовой атр
 ; Процедура очистки экрана, в регистре A атрибут
 ; ----------------------------------------------------------------------
 
-cls:        ld      hl, $4000
-            ld      b, $00
+cls:        ld      hl, $0000
+            ld      (cursor_xy), hl
+            ld      h, $40
+            ld      b, l
             ld      c, a
             ld      (cursor_attr), a
 p1m1:       ld      (hl), b
@@ -132,13 +134,91 @@ p3m2:       ld      l, $00
             ld      a, h
             cp      $18             ; Достиг нижней границы
             jr      nz, p3m1
-
-                ; @todo scroll up
-
+            call    scroll          ; Скроллинг экрана наверх
+            ld      h, $17          ; Курсор установить в конце
 p3m1:       ld      (cursor_xy), hl
             pop     hl
             pop     de
             pop     bc
+            ret
+
+; ----------------------------------------------------------------------
+; Скроллинг экрана наверх. Портит второй ряд регистров
+; ----------------------------------------------------------------------
+
+scroll:     exx
+
+            ; Перемотка блока наверх
+            ld      de, $4000
+            ld      hl, $4020
+            ld      b, 3
+
+            ; Повторить перемотку для 3-х частей экрана
+SL2:        push    hl
+            push    de
+            push    bc
+            ld      c,  $e0
+
+            ; Сдвинуть первые 7 линии
+            call    SLCP
+            ld      a, d
+            sub     a, 8
+            ld      d, a
+
+            ; 8-я линия
+            ld      e, $e0
+            ld      c, $20
+            ld      l, b
+            call    SLCP
+            pop     bc
+            pop     de
+            pop     hl
+
+            ; К следующей странице
+            ld      a, h
+            add     8
+            ld      h, a
+            ld      d, h
+            djnz    SL2
+
+            ; Сдвиг вверх атрибутов с очисткой
+            ld      bc, 768-32
+            ldir
+            ld      b, 32
+            ld      a, (cursor_attr)
+SL3:        ld      (de), a
+            inc     de
+            djnz    SL3
+
+            ; Очистка нижней строки (8 линии)
+            xor     a
+            ld      c, $08      ; Количество линии
+            ld      h, $50      ; Номер банка памяти
+SL5:        ld      b, $20      ; 32 символа
+            ld      l, $e0      ; Начинается на 7-й строке
+SL4:        ld      (hl), a     ; Обнулить
+            inc     hl
+            djnz    SL4
+            dec     c
+            jr      nz, SL5
+
+            exx
+            ret
+
+; Скроллинг нескольких линии
+SLCP:       ld      a, 8
+            ld      b, 0
+SL6:        push    hl
+            push    de
+            push    bc
+            ldir
+            pop     bc
+            pop     de
+            pop     hl
+            inc     d
+            inc     h
+            dec     a
+            jr      nz, SL6
             ret
 
 ; ----------------------------------------------------------------------
@@ -151,60 +231,6 @@ print:      ld      a, (de)
             ret     z
             call    prnc
             jr      print
-
-; ----------------------------------------------------------------------
-; Обработчик прерывания RST #10
-; ----------------------------------------------------------------------
-
-rst10:      ; Сохранение регистров A,BC,DE,HL
-            ld      (reg_a),  a
-            ex      (sp), hl            ; HL-адрес возврата
-            ld      a, (hl)             ; Прочесть следующий байт за RST
-            inc     hl                  ; Новый адрес возврата
-            ex      (sp), hl
-            push    de                  ; Сохранить DE
-            ld      h, 0
-            ld      l, a                ; Вычислить адрес перехода
-            add     hl, hl
-            ld      de, r10_lookup
-            add     hl, de
-            ld      e, (hl)
-            inc     hl
-            ld      d, (hl)
-            ex      de, hl
-            pop     de
-            ld      a, (reg_a)          ; Сохранены A, BC, DE (кроме HL)
-            jp      (hl)
-
-; ----------------------------------------------------------------------
-; Таблица переходов для API процедур
-; ----------------------------------------------------------------------
-
-r10_lookup: defw    r10_getxy       ; 00 Чтение положения курсора в HL
-            defw    r10_setxy       ; 01 Установка курсора из HL
-            defw    cls             ; 02 Очистка экрана в цвет A
-            defw    print           ; 03 Печать строки DE
-            defw    itoa            ; 04 Конвертация числа DE -> DE
-            defw    r10_read        ; 05 Чтение сектора HL:DE -> BC
-            defw    r10_write       ; 06 Запись сектора из BC в HL:DE
-            defw    div16u          ; 07 Деление, DE=DE / BC, HL=DE % BC
-
-; ----------------------------------------------------------------------
-
-r10_getxy:  ld      hl, (cursor_xy)
-            ret
-
-r10_setxy:  ld      hl, (reg_hl)
-            ld      (cursor_xy), hl
-            ret
-
-r10_read:   ld      hl, (reg_hl)
-            call    read
-            ret
-
-r10_write:  ld      hl, (reg_hl)
-            call    write
-            ret
 
 ; ШРИФТЫ
 fonts:      incbin  "font.fnt"

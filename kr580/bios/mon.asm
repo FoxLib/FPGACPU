@@ -22,6 +22,7 @@ reg_hl:     defw    0
 ; ----------------------------------------------------------------------
 
             include "defines.asm"
+            include "inc.rst10.asm"
             include "inc.display.asm"
             include "inc.math.asm"
             include "inc.stdio.asm"
@@ -31,19 +32,29 @@ reg_hl:     defw    0
 ; Старт операционной системы
 ; ----------------------------------------------------------------------
 
-start:
+start:      ld      sp, $8000
             ld      a, $07
             rst     $10
             defb    api_cls
 
-            ld      hl, $0110
+    ; ----------------
+            ld      hl, $0701
             rst     $10
             defb    api_setcursor
-
+            ld      a, 0x81
+            rst     $08
+            ld      hl, $171F
+            rst     $10
+            defb    api_setcursor
             ld      a, 0x82
             rst     $08
+    ; ----------------
+
+jr $
+
 
 
             jr      $
 
-m:  defb "Meow", 0
+m:  defb "Kitecat", 0
+
