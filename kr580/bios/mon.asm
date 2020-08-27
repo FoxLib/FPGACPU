@@ -29,14 +29,17 @@
 ; ----------------------------------------------------------------------
 
 start:
-            ld      a, $07
-            call    cls
+            ld      a, $0f
+            rst     $10
+            defb    2               ; CLS
 
-            ld      a, 4
-            ld      de, 505
+            ld      hl, $0102
             rst     $10
-            ld      a, 3
-            rst     $10
+            defb    1               ; SetCursor
+
+            ld      a, 'X'
+            rst     $08             ; Print
+
 
             jr      $
 

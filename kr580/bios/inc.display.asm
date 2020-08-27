@@ -155,51 +155,59 @@ print:      ld      a, (de)
 ; ----------------------------------------------------------------------
 ; Обработчик прерывания RST #10
 ; ----------------------------------------------------------------------
-; $00 Положение курсора Y,X => HL
-; $01 Установить курсор HL => Y,X
-; $02 CLS(B=color)
-; $03 Печать строки DE
-; $04 Конвертация числа DE -> строка DE
-; $05 Чтение сектора HL:DE в  BC
-; $06 Запись сектора HL:DE из BC
-; $07 16-битное деление DE на BC, DE-рез-т, HL-остаток
+
+reg_a:      defb    $00
+reg_hl:     defw    $0000
+
+rst10:      ; Сохранение регистров A,BC,DE,HL
+            ld      (reg_a),  a
+            ld      (reg_hl), hl
+            ex      (sp), hl            ; HL-адрес возврата
+            ld      a, (hl)             ; Прочесть следующий байт за RST
+            inc     hl                  ; Новый адрес возврата
+            ex      (sp), hl
+            push    de                  ; Сохранить DE
+            ld      h, 0
+            ld      l, a                ; Вычислить адрес перехода
+            add     hl, hl
+            ld      de, r10_lookup
+            add     hl, de
+            ld      e, (hl)
+            inc     hl
+            ld      d, (hl)
+            ex      de, hl
+            pop     de
+            ld      a, (reg_a)          ; Сохранены A, BC, DE (кроме HL)
+            jp      (hl)
+
+; ----------------------------------------------------------------------
+; Таблица переходов для API процедур
 ; ----------------------------------------------------------------------
 
-rst10:      cp      $08
-            jr      nc, rst10n1         ; Просмотреть [08..0F]
-            and     a
-            jr      z, r10_getxy        ; 00 Get cursor Y,X
-            dec     a
-            jr      z, r10_setxy        ; 01 Set cursor X
-            dec     a
-            jr      z, r10_cls          ; 02 CLS, B-color
-            dec     a
-            jr      z, r10_print        ; 03 Печать из DE
-            dec     a
-            jr      z, r10_itoa         ; 04 char* itoa(int)
-            dec     a
-            jr      z, r10_read         ; 05 READ
-            dec     a
-            jr      z, r10_write        ; 06 WRITE
-            call    div16u              ; 07 DIVIDE
-rst10n1:    sub     $08
-            ret
+r10_lookup: defw    r10_getxy       ; 00 Чтение положения курсора в HL
+            defw    r10_setxy       ; 01 Установка курсора из HL
+            defw    cls             ; 02 Очистка экрана в цвет A
+            defw    print           ; 03 Печать строки DE
+            defw    itoa            ; 04 Конвертация числа DE -> DE
+            defw    r10_read        ; 05 Чтение сектора HL:DE -> BC
+            defw    r10_write       ; 06 Запись сектора из BC в HL:DE
+            defw    div16u          ; 07 Деление, DE=DE / BC, HL=DE % BC
 
-; Запуск процедур API
+; ----------------------------------------------------------------------
+
 r10_getxy:  ld      hl, (cursor_xy)
             ret
-r10_setxy:  ld      (cursor_xy), hl
+
+r10_setxy:  ld      hl, (reg_hl)
+            ld      (cursor_xy), hl
             ret
-r10_cls:    ld      a, b
-            call    cls
+
+r10_read:   ld      hl, (reg_hl)
+            call    read
             ret
-r10_print:  call    print
-            ret
-r10_itoa:   call    itoa
-            ret
-r10_read:   call    read
-            ret
-r10_write:  call    write
+
+r10_write:  ld      hl, (reg_hl)
+            call    write
             ret
 
 ; ШРИФТЫ
