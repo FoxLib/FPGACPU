@@ -1,15 +1,16 @@
 ; RST #00   Сброс
             di
-            ld      a, $00
+            xor     a
             out     ($FE), a
             jp      start
+reg_a:      defb    0
 
 ; RST #08   Печать символа A в режиме телетайпа
             push    af
             call    prnc
             pop     af
             ret
-reg_a:      defb    0, 0
+cursor_xy:  defw    0
 
 ; RST #10   Управление вводом-выводом, рисование
             ld      (reg_hl), hl
@@ -38,7 +39,7 @@ start:
             rst     $10
             defb    1               ; SetCursor
 
-            ld      a, 0x83
+            ld      a, 0x82
             rst     $08             ; Print
 
 
