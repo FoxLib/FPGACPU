@@ -21,6 +21,7 @@ reg_hl:     defw    0
 ; Модули ядра
 ; ----------------------------------------------------------------------
 
+            include "defines.asm"
             include "inc.display.asm"
             include "inc.math.asm"
             include "inc.stdio.asm"
@@ -31,16 +32,16 @@ reg_hl:     defw    0
 ; ----------------------------------------------------------------------
 
 start:
-            ld      a, $0f
+            ld      a, $07
             rst     $10
-            defb    2               ; CLS
+            defb    api_cls
 
             ld      hl, $0110
             rst     $10
-            defb    1               ; SetCursor
+            defb    api_setcursor
 
             ld      a, 0x82
-            rst     $08             ; Print
+            rst     $08
 
 
             jr      $
