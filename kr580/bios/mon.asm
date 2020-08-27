@@ -9,11 +9,12 @@
             call    prnc
             pop     af
             ret
-            defb    0, 0
+reg_a:      defb    0, 0
 
 ; RST #10   Управление вводом-выводом, рисование
+            ld      (reg_hl), hl
             jp      rst10
-            defb    0, 0, 0, 0, 0
+reg_hl:     defw    0
 
 ; ----------------------------------------------------------------------
 ; Модули ядра
@@ -33,11 +34,11 @@ start:
             rst     $10
             defb    2               ; CLS
 
-            ld      hl, $0102
+            ld      hl, $0110
             rst     $10
             defb    1               ; SetCursor
 
-            ld      a, 'X'
+            ld      a, 0x83
             rst     $08             ; Print
 
 
