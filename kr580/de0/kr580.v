@@ -183,6 +183,7 @@ always @(posedge pin_clk) begin
             irq   <= 1'b0;
             latch <= pin_i;
             ei    <= ei_;
+            r     <= r + 1;
 
             // Запуск IRQ
             if (irq) irq_t <= 1;
