@@ -14,6 +14,7 @@ api_read:           equ $05 ; Чтение сектора HL:DE -> BC
 api_write:          equ $06 ; Запись сектора из BC в HL:DE
 api_div16u:         equ $07 ; Деление, DE=DE / BC, HL=DE % BC
 api_setattr:        equ $08 ; Установка текущего атрибута A
+api_scrollup:       equ $09 ; Перемотка наверх
 
 ; ----------------------------------------------------------------------
 pusha:      macro

@@ -1,5 +1,4 @@
 ; RST #00   Сброс
-            di
             xor     a
             out     ($FE), a
             jp      start
@@ -37,26 +36,10 @@ start:      ld      sp, $8000
             rst     $10
             defb    api_cls
 
-    ; ----------------
-            ld      hl, $0701
-            rst     $10
-            defb    api_setcursor
-            ld      a, 0x81
-            rst     $08
-            ld      hl, $171F
-            rst     $10
-            defb    api_setcursor
-            ld      a, 0x82
-            rst     $08
-            ld      a, 0x82
-            rst     $08
-    ; ----------------
-
-jr $
-
-
-
-            jr      $
+M1:
+            ld      de, m
+            call    print
+            jr      M1
 
 m:  defb "Kitecat", 0
 

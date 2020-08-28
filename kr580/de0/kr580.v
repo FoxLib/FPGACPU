@@ -38,7 +38,20 @@ module kr580(
 `define ALU_SCF     4'hE
 `define ALU_CCF     4'hF
 
+// Набор CBh
+`define ALU_SLA     5'h10
+`define ALU_SRA     5'h11
+`define ALU_SLL     5'h12
+`define ALU_SRL     5'h13
+`define ALU_BIT     5'h14
+`define ALU_RES     5'h15
+`define ALU_SET     5'h16
+`define ALU_RRLD    5'h17
+`define ALU_ADCW    5'h18
+`define ALU_SBCW    5'h19
+
 `define CARRY       0
+`define NEG         1
 `define PARITY      2
 `define AUX         4
 `define ZERO        6
@@ -129,9 +142,12 @@ wire        ccc     = (opcode[5:4] == 2'b00) & (f[`ZERO]   == opcode[3]) | // NZ
 /* Арифметическое-логическое устройство */
 reg  [ 3:0] alu_m = 0;
 reg  [ 8:0] alu_r;
+reg  [16:0] alu_r16;
 reg  [ 7:0] alu_f;
 reg  [ 7:0] op1 = 0;        // Первый операнд для АЛУ
+reg  [15:0] op1w = 0;
 reg  [ 7:0] op2 = 0;        // Второй операнд для АЛУ
+reg  [15:0] op2w = 0;
 
 /* Исполнение инструкции */
 always @(posedge pin_clk) begin
@@ -540,45 +556,83 @@ always @(posedge pin_clk) begin
 
                 0: begin t <= 1; pc <= pc + 1; m  <= 0; end
                 1: begin t <= 2; pc <= pc + 1; ed <= pin_i; end
-                2: begin m <= m + 1;
+                2: casex (ed)
 
-                    casex (ed)
+                    // 5 LD(I|IR|D|DR)
+                    8'b101x_x000: case (m)
 
-                        // 5 LD(I|IR|D|DR)
-                        8'b101x_x000: case (m)
+                        0: begin cursor <= hl; alt_a <= 1'b1; m <= 1; end
+                        1: begin cursor <= de; alt_a <= 1'b1; m <= 2;
+                                 pin_enw  <= 1'b1;
+                                 pin_o    <= pin_i;
+                                 op1      <= pin_i;
+                                 reg_ldir <= ed[3] ? `LDD : `LDI;
+                        end
+                        2: begin t <= 0;
 
-                            0: begin cursor <= hl; alt_a <= 1'b1; end
-                            1: begin cursor <= de; alt_a <= 1'b1;
-                                     pin_enw  <= 1'b1;
-                                     pin_o    <= pin_i;
-                                     op1      <= pin_i;
-                                     reg_ldir <= ed[3] ? `LDD : `LDI;
-                            end
-                            2: begin t <= 0;
+                            if (ed[4] && bc) pc <= pc - 2;
 
-                                if (ed[4] && bc) pc <= pc - 2;
+                            // Обновление флагов после LD(I|IR|D|DR)
+                            fw    <= 1;
+                            reg_f <= {
 
-                                // Обновление флагов после LD(I|IR|D|DR)
-                                fw    <= 1;
-                                reg_f <= {
+                                /* S */ f[`SIGN],
+                                /* Z */ f[`ZERO],
+                                /* 0 */ ldi_xy[1],
+                                /* H */ 1'b0,
+                                /* 0 */ ldi_xy[3],
+                                /* V */ |bc[15:0],
+                                /* 1 */ 1'b0,
+                                /* C */ f[`CARRY]
+                            };
 
-                                    /* S */ f[`SIGN],
-                                    /* Z */ f[`ZERO],
-                                    /* 0 */ ldi_xy[1],
-                                    /* H */ 1'b0,
-                                    /* 0 */ ldi_xy[3],
-                                    /* V */ |bc[15:0],
-                                    /* 1 */ 1'b0,
-                                    /* C */ f[`CARRY]
-                                };
-
-                            end
-
-                        endcase
+                        end
 
                     endcase
 
-                end
+                    // 6 LD (**), r16
+                    8'b01_xx0_011: case (m)
+
+                        0: begin m <= 1; // Читать L
+
+                            cursor[7:0] <= pin_i;
+                            reg_n <= ed[5:4];
+                            pc    <= pc + 1;
+
+                        end
+                        1: begin m <= 2; // Читать H, писать L
+
+                            cursor[15:8] <= pin_i;
+                            pc      <= pc + 1;
+                            pin_o   <= reg_r16[7:0];
+                            pin_enw <= 1;
+                            alt_a   <= 1;
+
+                        end
+
+                        2: begin m <= 3; // Писать H
+
+                            cursor  <= cursor + 1;
+                            pin_o   <= reg_r16[15:8];
+                            pin_enw <= 1;
+                            alt_a   <= 1;
+
+                        end
+                        3: begin t <= 0; end // Отключить запись
+
+                    endcase
+
+                    /* 6 LD r16, (**) */
+                    8'b01_xx1_011: case (m)
+
+                        0: begin m <= 1; cursor[7:0]  <= pin_i; pc <= pc + 1;   reg_n <= ed[5:4]; end
+                        1: begin m <= 2; cursor[15:8] <= pin_i; pc <= pc + 1;   alt_a <= 1; end
+                        2: begin m <= 3; reg_l <= pin_i; cursor <= cursor + 1;  alt_a <= 1; end
+                        3: begin t <= 0; reg_u <= pin_i; reg_w <= 1;  end
+
+                    endcase
+
+                endcase
 
             endcase
 
@@ -595,7 +649,9 @@ wire flag_sign =   alu_r[7];    // Знак
 wire flag_zero = ~|alu_r[7:0];  // Нуль
 wire flag_prty = ~^alu_r[7:0];  // Четность
 
-wire [5:0] ldi_xy = a + op1;
+wire [5:0]  ldi_xy = a + op1;
+wire [15:0] op2c   = op2w + f[`CARRY];
+reg         bit_z;
 
 always @* begin
 
@@ -613,7 +669,7 @@ always @* begin
                 /* A */ op1[3:0] + op2[3:0] > 5'hF,
                 /* 0 */ 1'b0,
                 /* P */ (op1[7] == op2[7]) && (op1[7] != alu_r[7]),
-                /* 1 */ 1'b1,
+                /* N */ 1'b0,
                 /* C */ alu_r[8]
 
             };
@@ -632,7 +688,7 @@ always @* begin
                 /* A */ op1[3:0] + op2[3:0] + f[`CARRY] > 5'hF,
                 /* 0 */ 1'b0,
                 /* P */ (op1[7] == op2[7]) && (op1[7] != alu_r[7]),
-                /* 1 */ 1'b1,
+                /* N */ 1'b0,
                 /* C */ alu_r[8]
 
             };
@@ -651,7 +707,7 @@ always @* begin
                 /* A */ op1[3:0] < op2[3:0],
                 /* 0 */ 1'b0,
                 /* P */ (op1[7] != op2[7]) && (op1[7] != alu_r[7]),
-                /* 1 */ 1'b1,
+                /* N */ 1'b1,
                 /* C */ alu_r[8]
 
             };
@@ -670,7 +726,7 @@ always @* begin
                 /* A */ op1[3:0] < op2[3:0] + f[`CARRY],
                 /* 0 */ 1'b0,
                 /* P */ (op1[7] != op2[7]) && (op1[7] != alu_r[7]),
-                /* 1 */ 1'b1,
+                /* N */ 1'b1,
                 /* C */ alu_r[8]
 
             };
@@ -689,7 +745,7 @@ always @* begin
                 /* A */ 1'b0,
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
-                /* 1 */ 1'b1,
+                /* N */ 1'b0,
                 /* C */ 1'b0
 
             };
@@ -708,7 +764,7 @@ always @* begin
                 /* A */ 1'b0,
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
-                /* 1 */ 1'b1,
+                /* N */ 1'b0,
                 /* C */ 1'b0
 
             };
@@ -727,7 +783,7 @@ always @* begin
                 /* A */ 1'b0,
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
-                /* 1 */ 1'b1,
+                /* N */ 1'b0,
                 /* C */ 1'b0
 
             };
@@ -746,13 +802,14 @@ always @* begin
                 /* A */ op1[3:0] < op2[3:0],
                 /* 0 */ 1'b0,
                 /* P */ flag_prty,
-                /* 1 */ 1'b1,
+                /* N */ 1'b1,
                 /* C */ alu_r[8]
 
             };
 
         end
 
+        /* Циклический сдвиг налево */
         `ALU_RLC: begin
 
             alu_r = {op1[6:0], op1[7]};
@@ -771,6 +828,7 @@ always @* begin
 
         end
 
+        /* Циклический сдвиг направо */
         `ALU_RRC: begin
 
             alu_r = {op1[0], op1[7:1]};
@@ -789,6 +847,7 @@ always @* begin
 
         end
 
+        /* Сдвиг с заемом C влево */
         `ALU_RL: begin
 
             alu_r = {op1[6:0], f[`CARRY]};
@@ -807,6 +866,7 @@ always @* begin
 
         end
 
+        /* Сдвиг с заемом C вправо */
         `ALU_RR: begin
 
             alu_r = {f[`CARRY], op1[7:1]};
@@ -825,27 +885,34 @@ always @* begin
 
         end
 
+        /* Десятичная коррекция */
         `ALU_DAA: begin
 
-            alu_r = a
-                    + ((f[`AUX]   | (a[3:0] >  4'h9)) ? 8'h06 : 0)
-                    + ((f[`CARRY] | (a[7:0] > 8'h99)) ? 8'h60 : 0);
+            if (f[`NEG])
+                alu_r = op1
+                        - ((f[`AUX]   | (op1[3:0] >  4'h9)) ? 8'h06 : 0)
+                        - ((f[`CARRY] | (op1[7:0] > 8'h99)) ? 8'h60 : 0);
+            else
+                alu_r = op1
+                        + ((f[`AUX]   | (op1[3:0] >  4'h9)) ? 8'h06 : 0)
+                        + ((f[`CARRY] | (op1[7:0] > 8'h99)) ? 8'h60 : 0);
 
             alu_f = {
 
                 /* S */ flag_sign,
                 /* Z */ flag_zero,
-                /* 0 */ 1'b0,
+                /* 0 */ alu_r[5],
                 /* A */ a[4] ^ alu_r[4],
-                /* 0 */ 1'b0,
+                /* 0 */ alu_r[3],
                 /* P */ flag_prty,
-                /* 1 */ 1'b1,
+                /* N */ f[`NEG],
                 /* C */ f[`CARRY] | (a > 8'h99)
 
             };
 
         end
 
+        /* A ^ $FF */
         `ALU_CPL: begin
 
             alu_r = ~a;
@@ -864,6 +931,7 @@ always @* begin
 
         end
 
+        /* CF = 1 */
         `ALU_SCF: begin
 
             alu_r = a;
@@ -882,6 +950,7 @@ always @* begin
 
         end
 
+        /* CF ^= 1 */
         `ALU_CCF: begin
 
             alu_r = a;
@@ -896,6 +965,177 @@ always @* begin
                 /* 1 */ 1'b1,
                 /* C */ f[`CARRY] ^ 1'b1
 
+            };
+
+        end
+
+        /* Логический влево */
+        `ALU_SLA: begin
+
+            alu_r = {op1[6:0], 1'b0};
+            alu_f = {
+
+                /* S */ flag_sign,
+                /* Z */ flag_zero,
+                /* 0 */ alu_r[5],
+                /* H */ 1'b0,
+                /* 0 */ alu_r[3],
+                /* P */ flag_prty,
+                /* N */ 1'b0,
+                /* C */ op1[7]
+
+            };
+
+        end
+
+        // Особый случай сдвига
+        `ALU_SLL: begin
+
+            alu_r = {op1[6:0], 1'b1};
+            alu_f = {
+
+                /* S */ flag_sign,
+                /* Z */ flag_zero,
+                /* 0 */ alu_r[5],
+                /* H */ 1'b0,
+                /* 0 */ alu_r[3],
+                /* P */ flag_prty,
+                /* N */ 1'b0,
+                /* C */ op1[7]
+
+            };
+
+        end
+
+        /* Арифметический вправо */
+        `ALU_SRA: begin
+
+            alu_r = {op1[7], op1[7:1]};
+            alu_f = {
+
+                /* S */ flag_sign,
+                /* Z */ flag_zero,
+                /* 0 */ alu_r[5],
+                /* H */ 1'b0,
+                /* 0 */ alu_r[3],
+                /* P */ flag_prty,
+                /* N */ 1'b0,
+                /* C */ op1[0]
+
+            };
+
+        end
+
+        /* Логический вправо */
+        `ALU_SRL: begin
+
+            alu_r = {1'b0, op1[7:1]};
+            alu_f = {
+
+                /* S */ flag_sign,
+                /* Z */ flag_zero,
+                /* 0 */ alu_r[5],
+                /* H */ 1'b0,
+                /* 0 */ alu_r[3],
+                /* P */ flag_prty,
+                /* N */ 1'b0,
+                /* C */ op1[0]
+
+            };
+
+        end
+
+        /* Проверить бит op1, op2[2:0] номер бита */
+        `ALU_BIT: begin
+
+            alu_r = op1;
+            bit_z = !op1[ op2[2:0] ]; // Вычисленный бит
+            alu_f = {
+
+                /* S */ op2[2:0] == 3'h7 && bit_z == 0,
+                /* Z */ bit_z, // Если бит = 0, ставим Z=1
+                /* 0 */ op2[2:0] == 3'h5 && bit_z == 0,
+                /* H */ 1'b1,
+                /* 0 */ op2[2:0] == 3'h3 && bit_z == 0,
+                /* P */ bit_z,
+                /* N */ 1'b0,
+                /* C */ op1[0]
+
+            };
+
+        end
+
+        /* Проверить бит op1, op2[2:0] номер бита */
+        `ALU_RES,
+        `ALU_SET: begin
+
+            case (op2[2:0])
+
+                3'b000: alu_r = {op1[7:1], op2[3]};
+                3'b001: alu_r = {op1[7:2], op2[3], op1[  0]};
+                3'b010: alu_r = {op1[7:3], op2[3], op1[1:0]};
+                3'b011: alu_r = {op1[7:4], op2[3], op1[2:0]};
+                3'b100: alu_r = {op1[7:5], op2[3], op1[3:0]};
+                3'b101: alu_r = {op1[7:6], op2[3], op1[4:0]};
+                3'b110: alu_r = {op1[  7], op2[3], op1[5:0]};
+                3'b111: alu_r = {          op2[3], op1[6:0]};
+
+            endcase
+
+            alu_f = f;
+
+        end
+
+        /* (16 bit) op1 + op2 + C => r */
+        `ALU_ADCW: begin
+
+            alu_r16 = op1w + op2c;
+            alu_f = {
+
+                /* S */ alu_r16[15],
+                /* Z */ alu_r16[15:0] == 0,
+                /* - */ alu_r16[13],
+                /* H */ op1w[12] ^ op2c[12] ^ alu_r16[12],
+                /* - */ alu_r16[11],
+                /* V */ (op1w[15] ^ op2c[15] ^ 1'b1) & (alu_r16[15] ^ op1w[15]),
+                /* N */ 1'b0,
+                /* C */ alu_r16[16]
+            };
+
+        end
+
+        /* (16 bit) op1 - op2 - C => r */
+        `ALU_SBCW: begin
+
+            alu_r16 = op1w - op2c;
+            alu_f = {
+
+                /* S */ alu_r16[15],
+                /* Z */ alu_r16[15:0] == 0,
+                /* - */ alu_r16[13],
+                /* H */ op1w[12] ^ op2c[12] ^ alu_r16[12],
+                /* - */ alu_r16[11],
+                /* V */ (op1w[15] ^ op2c[15]) & (alu_r16[15] ^ op1w[15]),
+                /* N */ 1'b1,
+                /* C */ alu_r16[16]
+            };
+
+        end
+
+        /* RLD | RRD */
+        `ALU_RRLD: begin
+
+            alu_r = op1;
+            alu_f = {
+
+                /* S */ op1[7],
+                /* Z */ op1[7:0] == 0,
+                /* - */ op1[5],
+                /* H */ 1'b0,
+                /* - */ op1[3],
+                /* V */ flag_prty,
+                /* N */ 1'b0,
+                /* C */ f[`CARRY]
             };
 
         end

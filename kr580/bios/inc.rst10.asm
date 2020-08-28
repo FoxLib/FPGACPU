@@ -36,6 +36,7 @@ r10_lookup: defw    r10_getxy
             defw    r10_write
             defw    div16u
             defw    r10_setatr
+            defw    scrollup
 
 ; ----------------------------------------------------------------------
 
