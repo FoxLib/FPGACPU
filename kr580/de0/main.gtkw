@@ -1,20 +1,20 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Fri Aug 28 03:47:40 2020
+[*] Fri Aug 28 15:21:27 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/kr580/de0/main.vcd"
-[dumpfile_mtime] "Fri Aug 28 03:47:02 2020"
-[dumpfile_size] 57846
+[dumpfile_mtime] "Fri Aug 28 15:20:56 2020"
+[dumpfile_size] 103423
 [savefile] "/disk/fox/dev/fpgacpu/kr580/de0/main.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 85 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] main.
 [sst_width] 243
 [signals_width] 225
 [sst_expanded] 1
-[sst_vpaned_height] 310
+[sst_vpaned_height] 313
 @28
 main.clk
 main.clock_cpu
@@ -29,7 +29,7 @@ main.cpu.pin_a[15:0]
 [color] 2
 main.cpu.pin_i[7:0]
 main.cpu.pin_o[7:0]
-@29
+@28
 [color] 2
 main.cpu.alt_a
 [color] 2
@@ -107,8 +107,6 @@ main.cpu.pin_pw
 -Port
 @22
 [color] 7
-main.cpu.alu_m[3:0]
-[color] 7
 main.cpu.op1[7:0]
 [color] 7
 main.cpu.op2[7:0]
@@ -129,7 +127,15 @@ main.cpu.alu_f[7:0]
 @1401200
 -group_end
 -ALU
+@800200
+-IRQ
+@29
+main.cpu.pin_intr
 @28
 main.cpu.ei
+main.cpu.irq
+main.cpu.irq_t[2:0]
+@1000200
+-IRQ
 [pattern_trace] 1
 [pattern_trace] 0

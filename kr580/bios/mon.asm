@@ -1,4 +1,5 @@
 ; RST #00   Сброс
+            di
             xor     a
             out     ($FE), a
             jp      start
@@ -41,5 +42,5 @@ M1:
             call    print
             jr      M1
 
-m:  defb "Kitecat", 0
+m:  defb "Kitecatis ", 0
 

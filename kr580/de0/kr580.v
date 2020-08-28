@@ -109,10 +109,11 @@ reg  [ 7:0] f  = 8'b01000000;   reg [ 7:0] f_ = 8'h00;
                 //  SZ A P C
 
 /* Сохраненный опкод */
-wire [ 7:0] opcode          = t ? opcode_latch : (pend_int ? 8'hFF : pin_i);
-reg  [ 7:0] opcode_latch    = 8'h00;
+wire [ 7:0] opcode          = t ? latch : pin_i;
+reg  [ 7:0] latch           = 8'h00;
 reg         prev_intr       = 1'b0;
-reg         pend_int        = 1'b0;
+reg         irq             = 1'b0;     // Исполнение запроса IRQ
+reg  [ 2:0] irq_t           = 1'b0;     // Шаг исполнения
 reg  [ 7:0] ed              = 8'h00;
 
 /* Управление записью в регистры */
@@ -158,26 +159,33 @@ always @(posedge pin_clk) begin
     /* Определение позитивного фронта intr */
     prev_intr <= pin_intr;
 
-    /* Получение запроса внешнего Interrupt */
-    if ({prev_intr, pin_intr} == 2'b01) begin
+    /* Получение запроса внешнего interrupt */
+    if ({prev_intr, pin_intr} == 2'b01) begin irq <= ei; end
 
-        pend_int <= ei;
-        pc       <= pc + (ei & halt);
+    /* Выполнение запроса IRQ */
+    else if (irq_t) begin
+
+        case (irq_t)
+
+            // Деактивация прерываний. Если halt, то PC = PC + 1
+            1: begin irq_t <= 2; ei <= 0; ei_ <= 0; if (halt) pc <= pc + 1; end
+
+        endcase
 
     end
 
     /* Исполнение опкодов */
     else begin
 
-        /* Запись опкода на будущее */
+        /* Запись опкода на первом такте */
         if (t == 0) begin
 
-            opcode_latch <= pend_int ? 8'hFF : pin_i; /* RST $38 */
-            pend_int     <= 1'b0;
+            irq   <= 1'b0;
+            latch <= pin_i;
+            ei    <= ei_;
 
-            if (pend_int) // Отключить другие прерывания
-            begin ei <= 0; ei_ <= 0; end
-            else  ei <= ei_;
+            // Запуск IRQ
+            if (irq) irq_t <= 1;
 
         end
 
@@ -194,6 +202,8 @@ always @(posedge pin_clk) begin
         ex_af    <= 1'b0;
         reg_ldir <= 1'b0;
 
+        // Выполнять инструкции можно только при отсутствии IRQ
+        if ((irq == 0 && t == 0) || t)
         casex (opcode)
 
             // 1 NOP
@@ -547,7 +557,7 @@ always @(posedge pin_clk) begin
             /* 4 RST # */
             8'b11_xxx_111: case (t)
 
-                0: begin t <= 1; pc    <= pc + (!pend_int); cursor <= sp; end
+                0: begin t <= 1; pc    <= pc + 1; cursor <= sp; end
                 1: begin t <= 2; pin_o <= pc[15:8]; pin_enw <= 1; cursor <= cursor - 1; alt_a <= 1; end
                 2: begin t <= 3; pin_o <= pc[ 7:0]; pin_enw <= 1; cursor <= cursor - 1; alt_a <= 1; end
                 3: begin t <= 0; reg_w <= 1; reg_n <= `REG_SP; {reg_u, reg_l} <= cursor; pc <= {opcode[5:3], 3'b000}; end
