@@ -146,7 +146,7 @@ ram u1(
     .q_b        (video_data),
 );
 
-// 256K памяти
+// 128K памяти
 bank u5(
 
     .clock      (clk),
