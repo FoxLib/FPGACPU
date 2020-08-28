@@ -34,13 +34,12 @@ reg_hl:     defw    0
 
 start:      ld      sp, $8000
             ld      a, $07
-            rst     $10
-            defb    api_cls
+            apic    api_cls
 
 M1:
             ld      de, m
             call    print
             jr      M1
 
-m:  defb "Kitecatis ", 0
+m:          defb "Koshka srala na baton ", 0
 

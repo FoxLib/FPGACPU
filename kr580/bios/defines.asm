@@ -17,13 +17,17 @@ api_setattr:        equ $08 ; Установка текущего атрибут
 api_scrollup:       equ $09 ; Перемотка наверх
 
 ; ----------------------------------------------------------------------
-pusha:      macro
+pusha:      macro           ; Сохранение регистров
             push    hl
             push    de
             push    bc
             endm
-popa:       macro
+popa:       macro           ; Восстановление регистров
             pop     bc
             pop     de
             pop     hl
+            endm
+apic:       macro   arg     ; Вызов API-функции
+            rst     $10
+            defb    arg
             endm
