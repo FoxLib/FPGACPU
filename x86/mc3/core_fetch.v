@@ -37,7 +37,7 @@ sub_fetch: begin
 
                 // INC|DEC r16
                 8'b0100_xxxx: begin sub <= sub_exec;  alu <= data[3] ? alu_sub : alu_add; bit16 <= 1'b1;
-                                     op1 <= r[data20]; op2 <= 1'b1; end
+                                    op1 <= r[data20]; op2 <= 1'b1; end
 
                 8'b000x_x110, // PUSH r16
                 8'b1001_1100, // PUSHF

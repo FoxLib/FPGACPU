@@ -90,32 +90,13 @@ pll u0(
     .locked     (locked)
 );
 
-// Память программ
-// -----------------------------------------------------------------------
-
-ram u1(
-
-    .clock      (clk),
-
-    /* Процессор */
-    .address_a  (pin_a),
-    .q_a        (pin_i),
-    .data_a     (pin_o),
-    .wren_a     (pin_enw),
-
-    /* Видео */
-    .address_b  ({3'b010, video_addr}),
-    .q_b        (video_data),
-
-);
-
 // Центральный процессор
 // -----------------------------------------------------------------------
 
 wire        pin_enw;
 wire [15:0] pin_a;
 wire [ 7:0] pin_i;
-wire [ 7:0] pin_o;
+reg  [ 7:0] pin_o;
 wire [ 7:0] pin_pa;
 reg  [ 7:0] pin_pi;
 wire [ 7:0] pin_po;
@@ -140,6 +121,78 @@ kr580 u3(
     /* Interrupt */
     .pin_intr   (pin_intr)
 );
+
+// Память программ
+// -----------------------------------------------------------------------
+
+wire [ 7:0] ram_i;
+reg         ram_enw;
+reg  [ 2:0] bank_s = 2'b00;
+reg  [ 7:0] bank_l = 0; wire [7:0] bank_i;
+reg  [ 7:0] bank_h = 0; wire       bank_enw;
+
+ram u1(
+
+    .clock      (clk),
+
+    /* Процессор */
+    .address_a  (pin_a),
+    .q_a        (ram_i),
+    .data_a     (pin_o),
+    .wren_a     (ram_enw),
+
+    /* Видео */
+    .address_b  ({3'b010, video_addr}),
+    .q_b        (video_data),
+);
+
+// 256K памяти
+bank u5(
+
+    .clock      (clk),
+    .address_a  ({bank_s, pin_a[13:0]}),
+    .q_a        (bank_i),
+    .data_a     (pin_o),
+    .wren_a     (bank_enw),
+);
+
+// Маршрутизация памяти
+always @(*) begin
+
+    bank_s   = 1'b0;
+    bank_enw = 1'b0;
+    pin_i    = ram_i;
+    ram_enw  = pin_enw;
+
+    // Выбор банка памяти, отображаемого на $C000-$FFFF
+    if ((pin_a >= 16'hC000) && bank_h > 1) begin
+
+        bank_s   = bank_h - 2;
+        pin_i    = bank_i;
+        bank_enw = pin_enw;
+        ram_enw  = 0;
+
+    end
+    else
+    // Выбор банка памяти, отображаемого на $8000-$BFFF
+    if ((pin_a >= 16'h8000) && bank_l > 1) begin
+
+        bank_s   = bank_l - 2;
+        pin_i    = bank_i;
+        bank_enw = pin_enw;
+        ram_enw  = 0;
+
+    end
+
+end
+
+// Выбор банка памяти
+always @(posedge clk25) begin
+
+    if (pin_pa == 8'h02 && pin_pw) bank_l <= pin_po;
+    if (pin_pa == 8'h03 && pin_pw) bank_h <= pin_po;
+
+end
 
 // Видеоадаптер
 // ---------------------------------------------------------------------
@@ -269,6 +322,8 @@ always @(*) begin
 
     case (pin_pa)
 
+        8'h02: pin_pi = bank_l;         // Банк 0
+        8'h03: pin_pi = bank_h;         // Банк 1
         8'hF0: pin_pi = spi_din;        // Принятые данные SPI
         8'hF1: pin_pi = spi_st;         // Статус SPI
         8'hFE: pin_pi = kb_ch;          // Принятые данные KBD

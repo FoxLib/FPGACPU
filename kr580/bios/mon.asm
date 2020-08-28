@@ -36,10 +36,4 @@ start:      ld      sp, $8000
             ld      a, $07
             apic    api_cls
 
-M1:
-            ld      de, m
-            call    print
-            jr      M1
-
-m:          defb "Koshka srala na baton ", 0
-
+            jr      $
