@@ -125,12 +125,13 @@ kr580 u3(
 // Память программ
 // -----------------------------------------------------------------------
 
-wire [ 7:0] ram_i;
 reg         ram_enw;
+wire [ 7:0] ram_i;
 reg  [ 2:0] bank_s = 2'b00;
 reg  [ 7:0] bank_l = 0; wire [7:0] bank_i;
 reg  [ 7:0] bank_h = 0; wire       bank_enw;
 
+// 64К базовой памяти
 ram u1(
 
     .clock      (clk),
