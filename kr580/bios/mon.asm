@@ -36,4 +36,8 @@ start:      ld      sp, $8000
             ld      a, $07
             apic    api_cls
 
+            ld      de, 1234
+            apic    api_itoa
+            apic    api_print
+
             jr      $
