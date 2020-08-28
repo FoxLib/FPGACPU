@@ -101,6 +101,9 @@ reg  [15:0] de = 16'h0000;      reg [15:0] de_ = 16'h0000;
 reg  [15:0] hl = 16'h0000;      reg [15:0] hl_ = 16'h0000;
 reg  [15:0] pc = 16'h0000;
 reg  [15:0] sp = 16'h0000;
+reg  [1:0]  im = 2'b00;
+reg  [ 7:0] i  = 8'h00;
+reg  [ 7:0] r  = 8'h00;
 reg  [ 7:0] a  = 8'h00;         reg [ 7:0] a_ = 8'h00;
 reg  [ 7:0] f  = 8'b01000000;   reg [ 7:0] f_ = 8'h00;
                 //  SZ A P C
@@ -140,7 +143,7 @@ wire        ccc     = (opcode[5:4] == 2'b00) & (f[`ZERO]   == opcode[3]) | // NZ
                        opcode == 8'b11_001_101;  // CALL
 
 /* Арифметическое-логическое устройство */
-reg  [ 3:0] alu_m = 0;
+reg  [ 4:0] alu_m = 0;
 reg  [ 8:0] alu_r;
 reg  [16:0] alu_r16;
 reg  [ 7:0] alu_f;
@@ -558,6 +561,139 @@ always @(posedge pin_clk) begin
                 1: begin t <= 2; pc <= pc + 1; ed <= pin_i; end
                 2: casex (ed)
 
+                    // 4 IN r8, (C)
+                    8'b01_xxx_000: case (m)
+
+                        0: begin m <= 1; pin_pa <= bc[7:0]; end
+                        1: begin t <= 0;
+
+                            // Подготовка флагов на запись
+                            reg_f = {
+
+                                /* S */ pin_pi[7],
+                                /* Z */ pin_pi == 0,
+                                /* 0 */ pin_pi[5],
+                                /* H */ 1'b0,
+                                /* 0 */ pin_pi[3],
+                                /* P */ ~^pin_pi,
+                                /* N */ 1'b0,
+                                /* C */ op1[7]
+                            };
+
+
+                            // Писать в регистр, только если не (HL)
+                            reg_b <= ed[5:3] != 3'b110;
+                            reg_n <= ed[5:3];
+                            reg_l <= pin_pi;
+                            fw    <= 1;
+
+                        end
+
+                    endcase
+
+                    // 4 OUT (C), r8
+                    8'b01_xxx_001: case (m)
+
+                        0: begin m <= 1; pin_pa <= bc[7:0]; reg_n <= ed[5:3]; end
+                        1: begin t <= 0;
+
+                            pin_po <= (reg_n == 3'b110) ? 0 : reg_r8;
+                            pin_pw <= 1;
+
+                        end
+
+                    endcase
+
+                    // 5 ADC|SBC HL, r16
+                    8'b01_xxx_010: case (m)
+
+                        0: begin m <= 1; op1w <= hl;      reg_n <= ed[5:4]; end
+                        1: begin m <= 2; op2w <= reg_r16; alu_m <= ed[3] ? `ALU_ADCW : `ALU_SBCW; end
+                        2: begin t <= 0;
+
+                            fw    <= 1;
+                            reg_w <= 1;
+                            reg_n <= `REG_HL;
+                            reg_f <= alu_f;
+
+                            {reg_u, reg_l} <= alu_r16;
+
+                        end
+
+                    endcase
+
+                    // 3 LD I/R/A
+                    8'b0100_0111: begin t <= 0; i <= a; end
+                    8'b0100_1111: begin t <= 0; r <= a; end
+                    8'b0101_0111: begin t <= 0; reg_b <= 1; reg_n <= `REG_A; reg_l <= i; end
+                    8'b0101_1111: begin t <= 0; reg_b <= 1; reg_n <= `REG_A; reg_l <= r; end
+
+                    // 5 RETN (Алиас RET)
+                    8'b01_xxx_101: case (m)
+
+                        0: begin m <= 1; alt_a <= 1;                    cursor <= sp; end
+                        1: begin m <= 2; alt_a <= 1; pc[ 7:0] <= pin_i; cursor <= cursor + 1; end
+                        2: begin t <= 0;             pc[15:8] <= pin_i; {reg_u, reg_l} <= cursor + 1;
+
+                            reg_w <= 1;
+                            reg_n <= `REG_SP;
+
+                            // RETI: Выставляет обратно прерывания
+                            if (ed[5:3] == 3'b001) begin
+
+                                ei  <= 1'b1;
+                                ei_ <= 1'b1;
+
+                            end
+
+                        end
+
+                    endcase
+
+                    // 3 IM n
+                    8'b01_xxx_110: begin t <= 0; im <= ed[3] ? (ed[4] ? 2 : a[0]) : ed[4]; end
+
+                    // 4 NEG
+                    8'b01_xxx_100: case (m)
+
+                        0: begin m <= 1; op1 <= 0; op2 <= a; alu_m <= `ALU_SUB; end
+                        1: begin t <= 0;
+
+                            fw    <= 1;
+                            reg_b <= 1;
+                            reg_n <= `REG_A;
+                            reg_l <= alu_r;
+                            reg_f <= alu_f;
+
+                        end
+
+                    endcase
+
+                    // 6 RRD | RLD
+                    8'b01_10x_111: case (m)
+
+                        0: begin m <= 1; cursor <= hl; alt_a <= 1; end
+                        1: begin m <= 2;
+
+                            // 1=RLD, 0=RRD
+                            reg_b <= 1;
+                            reg_n <= `REG_A;       // RLD          RRD
+                            reg_l <= {a[7:4], ed[3] ? pin_i[7:4] : pin_i[3:0]};
+
+                            // На выход на запись
+                            alt_a   <= 1;
+                            pin_enw <= 1;
+                            pin_o   <= ed[3] ? {pin_i[3:0],     a[3:0]} : // RLD
+                                               {    a[3:0], pin_i[7:4]};  // RRD
+
+                        end
+
+                        // Вычислить из записать флаги
+                        2: begin m <= 3; op1 <= a; alu_m <= `ALU_RRLD; end
+                        3: begin t <= 0; fw  <= 1; reg_f <= alu_f; end
+
+                    endcase
+
                     // 5 LD(I|IR|D|DR)
                     8'b101x_x000: case (m)
 
@@ -622,7 +758,7 @@ always @(posedge pin_clk) begin
 
                     endcase
 
-                    /* 6 LD r16, (**) */
+                    // 6 LD r16, (**)
                     8'b01_xx1_011: case (m)
 
                         0: begin m <= 1; cursor[7:0]  <= pin_i; pc <= pc + 1;   reg_n <= ed[5:4]; end
@@ -1065,7 +1201,7 @@ always @* begin
 
         end
 
-        /* Проверить бит op1, op2[2:0] номер бита */
+        /* Проверить бит op1, op2[2:0] номер бита, op[3] какой ставить */
         `ALU_RES,
         `ALU_SET: begin
 
