@@ -36,14 +36,15 @@ start:      ld      sp, $8000
             ld      a, $07
             apic    api_cls
 
+halt
+            ld      de, $455d
+            ld      bc, $7400
+            call    uftoi
 
+            ;ld      hl, 1234
+            ;call    uitof
 
-            ld      hl, 1234
-            call    uitof
-
-        halt
-
-            ld      de, 1234
+            ex      de, hl
             apic    api_itoa
             apic    api_print
 
