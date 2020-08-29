@@ -39,7 +39,7 @@ start:      ld      sp, $8000
 
         halt
 
-            ld      hl, 3
+            ld      hl, -3
             call    itof
 
 

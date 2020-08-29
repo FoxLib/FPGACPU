@@ -70,3 +70,67 @@ d16u2:      ld      a, (div16c)
             pop     bc
             pop     af
             ret
+
+; ----------------------------------------------------------------------
+; Перевод int HL -> float HL:DE
+; ----------------------------------------------------------------------
+itof_sign:  defb    0
+
+itof:       ; Проверка на HL=0 (особый случай)
+            ld      a, h
+            or      l
+            jr      z, itofz
+
+            xor     a
+            ld      (itof_sign), a
+
+            ; Если знак положительный, продолжить
+            ld      a, h
+            and     $80
+            jr      z, itofns
+
+            ; Сделать число HL позитивным
+            xor     a
+            ex      de, hl
+            ld      h, a
+            ld      l, a
+            sbc     hl, de
+            ld      a, $80
+            ld      (itof_sign), a
+
+            ; Выполнить нормализацию
+itofns:     push    bc
+            ld      de, $0000
+            ld      bc, $007f
+
+            ; Заполнение мантиссы
+itofl:      srl     h
+            rr      l
+            rr      d
+            rr      e
+            rr      b           ; d:e:b мантисса
+            inc     c           ; Увеличение порядка
+            ld      a, h
+            or      l
+            jr      nz, itofl
+
+itofe:      ; Компоновка числа
+            ld      a, d
+            and     $7f         ; Срезать скрытый бит
+            ld      l, a
+            ld      d, e
+            ld      e, b
+            xor     a
+            srl     c
+            rra
+            or      l           ; Поместить младший бит экспоненты в 8-й бит L
+            ld      l, a
+            ld      h, c
+
+            ; Установка знака
+            ld      a, (itof_sign)
+            or      h
+            ld      h, a
+            pop     bc
+            ret
+itofz:      ret
