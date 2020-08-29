@@ -27,3 +27,47 @@ L1:         push    hl
             pop     hl
             pop     bc
             ret
+; ----------------------------------------------------------------------
+; Перевод int HL -> float HL:DE
+; ----------------------------------------------------------------------
+
+itof:       ld      a, h
+            or      l
+            jr      z, itofz    ; Получен 0?
+
+            ; Есть знак?
+            ld      a, h
+            and     $80
+
+            push    bc
+            ld      de, $0000
+            ld      bc, $007f
+
+            ; Заполнение мантиссы
+itofl:      srl     h
+            rr      l
+            rr      d
+            rr      e
+            rr      b           ; d:e:b мантисса        -- (ix) тут не помешал бы
+            inc     c           ; c++ Увеличение порядка
+            ld      a, h
+            or      l
+            jr      nz, itofl
+
+itofe:      ; Компоновка числа
+            ld      a, d
+            and     $7f         ; Срезать скрытый бит
+            ld      l, a
+            ld      d, e
+            ld      e, b
+            xor     a
+            srl     c
+            rra
+            or      l           ; Поместить младший бит экспоненты в 8-й бит
+            ld      l, a
+            ld      h, c
+
+            ; @todo Установка знака
+            pop     bc
+            ret
+itofz:      ret
