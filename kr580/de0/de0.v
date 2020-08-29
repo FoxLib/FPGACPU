@@ -95,7 +95,7 @@ pll u0(
 
 wire        pin_enw;
 wire [15:0] pin_a;
-wire [ 7:0] pin_i;
+reg  [ 7:0] pin_i;
 reg  [ 7:0] pin_o;
 wire [ 7:0] pin_pa;
 reg  [ 7:0] pin_pi;
@@ -126,10 +126,12 @@ kr580 u3(
 // -----------------------------------------------------------------------
 
 reg         ram_enw;
-wire [ 7:0] ram_i;
-reg  [ 2:0] bank_s = 2'b00;
-reg  [ 7:0] bank_l = 0; wire [7:0] bank_i;
-reg  [ 7:0] bank_h = 0; wire       bank_enw;
+reg         bank_enw;
+wire [ 7:0] ram_i;              // Данные из общей памяти
+wire [ 7:0] bank_i;             // Данные из банков памяти
+reg  [ 2:0] bank_s = 3'b000;    // Номер выбранного текущего банка
+reg  [ 7:0] bank_l = 0;
+reg  [ 7:0] bank_h = 0;
 
 // 64К базовой памяти
 ram u1(
@@ -190,8 +192,8 @@ end
 // Выбор банка памяти
 always @(posedge clk25) begin
 
-    if (pin_pa == 8'h02 && pin_pw) bank_l <= pin_po;
-    if (pin_pa == 8'h03 && pin_pw) bank_h <= pin_po;
+    if (pin_pa == 8'h00 && pin_pw) bank_l <= pin_po;
+    if (pin_pa == 8'h01 && pin_pw) bank_h <= pin_po;
 
 end
 
@@ -203,7 +205,11 @@ wire [ 7:0] video_data;
 reg  [ 2:0] video_border = 3'b000;
 
 // Сигнал на обновление бордюра
-always @(posedge clk25) begin if (pin_pa == 8'hFE && pin_pw) video_border <= pin_po[2:0]; end
+always @(posedge clk25) begin
+
+    if (pin_pa == 8'hFE && pin_pw) video_border <= pin_po[2:0];
+
+end
 
 z80vid u4(
 
@@ -323,8 +329,8 @@ always @(*) begin
 
     case (pin_pa)
 
-        8'h02: pin_pi = bank_l;         // Банк 0
-        8'h03: pin_pi = bank_h;         // Банк 1
+        8'h00: pin_pi = bank_l;         // Банк 0
+        8'h01: pin_pi = bank_h;         // Банк 1
         8'hF0: pin_pi = spi_din;        // Принятые данные SPI
         8'hF1: pin_pi = spi_st;         // Статус SPI
         8'hFE: pin_pi = kb_ch;          // Принятые данные KBD
