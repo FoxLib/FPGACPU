@@ -72,65 +72,49 @@ d16u2:      ld      a, (div16c)
             ret
 
 ; ----------------------------------------------------------------------
-; Перевод int HL -> float HL:DE
+; Перевод unsigned int HL -> float DE:BC
 ; ----------------------------------------------------------------------
-itof_sign:  defb    0
 
-itof:       ; Проверка на HL=0 (особый случай)
+uitof:      ld      a, h
+            or      l
+            jr      z, uitofz   ; Проверка на ноль
+            push    hl
+            ld      de, $7e00
+            ld      bc, $0000
+uitofl:     srl     h           ; Заполнение мантиссы
+            rr      l
+            rr      e
+            rr      b
+            rr      c           ; e:b:с мантисса
+            inc     d           ; Увеличение порядка
             ld      a, h
             or      l
-            jr      z, itofz
+            jr      nz, uitofl
+            ld      a, e        ; Компоновка экспоненты
+            and     $7f         ; Срезать скрытый бит
+            srl     d           ; Сдвинуть направо
+            jr      nc, $+4     ; CF=0, E[7]=0
+            or      $80         ; CF=1, E[7]=1
+            ld      e, a
+            pop     hl
+            ret
+uitofz:     ld      d, a        ; Обнуление float
+            ld      e, a
+            ld      b, a
+            ld      c, a
+            ret
 
-            xor     a
-            ld      (itof_sign), a
+; ----------------------------------------------------------------------
+; Преобразовать число HL в негативное (HL=-HL), AF=0
+; ----------------------------------------------------------------------
 
-            ; Если знак положительный, продолжить
-            ld      a, h
-            and     $80
-            jr      z, itofns
-
-            ; Сделать число HL позитивным
-            xor     a
+negate:     push    de
             ex      de, hl
+            xor     a
             ld      h, a
             ld      l, a
             sbc     hl, de
-            ld      a, $80
-            ld      (itof_sign), a
-
-            ; Выполнить нормализацию
-itofns:     push    bc
-            ld      de, $0000
-            ld      bc, $007f
-
-            ; Заполнение мантиссы
-itofl:      srl     h
-            rr      l
-            rr      d
-            rr      e
-            rr      b           ; d:e:b мантисса
-            inc     c           ; Увеличение порядка
-            ld      a, h
-            or      l
-            jr      nz, itofl
-
-itofe:      ; Компоновка числа
-            ld      a, d
-            and     $7f         ; Срезать скрытый бит
-            ld      l, a
-            ld      d, e
-            ld      e, b
-            xor     a
-            srl     c
-            rra
-            or      l           ; Поместить младший бит экспоненты в 8-й бит L
-            ld      l, a
-            ld      h, c
-
-            ; Установка знака
-            ld      a, (itof_sign)
-            or      h
-            ld      h, a
-            pop     bc
+            pop     de
             ret
-itofz:      ret
+
+

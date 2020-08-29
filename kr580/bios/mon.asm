@@ -37,18 +37,11 @@ start:      ld      sp, $8000
             apic    api_cls
 
 
-        halt
 
-            ld      hl, -3
-            call    itof
-
-
-            ; .. сдвиг b
-
-LAST:
+            ld      hl, 1234
+            call    uitof
 
         halt
-            ; ----------
 
             ld      de, 1234
             apic    api_itoa
