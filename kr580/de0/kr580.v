@@ -310,7 +310,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 LD (**), HL */
+            // 4 LD (**), HL
             8'b00_100_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -321,7 +321,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 5 LD HL, (**) */
+            // 5 LD HL, (**)
             8'b00_101_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -332,7 +332,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 LD (**), A */
+            // 4 LD (**), A
             8'b00_110_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -342,7 +342,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 LD A, (**) */
+            // 4 LD A, (**)
             8'b00_111_010: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -352,7 +352,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 2 INC r16 */
+            // 2 INC r16
             8'b00_xx0_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; end
@@ -360,7 +360,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 2 DEC r16 */
+            // 2 DEC r16
             8'b00_xx1_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; end
@@ -368,8 +368,8 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 INC r8 */
-            /* 4 DEC r8 */
+            // 4 INC r8
+            // 4 DEC r8
             8'b00_xxx_10x: case (t)
 
                 0: begin t <= 1;
@@ -393,7 +393,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 3 LD r, i8 */
+            // 3 LD r, i8
             8'b00_xxx_110: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:3]; cursor <= hl; end
@@ -402,7 +402,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 2 RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF */
+            // 2 RLCA, RRCA, RLA, RRA, DAA, CPL, SCF, CCF
             8'b00_xxx_111: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; op1 <= a; alu_m <= {1'b1, opcode[5:3]}; end
@@ -410,7 +410,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 LD r, r */
+            // 4 LD r, r
             8'b01_110_110: halt <= 1;
             8'b01_xxx_xxx: case (t)
 
@@ -421,7 +421,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 3 <alu> A, r */
+            // 3 <alu> A, r
             8'b10_xxx_xxx: case (t)
 
                 0: begin t <= 1; op1   <= a; pc <= pc + 1; reg_n <= opcode[2:0]; alt_a <= 1; cursor <= hl; end
@@ -430,7 +430,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 2/3 RET c | RET */
+            // 2/3 RET c | RET
             8'b11_001_001,
             8'b11_xxx_000: case (t)
 
@@ -440,7 +440,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 POP r16 */
+            // 4 POP r16
             8'b11_xx0_001: case (t)
 
                 0: begin t <= 1; cursor <= sp;         alt_a <= 1;  pc    <= pc + 1; end
@@ -455,21 +455,21 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 1 JP (HL) */
+            // 1 JP (HL)
             8'b11_101_001: case (t)
 
                 0: begin pc <= hl; end
 
             endcase
 
-            /* 1 LD SP, HL */
+            // 1 LD SP, HL
             8'b11_111_001: case (t)
 
                 0: begin pc <= pc + 1; reg_n <= `REG_SP; reg_w <= 1; {reg_u, reg_l} <= hl; end
 
             endcase
 
-            /* 4 JP c, ** | JP ** */
+            // 4 JP c, ** | JP **
             8'b11_000_011,
             8'b11_xxx_010: case (t)
 
@@ -480,7 +480,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 2 OUT (*), A */
+            // 2 OUT (*), A
             8'b11_010_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -488,7 +488,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 3 IN  A, (*) */
+            // 3 IN  A, (*)
             8'b11_011_011: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; end
@@ -497,7 +497,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 5 EX (SP), HL */
+            // 5 EX (SP), HL
             8'b11_100_011: case (t)
 
                 0: begin t <= 1; alt_a <= 1; cursor <= sp; pc <= pc + 1;  end
@@ -508,21 +508,21 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 1 EX DE, HL */
+            // 1 EX DE, HL
             8'b11_101_011: case (t)
 
                 0: begin pc <= pc + 1; ex_de_hl <= 1; end
 
             endcase
 
-            /* 1 DI, EI */
+            // 1 DI, EI
             8'b11_11x_011: case (t)
 
                 0: begin pc <= pc + 1; ei_ <= opcode[3]; end
 
             endcase
 
-            /* 3/6 CALL c, ** */
+            // 3/6 CALL c, **
             8'b11_001_101,
             8'b11_xxx_100: case (t)
 
@@ -536,7 +536,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 PUSH r16 */
+            // 4 PUSH r16
             8'b11_xx0_101: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; reg_n <= opcode[5:4]; cursor <= sp; end
@@ -546,7 +546,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 3 <alu> A, i8 */
+            // 3 <alu> A, i8
             8'b11_xxx_110: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; alu_m <= opcode[5:3]; op1 <= a; end
@@ -555,7 +555,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 4 RST # */
+            // 4 RST #
             8'b11_xxx_111: case (t)
 
                 0: begin t <= 1; pc    <= pc + 1; cursor <= sp; end
@@ -565,7 +565,7 @@ always @(posedge pin_clk) begin
 
             endcase
 
-            /* 3+ Префикс EDh */
+            // 3+ Префикс EDh
             8'b11_101_101: case (t)
 
                 0: begin t <= 1; pc <= pc + 1; m  <= 0; end
@@ -783,9 +783,58 @@ always @(posedge pin_clk) begin
 
             endcase
 
+            // Префикс CBh
+            8'b11_001_011: case (t)
+
+                0: begin t <= 1; pc <= pc + 1; cursor <= hl; end
+                1: begin t <= 2; pc <= pc + 1; ed <= pin_i; reg_n <= pin_i[2:0]; alt_a <= (pin_i[2:0] == 3'b110); end
+                2: begin t <= 3;
+
+                    // Операнд может идти из памяти (HL) или из Reg8
+                    op1 <= reg_hl ? pin_i : reg_r8;
+
+                    // Второй операнд [5:3] для bit | res[6]=0, set[6]=1
+                    op2 <= ed[6:3];
+
+                    // Выбор режима
+                    casex (ed)
+
+                        // Инструкции RLC, RRC, RL, RR
+                        8'b00_0xx_xxx: alu_m <= `ALU_RLC + ed[4:3];
+
+                        // Инструкции SLA, SRA, SLL, SRL
+                        8'b00_1xx_xxx: alu_m <= `ALU_SLA + ed[4:3];
+
+                        // Инструкции 101xx: 101[01]=BIT, 101[10]=RES, 101[11]=SET
+                              default: alu_m <= `ALU_BIT + (ed[7:6] - 1);
+
+                    endcase
+
+                end
+                3: begin t <= 4;
+
+                    fw    <= 1'b1;
+                    reg_f <= alu_f;
+
+                    if (alu_m != `ALU_BIT) begin
+
+                         pin_enw <=  reg_hl;
+                         alt_a   <=  reg_hl;
+                         pin_o   <=  alu_r;
+                         reg_l   <=  alu_r;
+                         reg_b   <= !reg_hl;
+
+                    end
+
+                end
+                4: begin t <= 0; alt_a <= 0; end
+
+            endcase
+
         endcase
 
     end
+
 end
 
 // ---------------------------------------------------------------------
