@@ -24,6 +24,7 @@ wire [ 7:0] out;                // Для записи
 wire        we;
 wire        print;              // Сигнал печати символа out
 reg  [ 7:0] keyb = 0;
+wire        kback;
 
 initial $readmemh("program.hex", prgmem, 16'h0000);
 integer i;
@@ -57,7 +58,8 @@ bf bfunit(
     .cursor     (cursor),
     .out        (out),
     .we         (we),
-    .print      (print)
+    .print      (print),
+    .kback      (kback)
 );
 
 endmodule

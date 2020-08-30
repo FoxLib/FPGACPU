@@ -22,7 +22,8 @@ module bf(
     output reg [15:0]   cursor,
     output reg [ 7:0]   out,            // Данные для записи
     output reg          we,             // Сигнал записи в память
-    output reg          print           // Сигнал печати `out`
+    output reg          print,          // Сигнал печати `out`
+    output reg          kback           // Данные приняты с keyb
 );
 
 initial begin
@@ -35,25 +36,56 @@ initial begin
 
 end
 
-reg  [2:0] tstate = 0;
+reg        tstate = 0;
 reg  [3:0] latch;
+reg  [7:0] counter;
 wire [3:0] opcode = tstate ? latch : i_prg;
 
 always @(posedge clock) begin
 
     we    <= 0;
     print <= 0;
+    kback <= 0;
+    pc    <= pc + 1;
 
     if (tstate == 0) begin latch <= i_prg; end
 
     case (opcode)
 
-        /* > */ 0: begin pc <= pc + 1; cursor <= cursor + 1; end
-        /* < */ 1: begin pc <= pc + 1; cursor <= cursor - 1; end
-        /* + */ 2: begin pc <= pc + 1; out <= i_din + 1; we <= 1; end
-        /* - */ 3: begin pc <= pc + 1; out <= i_din - 1; we <= 1; end
-        /* . */ 4: begin pc <= pc + 1; out <= i_din; print <= 1; end
-        /* , */ 5: begin if (keyb) begin pc <= pc + 1; out <= keyb; we <= 1; end end
+        /* > */ 0: begin cursor <= cursor + 1; end
+        /* < */ 1: begin cursor <= cursor - 1; end
+        /* + */ 2: begin out <= i_din + 1; we <= 1; end
+        /* - */ 3: begin out <= i_din - 1; we <= 1; end
+        /* . */ 4: begin out <= i_din; print <= 1; end
+        /* , */ 5: begin if (keyb) begin out <= keyb; we <= 1; kback <= 1; end else pc <= pc; end
+        /* [ */ 6: case (tstate) // Если не 0, то перейти к следующей ячейке
+
+            0: begin counter <= 1; if (i_din == 0) tstate <= 1; end
+            1: begin
+
+                if      (i_prg == 6) begin counter <= counter + 1; end
+                else if (i_prg == 7) begin counter <= counter - 1;
+                         if (counter == 1) tstate <= 0;
+                end
+
+            end
+
+        endcase
+        /* ] */ 7: case (tstate) // Если 0, то перейти к следующей ячейке
+
+            0: begin counter <= 1; if (i_din) begin pc <= pc - 1; tstate <= 1; end end
+            1: begin
+
+                pc <= pc - 1;
+
+                if      (i_prg == 7) begin counter <= counter + 1; end
+                else if (i_prg == 6) begin counter <= counter - 1;
+                         if (counter == 1) begin tstate <= 0; pc <= pc; end
+                end
+
+            end
+
+        endcase
 
     endcase
 
