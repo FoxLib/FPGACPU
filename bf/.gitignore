@@ -19,6 +19,7 @@ timing
 *.jic
 *.map
 *.qqq
+*.dump
 .qsys_edit
 greybox_tmp
 undo_redo.txt

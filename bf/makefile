@@ -1,16 +1,15 @@
 all:
-	iverilog -g2005-sv -DICARUS=1 tb.v -o tb.qqq
-	vvp tb.qqq >> /dev/null
-
+	iverilog -g2005-sv -DICARUS=1 tb.v bf.v -o tb.qqq
+	vvp tb.qqq > tb.dump
+vcd:
+	gtkwave tb.vcd
 wave:
 	gtkwave tb.gtkw
-
 mif:
 	date
 	quartus_cdb de0 -c de0 --update_mif
 	quartus_asm --read_settings_files=on --write_settings_files=off de0 -c de0
 	date
-
 clean:
 	rm -f tb.qqq
 	rm -rf db incremental_db simulation timing
