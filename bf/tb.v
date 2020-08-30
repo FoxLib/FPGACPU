@@ -1,10 +1,6 @@
 `timescale 10ns / 1ns
 
-/*
- * Процессор BrainF
- */
-
-module main;
+module tb;
 
 // ---------------------------------------------------------------------
 
@@ -12,7 +8,7 @@ reg         clk;
 always #0.5 clk = ~clk;
 
 initial begin clk = 1; #2000 $finish; end
-initial begin $dumpfile("main.vcd"); $dumpvars(0, main); end
+initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
 
 // ---------------------------------------------------------------------
 
