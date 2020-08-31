@@ -10,7 +10,7 @@ cls:        ld      hl, $0000
             ld      b, l
             ld      c, a
             ld      (cursor_attr), a
-clsm1:       ld      (hl), b
+clsm1:      ld      (hl), b
             inc     l
             jr      nz, clsm1
             inc     h
@@ -183,6 +183,10 @@ SL2:        push    hl
             push    de
             push    bc
             ld      c,  $e0
+            push    bc          ; Сохранить B -> B'
+            exx
+            pop     bc
+            exx
 
             ; Сдвинуть первые 7 линии
             call    SLCP
@@ -190,12 +194,19 @@ SL2:        push    hl
             sub     a, 8
             ld      d, a
 
+            exx
+            ld      a, b
+            cp      1
+            exx                 ; Проверить на B=1
+            jr      z, SL7      ; Если так, то не поднимать линию
+
             ; 8-я линия
             ld      e, $e0
             ld      c, $20
             ld      l, b
             call    SLCP
-            pop     bc
+
+SL7:        pop     bc
             pop     de
             pop     hl
 

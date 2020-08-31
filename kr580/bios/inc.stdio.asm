@@ -38,38 +38,42 @@ getch:      push    bc
             ld      hl, keyb_spec
             in      a, ($ff)
             ld      b, a
-getchl:     in      a, ($ff)        ; Ждать переключения клавиши
+
+            ; Ждать нажатия клавиши
+getchl:     in      a, ($ff)
             cp      b
             jr      z, getchl
             ld      b, a
 
             ; Обработка нажатия клавиш
             in      a, ($fe)        ; Полученный символ
-            cp      $11             ; Левый SHIFT нажат
-            jr      nz, $+6
-            set     0, (hl)
+            cp      $11
+            jr      nz, $+6         ; (skip 2 instr)
+            set     0, (hl)         ; Левый SHIFT нажат
             jr      getchl
-            cp      $11 + $80       ; Левый SHIFT отпущен
-            jr      nz, $+6
-            res     0, (hl)
+
+            cp      $11 + $80
+            jr      nz, $+6         ; (skip 2 instr)
+            res     0, (hl)         ; Левый SHIFT отпущен
             jr      getchl
+
             cp      $80
             jr      nc, getchl      ; Отпущенная клавиша не интересует
 
-            ; Если SHIFT отпущен => AZ -> az
+            ; Если SHIFT отпущен
             bit     0, (hl)
-            jr      nz, getch1
+            jr      nz, getch1      ; Если SHIFT отпущен => AZ -> az
             cp      'A'
             jr      c, getch1       ; Acc < 'A', пропуск
             cp      'Z'+1
             jr      nc, getch1      ; Acc > 'Z', пропуск
             add     'a'-'A'         ; Коррекция Acc
 
-            ; Далее код если SHIFT зажат
+            ; Если SHIFT зажат
 getch1:     bit     0, (hl)
             jr      z, getch2
 
-            ; Поиск символа с нажатым SHIFT
+            ; Поиск символа с нажатым SHIFT (Z=0)
             ld      hl, getchtrn
 getch3:     ld      c, a
             ld      a, (hl)
@@ -83,6 +87,7 @@ getch3:     ld      c, a
             cp      b
             jr      nz, getch3      ; Повторить, пока не совпадёт
             ld      a, c
+
 getch2:     pop     hl
             pop     bc
             ret
@@ -97,6 +102,8 @@ getchtrn:   defb    '`', '~'
             defb    '\\', '|'
             defb    '[', '{'
             defb    ']', '}'
+            defb    '-', '_'
+            defb    '=', '+'
             defb    '0', ')'
             defb    '1', '!'
             defb    '2', '@'
@@ -107,6 +114,4 @@ getchtrn:   defb    '`', '~'
             defb    '7', '&'
             defb    '8', '*'
             defb    '9', '('
-            defb    '-', '_'
-            defb    '=', '+'
             defb    0
