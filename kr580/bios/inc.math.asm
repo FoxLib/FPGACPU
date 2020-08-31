@@ -5,70 +5,32 @@
 ; ----------------------------------------------------------------------
 
 ; Параметры
-div16c:     defb    0                   ; Счетчик битов
-div16t:     defb    0, 0                ; Временное сохранение
-div16r:     defb    0, 0                ; Результат 16 бит
-
-; Процедура
-div16u:     push    af
-            push    bc
-
-            ; Обнулить результат
-            ld      a, 16
-            ld      hl, $0000
-            ld      (div16r), hl
-            ld      (div16c), a
-
-            ; Инвертировать BC = -BC
-            xor     a
-            sub     c
-            ld      c, a
-            ld      a, 0
-            sbc     a, b
-            ld      b, a
-
-            ; Сдвиг результата (16 бит)
-d16u1:      push    hl
-            ld      hl, (div16r)
-            add     hl, hl
-            inc     hl
-            ld      (div16r), hl
+div16u:     push    bc
+            push    de
+            exx
             pop     hl
-
-            ; Сдвиг HL:DE (32 бита)
+            exx
+            ld      hl, $0000
+            ld      d, h
+            ld      e, l
+            ld      a, 16
+div16ul:    push    af
+            exx
+            add     hl, hl
+            exx
+            adc     hl, hl
+            sla     e                   ; Сдвиг DE (результата)
+            rl      d
+            inc     e                   ; Выставить 1 по умолчанию
             xor     a
-            ex      de, hl
-            add     hl, hl
-            ex      de, hl
-            adc     a, a
-            add     hl, hl
-            add     l
-            ld      l, a
-
-            ; Попробовать вычесть
-            ld      (div16t), hl    ; Сохранить в случае если HL меньше BC
-            add     hl, bc
-            jr      c, d16u2        ; HL >= BC
-
-            ; Вычесть BC из HL не получилось
-            ld      hl, (div16r)
-            dec     hl              ; Убрать единицу в бите 0 результата
-            ld      (div16r), hl
-            ld      hl, (div16t)    ; Вернуть назад HL
-
-            ; Повторить 16 раз
-d16u2:      ld      a, (div16c)
+            sbc     hl, bc
+            jr      nc, div16us         ; HL < BC ? Если нет, пропуск
+            add     hl, bc              ; Восстановить HL
+            dec     e                   ; Убрать 1 -> 0
+div16us:    pop     af
             dec     a
-            ld      (div16c), a
-            jr      nz, d16u1
-
-            ; Загружаем результаты
-            ex      de, hl
-            ld      hl, (div16r)    ; На самом деле тут DE=результат
-            ex      de, hl          ; А HL остается остатком от деления
-
+            jr      nz, div16ul
             pop     bc
-            pop     af
             ret
 
 ; ----------------------------------------------------------------------

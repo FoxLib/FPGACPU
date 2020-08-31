@@ -45,6 +45,7 @@ r10_getxy:  ld      hl, (cursor_xy)
 
 r10_setxy:  ld      hl, (reg_hl)
             ld      (cursor_xy), hl
+            call    clrcursor
             call    setcursor
             ret
 

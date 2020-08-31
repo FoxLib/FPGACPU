@@ -17,6 +17,13 @@ cursor_xy:  defw    0
             jp      rst10
 reg_hl:     defw    0
 
+; RST #18   Чтение символа с клавиатуры
+            jp      getch
+cursor_old: defw    $5800           ; Старая позиция курсора
+cursor_attr:defb    0               ; Текущий цветовой атрибут
+keyb_spec:  defb    0               ; Нажатые клавиши shift/ctrl/alt
+            defb    0
+
 ; ----------------------------------------------------------------------
 ; Модули ядра
 ; ----------------------------------------------------------------------
@@ -36,7 +43,19 @@ start:      ld      sp, $8000
             ld      a, $07
             apic    api_cls
 
+            ld      de, 34545
+            ld      bc, 35
+            call    div16u
+            call    itoa
+            call    print
+
             ld      de, murk
             apic    api_print
+
+ml:         rst     $18
+            rst     $08
+            jr      ml
+
+
             jr      $
-murk:       defb    "Andrey Nifedow TOP", 0
+murk:       defb    13,"Z80 BASIC 1.0",13,"Ready",13,0
