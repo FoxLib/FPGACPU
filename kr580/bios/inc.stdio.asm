@@ -32,16 +32,39 @@ L1:         push    hl
 ; Чтение нажатия символа с ожиданием и выдача его в A
 ; ----------------------------------------------------------------------
 getch:      push    bc
+            push    hl
+
+            ld      hl, keyb_spec
             in      a, ($ff)
             ld      b, a
 getchl:     in      a, ($ff)        ; Ждать переключения клавиши
             cp      b
             jr      z, getchl
             ld      b, a
+
+            ; Обработка нажатия клавиш
             in      a, ($fe)        ; Полученный символ
-            ; .. обработка shift
+            cp      $11             ; Левый SHIFT нажат
+            jr      nz, $+6
+            set     0, (hl)
+            jr      getchl
+            cp      $11 + $80       ; Левый SHIFT отпущен
+            jr      nz, $+6
+            res     0, (hl)
+            jr      getchl
             cp      $80
             jr      nc, getchl      ; Отпущенная клавиша не интересует
+
+            ; Если SHIFT отпущен => AZ -> az
+            bit     0, (hl)
+            jr      nz, getch1
+            cp      'A'
+            jr      c, getch1
+            cp      'Z'+1
+            jr      nc, getch1
+            add     'a'-'A'
+getch1:
             ; ...
+            pop     hl
             pop     bc
             ret

@@ -43,12 +43,6 @@ start:      ld      sp, $8000
             ld      a, $07
             apic    api_cls
 
-            ld      de, 34545
-            ld      bc, 35
-            call    div16u
-            call    itoa
-            call    print
-
             ld      de, murk
             apic    api_print
 
@@ -56,6 +50,4 @@ ml:         rst     $18
             rst     $08
             jr      ml
 
-
-            jr      $
-murk:       defb    13,"Z80 BASIC 1.0",13,"Ready",13,0
+murk:       defb    "Z80 BASIC 1.0",13,"Ready",13,0
