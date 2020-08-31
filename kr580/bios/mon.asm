@@ -50,4 +50,5 @@ ml:         rst     $18
             rst     $08
             jr      ml
 
-murk:       defb    "Z80 BASIC 1.0",13,"Ready",13,0
+murk:       defb    "TinyBasi",127,"1.0",13,0
+; буфер defw 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; буфер 32 байта

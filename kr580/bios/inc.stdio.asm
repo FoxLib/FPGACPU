@@ -31,6 +31,7 @@ L1:         push    hl
 ; ----------------------------------------------------------------------
 ; Чтение нажатия символа с ожиданием и выдача его в A
 ; ----------------------------------------------------------------------
+
 getch:      push    bc
             push    hl
 
@@ -59,12 +60,53 @@ getchl:     in      a, ($ff)        ; Ждать переключения кла
             bit     0, (hl)
             jr      nz, getch1
             cp      'A'
-            jr      c, getch1
+            jr      c, getch1       ; Acc < 'A', пропуск
             cp      'Z'+1
-            jr      nc, getch1
-            add     'a'-'A'
-getch1:
-            ; ...
-            pop     hl
+            jr      nc, getch1      ; Acc > 'Z', пропуск
+            add     'a'-'A'         ; Коррекция Acc
+
+            ; Далее код если SHIFT зажат
+getch1:     bit     0, (hl)
+            jr      z, getch2
+
+            ; Поиск символа с нажатым SHIFT
+            ld      hl, getchtrn
+getch3:     ld      c, a
+            ld      a, (hl)
+            and     a
+            ld      b, a
+            ld      a, c
+            jr      z, getch2       ; Протестировать на конец таблицы
+            inc     hl
+            ld      c, (hl)
+            inc     hl              ; Прочитать пару B -> C
+            cp      b
+            jr      nz, getch3      ; Повторить, пока не совпадёт
+            ld      a, c
+getch2:     pop     hl
             pop     bc
             ret
+
+; Таблица трансляции SHIFT
+getchtrn:   defb    '`', '~'
+            defb    ',', '<'
+            defb    '.', '>'
+            defb    '/', '?'
+            defb    ';', ':'
+            defb    $27, '"'
+            defb    '\\', '|'
+            defb    '[', '{'
+            defb    ']', '}'
+            defb    '0', ')'
+            defb    '1', '!'
+            defb    '2', '@'
+            defb    '3', '#'
+            defb    '4', '$'
+            defb    '5', '%'
+            defb    '6', '^'
+            defb    '7', '&'
+            defb    '8', '*'
+            defb    '9', '('
+            defb    '-', '_'
+            defb    '=', '+'
+            defb    0
