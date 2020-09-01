@@ -12,6 +12,10 @@ keyloop:    xor     a
             rst     $18                 ; Ввод символа
             cp      $08
             jr      z, bskey
+            cp      13
+            jr      z, entk
+            cp      $20
+            jr      c, keyloop          ; Не принимать спецсимволы
             ld      b, a
             ld      a, (cursor_xy)
             cp      $1f
@@ -37,6 +41,9 @@ bskey:      ld      hl, (cursor_xy)
             call    setcursor
             jr      keyloop
 
+            ; Ввод строки
+entk:       rst     $08
+            jr      keyloop
 
 ; Очистка экрана и приветствие
 clear:      xor     a
