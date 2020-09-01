@@ -7,19 +7,19 @@ buffer:     defw    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 start:      call    clear
 
-            ; Ввод строки
+            ; Ввод строки для ее интерпретации
 keyloop:    xor     a
-            rst     $18                 ; Ввод символа
+            rst     $18                 ; Ввод символа в ожидающем режиме
             cp      $08
-            jr      z, bskey
-            cp      13
-            jr      z, entk
+            jr      z, bskey            ; BACKSPACE
+            cp      $0D
+            jr      z, entk             ; ENTER
             cp      $20
             jr      c, keyloop          ; Не принимать спецсимволы
             ld      b, a
             ld      a, (cursor_xy)
             cp      $1f
-            jr      nc, keyloop
+            jr      nc, keyloop         ; Проверка на конец строки
             ld      a, b
             call    savek               ; Сохранить символ в буфере
             rst     $08
@@ -30,7 +30,7 @@ bskey:      ld      hl, (cursor_xy)
             ld      a, l
             and     a
             jr      z, keyloop          ; Курсор в X=0
-halt
+
             ; Передвинуть курсор влево
             call    clrcursor
             dec     l
@@ -61,8 +61,8 @@ savek:      exx
             exx
             ret
 
-            ; Ввод строки
-entk:       rst     $08
+            ; Интерпретация строки
+entk:       rst     $08                 ; Переход к новой строке
             jr      keyloop
 
 ; ----------------------------------------------------------------------
