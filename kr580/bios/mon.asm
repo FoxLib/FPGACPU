@@ -16,7 +16,7 @@ cursor_xy:  defw    0
             jp      rst10
 reg_hl:     defw    0
 
-; RST #18   Чтение символа с клавиатуры
+; RST #18   Чтение символа с клавиатуры (A=0 ожидать, A<>0 не ждать)
             jp      getch
 cursor_old: defw    $5800           ; Старая позиция курсора
 cursor_attr:defb    0               ; Текущий цветовой атрибут
