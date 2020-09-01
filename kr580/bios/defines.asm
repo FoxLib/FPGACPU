@@ -31,3 +31,14 @@ apic:       macro   arg     ; Вызов API-функции
             rst     $10
             defb    arg
             endm
+; ----------------------------------------------------------------------
+commands:   defb    5,"PRINT"       ; 0
+            ; defw  CMD_PRINT
+            defb    5,"INPUT"
+            ; defw  CMD_INPUT
+            defb    3,"FOR"
+            ; defw  CMD_FOR
+            defb    4,"NEXT"
+            ; defw  CMD_NEXT
+
+
