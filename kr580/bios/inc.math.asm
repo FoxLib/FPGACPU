@@ -100,14 +100,53 @@ negate:     push    de
 
 ; ----------------------------------------------------------------------
 ; Умножение DE на BC (16 bit)
-; DE-результат
+; HL:DE-результат
 ; ----------------------------------------------------------------------
 
-mul16u:     ld      a, 16
-            ld      hl, $0000
-            srl     b
-            rr      c
-            jr      c, mul16us
-mul16us:
+mult32r:    defw    0, 0
 
+mul16u:     push    bc
+            ld      a, 16
+            ld      hl, $0000
+            ld      (mult32r), hl
+            ld      (mult32r+2), hl
+
+            ; Проверить следующий бит, если 1, то RES32 += HL:DE
+mul16ul:    srl     b
+            rr      c
+            jr      nc, mul16us
+
+            ; Сложить mult16r + HL:DE
+            push    bc
+            push    de
+            push    hl
+            ex      de, hl
+            ld      bc, (mult32r)
+            add     hl, bc
+            ld      bc, (mult32r+2)
+            ex      de, hl
+            adc     hl, bc
+            ld      (mult32r), de
+            ld      (mult32r+2), hl
+            pop     hl
+            pop     de
+            pop     bc
+
+            ; Умножение HL:DE на 2
+mul16us:    sla     e
+            rl      d
+            adc     hl, hl
+            dec     a
+            jr      nz, mul16ul
+
+            ; Выгрузка результата
+            ld      hl, (mult32r+2)
+            ld      de, (mult32r)
+            pop     bc
             ret
+
+; ----------------------------------------------------------------------
+; Умножение DE на 10, HL:DE-результат
+; ----------------------------------------------------------------------
+
+mul10u:     ret

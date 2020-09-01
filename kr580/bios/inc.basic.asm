@@ -7,12 +7,6 @@ buffer:     defw    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 start:      call    clear
 
-            ;halt
-            ld      de, 123
-            ld      bc, 333
-            ;call    mul16u
-
-
             ; Ввод строки для ее интерпретации
 keyloop:    xor     a
             rst     $18                 ; Ввод символа в ожидающем режиме
