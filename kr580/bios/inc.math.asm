@@ -106,17 +106,25 @@ negate:     push    de
 mult32r:    defw    0, 0
 
 mul16u:     push    bc
+            push    af
+
             ld      a, 16
             ld      hl, $0000
             ld      (mult32r), hl
             ld      (mult32r+2), hl
 
-            ; Проверить следующий бит, если 1, то RES32 += HL:DE
-mul16ul:    srl     b
+            ; Пересчитать 16 бит (максимум)
+mul16ul:    push    af
+            ld      a, b
+            or      c
+            jr      z, mul16ule     ; Не считать старшие незначимые разряды
+
+            ; Проверка следующего бита
+            srl     b
             rr      c
             jr      nc, mul16us
 
-            ; Сложить mult16r + HL:DE
+            ; Сложить RES32 += HL:DE
             push    bc
             push    de
             push    hl
@@ -136,14 +144,19 @@ mul16ul:    srl     b
 mul16us:    sla     e
             rl      d
             adc     hl, hl
+            pop     af
             dec     a
             jr      nz, mul16ul
 
             ; Выгрузка результата
-            ld      hl, (mult32r+2)
+mul16uls:   ld      hl, (mult32r+2)
             ld      de, (mult32r)
+            pop     af
             pop     bc
             ret
+
+mul16ule:   pop     af
+            jr      mul16uls
 
 ; ----------------------------------------------------------------------
 ; Умножение DE на 10, HL:DE-результат
