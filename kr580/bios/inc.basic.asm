@@ -21,6 +21,7 @@ keyloop:    xor     a
             cp      $1f
             jr      nc, keyloop
             ld      a, b
+            call    savek               ; Сохранить символ в буфере
             rst     $08
             jr      keyloop
 
@@ -29,7 +30,7 @@ bskey:      ld      hl, (cursor_xy)
             ld      a, l
             and     a
             jr      z, keyloop          ; Курсор в X=0
-
+halt
             ; Передвинуть курсор влево
             call    clrcursor
             dec     l
@@ -37,15 +38,37 @@ bskey:      ld      hl, (cursor_xy)
             ld      a, ' '
             ld      b, h
             ld      c, l
+            call    savek
             call    prn                 ; Очистить символ
             call    setcursor
             jr      keyloop
+
+            ; Запись в буфер символа A
+savek:      exx
+            ex      af, af'
+            ld      a, (cursor_xy)
+            ld      b, 0
+            ld      c, a
+            ld      hl, buffer
+            add     hl, bc              ; HL = cursor_x + buffer
+            ex      af, af'
+            ld      (hl), a             ; Записать символ
+            ex      af, af'
+            xor     a
+            inc     hl
+            ld      (hl), a             ; Вставить конец строки
+            ex      af, af'
+            exx
+            ret
 
             ; Ввод строки
 entk:       rst     $08
             jr      keyloop
 
+; ----------------------------------------------------------------------
 ; Очистка экрана и приветствие
+; ----------------------------------------------------------------------
+
 clear:      xor     a
             out     ($FE), a
             ld      a, $07
