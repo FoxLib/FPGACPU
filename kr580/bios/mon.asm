@@ -1,7 +1,6 @@
 ; RST #00   Сброс
             di
-            xor     a
-            out     ($FE), a
+            ld      sp, $8000
             jp      start
 reg_a:      defb    0
 
@@ -34,21 +33,4 @@ keyb_spec:  defb    0               ; Нажатые клавиши shift/ctrl/a
             include "inc.math.asm"
             include "inc.stdio.asm"
             include "inc.spi.asm"
-
-; ----------------------------------------------------------------------
-; Старт операционной системы
-; ----------------------------------------------------------------------
-
-start:      ld      sp, $8000
-            ld      a, $07
-            apic    api_cls
-
-            ld      de, murk
-            apic    api_print
-
-ml:         rst     $18
-            rst     $08
-            jr      ml
-
-murk:       defb    "TinyBasi",127,"1.0",13,0
-; буфер defw 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ; буфер 32 байта
+            include "inc.basic.asm"

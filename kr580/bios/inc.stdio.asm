@@ -74,6 +74,14 @@ getch1:     bit     0, (hl)
             jr      z, getch2
 
             ; Поиск символа с нажатым SHIFT (Z=0)
+            ;
+            ; hl = (uint8_t*) getchtrn;
+            ; while (m = *hl) {
+            ;   if (m == a) return *(hl+1);
+            ;   hl += 2;
+            ; }
+            ; return a;
+
             ld      hl, getchtrn
 getch3:     ld      c, a
             ld      a, (hl)
