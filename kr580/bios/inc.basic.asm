@@ -1,5 +1,6 @@
 hello:      defb    "TinyBasi",127,"1.0",13,0
 curline:    defw    0                   ; Номер строки (0..65535)
+testing:    defb "10 CLS",0
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
@@ -7,10 +8,9 @@ curline:    defw    0                   ; Номер строки (0..65535)
 
 start:      call    clear
 
-
-        ld      hl, testing
-        call    interpret
-        jr      $
+        ;ld      hl, testing
+        ;call    interpret
+        ;jr      $
 
 
 clrbuf:     xor     a
@@ -251,5 +251,10 @@ clear:      xor     a
 ; Исполнение команд интерпретатора
 ; ----------------------------------------------------------------------
 
+; === Печать выражения(й)
 CMD_PRINT:  ret
-CMD_CLS:    ret
+
+; === Очистка экрана
+CMD_CLS:    ld      a, (cursor_attr)
+            apic    api_cls
+            jp      nextline
