@@ -45,14 +45,30 @@ apic:       macro   arg     ; Вызов API-функции
             rst     $10
             defb    arg
             endm
+
 ; ----------------------------------------------------------------------
-commands:   defb    5,"PRINT"       ; 0
-            ; defw  CMD_PRINT
-            defb    5,"INPUT"
+; Система команд Бейсика
+; ----------------------------------------------------------------------
+
+commands:
+            defb    5,"PRINT"
+            defw    CMD_PRINT
+            defb    3,"CLS"
+            defw    CMD_CLS
+
+            ; defb  3,"NEW"
+            ; defb  3,"RUN"
+
+            ;defb    5,"INPUT"
             ; defw  CMD_INPUT
-            defb    3,"FOR"
+            ;defb    3,"FOR"
             ; defw  CMD_FOR
-            defb    4,"NEXT"
+            ;defb    4,"NEXT"
             ; defw  CMD_NEXT
+            ;defb    5,"PAPER"
+            ;defb    6,"BORDER"
+            ;defb    3,"INK"
+            ;defb    6,"LOCATE"
+            ;defb    1,"?"
 
-
+            defb    0

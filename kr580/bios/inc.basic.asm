@@ -6,6 +6,13 @@ curline:    defw    0                   ; Номер строки (0..65535)
 ; ----------------------------------------------------------------------
 
 start:      call    clear
+
+
+        ld      hl, testing
+        call    interpret
+        jr      $
+
+
 clrbuf:     xor     a
             ld      hl, buffer
             ld      (hl), a             ; Очистка буфера
@@ -185,6 +192,20 @@ entkint:    ld      a, 13
             rst     $08
             ld      a, 7
             ld      (cursor_attr), a
+
+            ; Если строка равна 0, то выполниить сейчас же
+            ld      hl, (curline)
+            ld      a, h
+            or      l
+            jr      z, entkintrn
+
+            ; Найти и встроить или заменить строку
+            halt
+
+            ; Ожидание ввода
+            jp      clrbuf
+
+entkintrn:  ld      hl, buffer
             call    interpret
             jp      clrbuf
 
@@ -229,3 +250,6 @@ clear:      xor     a
 ; ----------------------------------------------------------------------
 ; Исполнение команд интерпретатора
 ; ----------------------------------------------------------------------
+
+CMD_PRINT:  ret
+CMD_CLS:    ret

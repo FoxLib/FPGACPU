@@ -12,7 +12,7 @@ itoa:       push    bc
             push    hl
             ld      hl, itoa_dt+4       ; Последний символ
             ld      bc, 10
-L1:         push    hl
+itoal:      push    hl
             call    div16u              ; Разделить число на 10
             ld      a, l                ; Записать остаток в A
             add     a, '0'
@@ -21,7 +21,7 @@ L1:         push    hl
             dec     hl
             ld      a, d
             or      e
-            jr      nz, L1              ; Повторять пока не будет 0
+            jr      nz, itoal           ; Повторять пока не будет 0
             inc     hl                  ; Восстановить указатель
             ex      de, hl              ; Поместить HL -> DE
             pop     hl
