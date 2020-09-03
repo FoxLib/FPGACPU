@@ -4,13 +4,10 @@
 ; DE-результат выражения
 ; ----------------------------------------------------------------------
 
-; Уровень 1
-; =========
+; Уровень 1: Минус, плюс и логические операции
+; ----------------------------------------------------------------------
 expr_init:  ld      de, 0
-
-    halt
-
-expr:       call    expr1
+expr:       call    expr1           ; Левая часть
 expr_n:     ld      a, (hl)
             cp      '+'
             jr      z, e_plus
@@ -37,33 +34,63 @@ e_plus:     inc     hl
 ; Операция вычитания
 e_minus:    inc     hl
             push    de
-            call    expr1           ; BC-1, DE-2
+            call    expr1           ; DE -> BC, DE - 2-й операнд
             pop     bc
             push    hl
             push    bc
-            pop     hl
+            pop     hl              ; HL=BC
             xor     a
             sbc     hl, de
             ex      de, hl
             pop     hl              ; DE=BC-DE
             jr      expr_n
 
-; Уровень 2
+; Уровень 2: Умножение, деление, модуль
 ; ----------------------------------------------------------------------
 
-expr1:      call    expr2
-            ld      a, (hl)
-            cp      '/'
-            jr      z, e1_div
+expr1:      call    expr2           ; Левая часть
+expr1_n:    ld      a, (hl)
             cp      '*'
             jr      z, e1_mul
-            ret                     ; Нет более операторов
+            cp      '/'
+            jr      z, e1_div
+            cp      '%'
+            jr      z, e1_mod
+            ret                     ; Операторы не обнаружены
 
-; Операция деления
-e1_div:     halt
+; Деление с получением целого
+e1_div:     call    e1_divmod
+            push    hl
+            call    div16u
+            pop     hl
+            jr      expr1_n
 
-; Операция умножения
-e1_mul:     halt
+; Деление и получение модуля
+e1_mod:     call    e1_divmod
+            push    hl
+            call    div16u
+            ex      de, hl
+            pop     hl
+            jr      expr1_n
+
+; Умножение
+e1_mul:     inc     hl
+            push    de
+            call    expr2           ; DE-умножатор
+            pop     bc
+            push    hl
+            call    mul16u          ; DE = DE*BC
+            pop     hl
+            jr      expr1_n
+
+; Общая процедура для деления и модуля
+e1_divmod:  inc     hl
+            push    de
+            call    expr2
+            push    de
+            pop     bc
+            pop     de              ; SWAP BC, DE
+            ret
 
 ; Уровень 3
 ; ----------------------------------------------------------------------

@@ -2,7 +2,7 @@ hello:      defb    "TinyBasi",127,"1.0",13,0
 curline:    defw    0                   ; Номер строки (0..65535)
 
 ; ---
-testing:    defb "-21+(-3)",0
+testing:    defb "0/0",0
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
@@ -10,10 +10,10 @@ testing:    defb "-21+(-3)",0
 
 start:      call    clear
 
-;halt
-        ld      hl, testing
-        call    expr_init
-        jr      $
+    halt
+    ld      hl, testing
+    call    expr_init
+    jr      $
 
 
 clrbuf:     xor     a
