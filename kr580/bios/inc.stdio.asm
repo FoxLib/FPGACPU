@@ -37,11 +37,11 @@ atoi:       push    af
             push    bc
             ld      de, $0000
 atoil:      ld      a, (hl)
-            inc     hl
             sub     '0'
             jr      c, atoie
             cp      10
             jr      nc, atoie       ; '0' <= Acc <= '9'
+            inc     hl
             push    hl
             ld      bc, 10
             call    mul16u          ; DE *= 10

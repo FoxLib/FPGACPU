@@ -1,6 +1,8 @@
 hello:      defb    "TinyBasi",127,"1.0",13,0
 curline:    defw    0                   ; Номер строки (0..65535)
-testing:    defb "10 CLS",0
+
+; ---
+testing:    defb "-21+(-3)",0
 
 ; ----------------------------------------------------------------------
 ; Старт операционной системы
@@ -8,9 +10,10 @@ testing:    defb "10 CLS",0
 
 start:      call    clear
 
-        ;ld      hl, testing
-        ;call    interpret
-        ;jr      $
+;halt
+        ld      hl, testing
+        call    expr_init
+        jr      $
 
 
 clrbuf:     xor     a
@@ -122,7 +125,6 @@ entkl:      ld      a, (hl)
             pop     de
             xor     a
             sbc     hl, de              ; Количество символов (E)
-            dec     hl
             ex      de, hl              ; Вернуть HL к началу
             ld      bc, $0100+CLR_LINE  ; Переход в режим 1 + цвет
 

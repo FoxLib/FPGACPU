@@ -39,4 +39,5 @@ csym:       defb    0               ; Текущий интерпретируе�
             include "inc.stdio.asm"
             include "inc.spi.asm"
             include "inc.interpret.asm"
+            include "inc.expr.asm"
             include "inc.basic.asm"
