@@ -26,8 +26,8 @@ CLR_DFLT:           equ     7           ; Цвет по умолчанию
 ; Буферы
 ; ----------------------------------------------------------------------
 buffer:             equ     $5B00       ; Исходный код (32b)
-compiled:           equ     $5B20       ; Скомпилированный (32b)
-variable:           equ     $5B40       ; Описатели переменных (2 x 676) 1352 байт, переменная 2 байта 26 букв
+variable:           equ     $5B20       ; Описатели переменных A-Z (2x26)
+progmem:            equ     $5B60       ; Память программы
 
 ; Макросы
 ; ----------------------------------------------------------------------
@@ -50,25 +50,23 @@ apic:       macro   arg     ; Вызов API-функции
 ; Система команд Бейсика
 ; ----------------------------------------------------------------------
 
-commands:
+statements:
             defb    5,"PRINT"
             defw    CMD_PRINT
             defb    3,"CLS"
             defw    CMD_CLS
 
-            ; defb  3,"NEW"
-            ; defb  3,"RUN"
-
+            ;defb  3,"NEW"
+            ;defb  3,"RUN"
             ;defb    5,"INPUT"
-            ; defw  CMD_INPUT
             ;defb    3,"FOR"
-            ; defw  CMD_FOR
             ;defb    4,"NEXT"
-            ; defw  CMD_NEXT
             ;defb    5,"PAPER"
             ;defb    6,"BORDER"
             ;defb    3,"INK"
             ;defb    6,"LOCATE"
             ;defb    1,"?"
+            ;defb    4, "POKE"
+            ;defb    4, "PEEK"
 
             defb    0

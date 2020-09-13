@@ -7,7 +7,7 @@
 
 ip_ptr:     defw    0
 
-            ; Сначала отсеять пробелы и цифры вначале
+            ; Отсеять пробелы и цифры вначале
 interpret:  ld      a, (hl)
             inc     hl
             cp      ' '
@@ -33,8 +33,10 @@ runline:    ld      a, (hl)
             jr      z, runline      ; Не учитывать пробел в начале
             and     a
             ret     z               ; Команда завершена
+
+            ; Начать поиск
             dec     hl
-            ld      de, commands
+            ld      de, statements
 
 ipnx:       ; Искать следуюшую команду
             ld      a, (de)

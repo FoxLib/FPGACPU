@@ -1,6 +1,6 @@
 ; RST #00   Сброс
             di
-            ld      sp, $8000
+            ld      sp, $0000
             jp      start
 reg_a:      defb    0
 

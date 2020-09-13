@@ -1,13 +1,26 @@
 
 ; ----------------------------------------------------------------------
-; Вычисление выражения HL
-; DE-результат выражения
+; Вычисление выражения HL => DE-результат
+; AFFECTED: AF, BC
 ; ----------------------------------------------------------------------
 
-; Уровень 1: Минус, плюс и логические операции
+; Уровень 1: Минус, плюс, логические операции
 ; ----------------------------------------------------------------------
+stack_expr: defw    0                   ; Для быстрого возврата ERROR
+expr_errno: defb    0                   ; Код ошибки
 expr_init:  ld      de, 0
-expr:       call    expr1           ; Левая часть
+            push    hl
+            ld      h, e
+            ld      l, e
+            ld      a, e
+            add     hl, sp
+            ld      (stack_expr), hl    ; Сохранить указатель стека
+            ld      (expr_errno), a
+            pop     hl
+
+; Начать вычисления
+; -----------------------------------------------------------------------
+expr:       call    expr1               ; Левая часть
 expr_n:     ld      a, (hl)
             cp      '+'
             jr      z, e_plus
@@ -17,25 +30,22 @@ expr_n:     ld      a, (hl)
             ;jr     z, e_or
             cp      '&'
             ;jr     z, e_and
-            cp      '^'
+            cp      '#'
             ;jr     z, e_xor
+            cp      '>'             ; Сравнить A < B -> 0 или 1
+            cp      '<'
+            cp      '='
             ret                     ; Завершение разбора
 
 ; Операция сложения
-e_plus:     inc     hl
-            push    de
-            call    expr1           ; Вычисление правой части
-            pop     bc
+e_plus:     call    e_commom
             ex      de, hl
             add     hl, bc
             ex      de, hl          ; DE = left + right
             jr      expr_n          ; К следующей части
 
 ; Операция вычитания
-e_minus:    inc     hl
-            push    de
-            call    expr1           ; DE -> BC, DE - 2-й операнд
-            pop     bc
+e_minus:    call    e_commom        ; DE -> BC, DE - 2-й операнд
             push    hl
             push    bc
             pop     hl              ; HL=BC
@@ -44,6 +54,13 @@ e_minus:    inc     hl
             ex      de, hl
             pop     hl              ; DE=BC-DE
             jr      expr_n
+
+; Вычисление правой части
+e_commom:   inc     hl
+            push    de
+            call    expr1
+            pop     bc
+            ret
 
 ; Уровень 2: Умножение, деление, модуль
 ; ----------------------------------------------------------------------
@@ -56,6 +73,8 @@ expr1_n:    ld      a, (hl)
             jr      z, e1_div
             cp      '%'
             jr      z, e1_mod
+            cp      '^'
+            ; jr z,     e1_pow
             ret                     ; Операторы не обнаружены
 
 ; Деление с получением целого
@@ -103,26 +122,28 @@ expr2:      call    spaces          ; Убрать лидирующие проб
             call    expr            ; Если скобка открыта, выполнить
             ld      a, (hl)
             cp      ')'
-            jr      nz, expr_eprt   ; Ошибка завершения скобок!
+            jr      nz, expr_err1   ; Ошибка завершения скобок!
             inc     hl
             jr      spaces          ; Удалить пробелы и выйти с 3-уровня
 
             ; Проверка на VAR|DIGIT
 expr2_1:    cp      '-'
             jr      z, expr2_1m     ; Отрицательное число
+            ; cp      '$'   hex
+            ; jr      z, expr2_1h
             cp      'A'
             jr      c, expr2_1n     ; Не принадлежит A..Z
             cp      'Z'+1
             jr      c, expr2_1v     ; Принадлежит A..Z
 expr2_1n:   cp      '0'
-            jr      c, expr2_1u     ; Неизвестно что это
+            jr      c, expr_err2    ; Неизвестно что это
             cp      '9'+1
-            jr      nc, expr2_1u
+            jr      nc, expr_err2
             dec     hl
             call    atoi            ; Это число --> DE
             jr      spaces          ; Убрать пробелы и выйти из процедуры
 
-expr2_1v:   ; @TODO поиск переменной
+expr2_1v:   ; @TODO поиск переменной или функции
             halt
             jr      spaces
 
@@ -131,9 +152,6 @@ expr2_1m:   ld      de, 0
             dec     hl
             ret
 
-            ; Ошибка выражения, выход с нулем
-expr2_1u:   halt
-
 ; Пропуск пробелов во входящей строке
 spaces:     ld      a, (hl)
             cp      ' '
@@ -141,9 +159,13 @@ spaces:     ld      a, (hl)
             inc     hl
             jr      spaces
 
+; Запись ошибки выражения и возврат стека
 ; ----------------------------------------------------------------------
-expr_eprt:  halt
+expr_err1:  ld      a, 1                ; Ошибка закрытия скобки
+            jr      expr_error
+expr_err2:  ld      a, 2                ; Неизвестный символ
+expr_error: ld      (expr_errno), a
+            ld      hl, (stack_expr)
+            ld      sp, hl
 
-expr_error: ; ОШИБКА ВЫРАЖЕНИЯ
-            halt
-            jr      $
+            ret

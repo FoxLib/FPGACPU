@@ -10,12 +10,6 @@ testing:    defb "0/0",0
 
 start:      call    clear
 
-    halt
-    ld      hl, testing
-    call    expr_init
-    jr      $
-
-
 clrbuf:     xor     a
             ld      hl, buffer
             ld      (hl), a             ; Очистка буфера
@@ -162,12 +156,8 @@ sel03:      cp      '0'
 sel03a:     ld      c, CLR_NUMBER
             jr      nextcls
 
-            ; Обработка '-+.' и "..."
-sel04:      cp      '-'
-            jr      z, sel03a            ; +/-/. обычно относится к числам
-            cp      '+'
-            jr      z, sel03a
-            cp      '.'
+            ; Обработка '.' и "..."
+sel04:      cp      '.'
             jr      z, sel03a
 
             ; Кавычки "..."
@@ -201,7 +191,7 @@ entkint:    ld      a, 13
             or      l
             jr      z, entkintrn
 
-            ; Найти и встроить или заменить строку
+            ; Найти, встроить или заменить строку
             halt
 
             ; Ожидание ввода
