@@ -22,40 +22,40 @@ enum EnumOperands { ___ = 0,
 enum EnumInstruction {
 
     // Базовые
-    BRK = 1,  ORA, AND, EOR, ADC, STA, LDA,
-    CMP, SBC, BPL, BMI, BVC, BVS, BCC, BCS,
-    BNE, BEQ, JSR, RTI, RTS, LDY, CPY, CPX,
-    ASL, PHP, CLC, BIT, ROL, PLP, SEC, LSR,
-    PHA, PLA, JMP, CLI, ROR, SEI, STY, STX,
-    DEY, TXA, TYA, TXS, LDX, TAY, TAX, CLV,
-    TSX, DEC, INY, DEX, CLD, INC, INX, NOP,
+    IBRK = 1,   ORA, IAND, EOR, IADC, STA, LDA,
+    ICMP,  SBC, BPL,  BMI, BVC,  BVS, BCC, BCS,
+     BNE,  BEQ, JSR,  RTI, RTS,  LDY, CPY, CPX,
+     ASL,  PHP, CLC,  BIT, ROL,  PLP, SEC, LSR,
+     PHA,  PLA, JMP,  CLI, ROR,  SEI, STY, STX,
+     DEY,  TXA, TYA,  TXS, LDX,  TAY, TAX, CLV,
+     TSX, IDEC, INY,  DEX, CLD, IINC, INX, NOP,
 
     // Расширенные
-    SED, AAC, SLO, RLA, RRA, SRE, DCP,
-    ISC, LAX, AAX, ASR, ARR, ATX, AXS, XAA,
-    AXA, SYA, SXA, DOP
+    SED, AAC, SLO, RLA, RRA, SRE, DCP, ISC, LAX,
+    AAX, ASR, ARR, ATX, AXS, XAA, AXA, SYA, SXA,
+    DOP
 };
 
 // Имена инструкции
 const unsigned char opcode_names[256]  PROGMEM = {
 
-    /*        00  01   02   03   04   05   06   07   08   09   0A   0B   0C   0D   0E   0F */
-    /* 00 */ BRK, ORA, ___, SLO, DOP, ORA, ASL, SLO, PHP, ORA, ASL, AAC, DOP, ORA, ASL, SLO,
-    /* 10 */ BPL, ORA, ___, SLO, DOP, ORA, ASL, SLO, CLC, ORA, NOP, SLO, DOP, ORA, ASL, SLO,
-    /* 20 */ JSR, AND, ___, RLA, BIT, AND, ROL, RLA, PLP, AND, ROL, AAC, BIT, AND, ROL, RLA,
-    /* 30 */ BMI, AND, ___, RLA, DOP, AND, ROL, RLA, SEC, AND, NOP, RLA, DOP, AND, ROL, RLA,
-    /* 40 */ RTI, EOR, ___, SRE, DOP, EOR, LSR, SRE, PHA, EOR, LSR, ASR, JMP, EOR, LSR, SRE,
-    /* 50 */ BVC, EOR, ___, SRE, DOP, EOR, LSR, SRE, CLI, EOR, NOP, SRE, DOP, EOR, LSR, SRE,
-    /* 60 */ RTS, ADC, ___, RRA, DOP, ADC, ROR, RRA, PLA, ADC, ROR, ARR, JMP, ADC, ROR, RRA,
-    /* 70 */ BVS, ADC, ___, RRA, DOP, ADC, ROR, RRA, SEI, ADC, NOP, RRA, DOP, ADC, ROR, RRA,
-    /* 80 */ DOP, STA, DOP, AAX, STY, STA, STX, AAX, DEY, DOP, TXA, XAA, STY, STA, STX, AAX,
-    /* 90 */ BCC, STA, ___, AXA, STY, STA, STX, AAX, TYA, STA, TXS, AAX, SYA, STA, SXA, AAX,
-    /* A0 */ LDY, LDA, LDX, LAX, LDY, LDA, LDX, LAX, TAY, LDA, TAX, ATX, LDY, LDA, LDX, LAX,
-    /* B0 */ BCS, LDA, ___, LAX, LDY, LDA, LDX, LAX, CLV, LDA, TSX, LAX, LDY, LDA, LDX, LAX,
-    /* C0 */ CPY, CMP, DOP, DCP, CPY, CMP, DEC, DCP, INY, CMP, DEX, AXS, CPY, CMP, DEC, DCP,
-    /* D0 */ BNE, CMP, ___, DCP, DOP, CMP, DEC, DCP, CLD, CMP, NOP, DCP, DOP, CMP, DEC, DCP,
-    /* E0 */ CPX, SBC, DOP, ISC, CPX, SBC, INC, ISC, INX, SBC, NOP, SBC, CPX, SBC, INC, ISC,
-    /* F0 */ BEQ, SBC, ___, ISC, DOP, SBC, INC, ISC, SED, SBC, NOP, ISC, DOP, SBC, INC, ISC
+    /*        00   01   02   03   04   05     06   07   08    09   0A   0B   0C    0D    0E   0F */
+    /* 00 */ IBRK, ORA, ___, SLO, DOP,  ORA,  ASL, SLO, PHP,  ORA, ASL, AAC, DOP,  ORA,  ASL, SLO,
+    /* 10 */ BPL,  ORA, ___, SLO, DOP,  ORA,  ASL, SLO, CLC,  ORA, NOP, SLO, DOP,  ORA,  ASL, SLO,
+    /* 20 */ JSR, IAND, ___, RLA, BIT, IAND,  ROL, RLA, PLP, IAND, ROL, AAC, BIT, IAND,  ROL, RLA,
+    /* 30 */ BMI, IAND, ___, RLA, DOP, IAND,  ROL, RLA, SEC, IAND, NOP, RLA, DOP, IAND,  ROL, RLA,
+    /* 40 */ RTI,  EOR, ___, SRE, DOP,  EOR,  LSR, SRE, PHA,  EOR, LSR, ASR, JMP,  EOR,  LSR, SRE,
+    /* 50 */ BVC,  EOR, ___, SRE, DOP,  EOR,  LSR, SRE, CLI,  EOR, NOP, SRE, DOP,  EOR,  LSR, SRE,
+    /* 60 */ RTS, IADC, ___, RRA, DOP, IADC,  ROR, RRA, PLA, IADC, ROR, ARR, JMP, IADC,  ROR, RRA,
+    /* 70 */ BVS, IADC, ___, RRA, DOP, IADC,  ROR, RRA, SEI, IADC, NOP, RRA, DOP, IADC,  ROR, RRA,
+    /* 80 */ DOP,  STA, DOP, AAX, STY,  STA,  STX, AAX, DEY,  DOP, TXA, XAA, STY,  STA,  STX, AAX,
+    /* 90 */ BCC,  STA, ___, AXA, STY,  STA,  STX, AAX, TYA,  STA, TXS, AAX, SYA,  STA,  SXA, AAX,
+    /* A0 */ LDY,  LDA, LDX, LAX, LDY,  LDA,  LDX, LAX, TAY,  LDA, TAX, ATX, LDY,  LDA,  LDX, LAX,
+    /* B0 */ BCS,  LDA, ___, LAX, LDY,  LDA,  LDX, LAX, CLV,  LDA, TSX, LAX, LDY,  LDA,  LDX, LAX,
+    /* C0 */ CPY, ICMP, DOP, DCP, CPY, ICMP, IDEC, DCP, INY, ICMP, DEX, AXS, CPY, ICMP, IDEC, DCP,
+    /* D0 */ BNE, ICMP, ___, DCP, DOP, ICMP, IDEC, DCP, CLD, ICMP, NOP, DCP, DOP, ICMP, IDEC, DCP,
+    /* E0 */ CPX,  SBC, DOP, ISC, CPX,  SBC, IINC, ISC, INX,  SBC, NOP, SBC, CPX,  SBC, IINC, ISC,
+    /* F0 */ BEQ,  SBC, ___, ISC, DOP,  SBC, IINC, ISC, SED,  SBC, NOP, ISC, DOP,  SBC, IINC, ISC
 };
 
 // Типы операндов для каждого опкода
@@ -102,7 +102,7 @@ const unsigned char cycles_basic[256]  PROGMEM = {
 };
 
 // ---------------------------------------------------------------------
-class CPU  {
+class CPU {
 
 protected:
 
@@ -116,20 +116,16 @@ public:
 
     CPU();
 
-    virtual unsigned char  read_byte(int);
-    virtual void           write_byte(int, unsigned char);
-
     int  get_effective(int);
     int  do_branch(int&, int);
     void do_brk();
-    int  disassemble(int);
     int  step();
 
-    // Макросы
+    // Флаги
     void SET_ZERO(int x)        { reg_P = x ? (reg_P & 0xFD) : (reg_P | 0x02); }
     void SET_OVERFLOW(int x)    { reg_P = x ? (reg_P | 0x40) : (reg_P & 0xBF); }
     void SET_CARRY(int x)       { reg_P = x ? (reg_P | 0x01) : (reg_P & 0xFE); }
-    void SET_DECIMAL(int x)     { reg_P = x ? (reg_P | 0x08) : (reg_P & 0xF7); }
+    void SET_IDECIMAL(int x)     { reg_P = x ? (reg_P | 0x08) : (reg_P & 0xF7); }
     void SET_BREAK(int x)       { reg_P = x ? (reg_P | 0x10) : (reg_P & 0xEF); }
     void SET_INTERRUPT(int x)   { reg_P = x ? (reg_P | 0x04) : (reg_P & 0xFB); }
     void SET_SIGN(int x)        { reg_P = (x & 0x80) ? (reg_P | 0x80) : (reg_P & 0x7F); };
@@ -140,9 +136,17 @@ public:
     int  IF_OVERFLOW()          { return (reg_P & 0x40 ? 1 : 0); }
     int  IF_SIGN()              { return (reg_P & 0x80 ? 1 : 0); }
 
+    // Стек
     void PUSH(int x)     { write_byte(0x100 + reg_S, x & 0xff); reg_S = ((reg_S - 1) & 0xff); }
     unsigned char PULL() { reg_S = (reg_S + 1) & 0xff; return read_byte(0x100 + reg_S); }
-    unsigned short read_word(int addr) { return read_byte(addr) + (read_byte(addr) << 8); }
+
+    // Работа с памятью
+    volatile unsigned char
+        read_byte (unsigned int addr);
+    volatile void
+        write_byte(unsigned int addr, unsigned char data);
+
+    unsigned short read_word (unsigned int addr) { return read_byte(addr) + (read_byte(addr) << 8); }
 
 };
 
@@ -347,7 +351,7 @@ int CPU::step() {
     switch (opname) {
 
         // Сложение с учетом переноса
-        case ADC: {
+        case IADC: {
 
             temp = src + reg_A + (reg_P & 1);
             SET_ZERO(temp & 0xff);
@@ -359,7 +363,7 @@ int CPU::step() {
         }
 
         // Логическое умножение
-        case AND: {
+        case IAND: {
 
             src &= reg_A;
             SET_SIGN(src);
@@ -401,7 +405,7 @@ int CPU::step() {
         }
 
         // Программное прерывание
-        case BRK: {
+        case IBRK: {
 
             reg_PC = (reg_PC + 2) & 0xffff;
             do_brk();
@@ -412,18 +416,18 @@ int CPU::step() {
         /* Флаги */
         case CLC: SET_CARRY(0); break;
         case SEC: SET_CARRY(1); break;
-        case CLD: SET_DECIMAL(0); break;
-        case SED: SET_DECIMAL(1); break;
+        case CLD: SET_IDECIMAL(0); break;
+        case SED: SET_IDECIMAL(1); break;
         case CLI: SET_INTERRUPT(0); break;
         case SEI: SET_INTERRUPT(1); break;
         case CLV: SET_OVERFLOW(0); break;
 
         /* Сравнение A, X, Y с операндом */
-        case CMP:
+        case ICMP:
         case CPX:
         case CPY: {
 
-            src = (opname == CMP ? reg_A : (opname == CPX ? reg_X : reg_Y)) - src;
+            src = (opname == ICMP ? reg_A : (opname == CPX ? reg_X : reg_Y)) - src;
             SET_CARRY(src >= 0);
             SET_SIGN(src);
             SET_ZERO(src & 0xff);
@@ -431,7 +435,7 @@ int CPU::step() {
         }
 
         /* Уменьшение операнда на единицу */
-        case DEC: {
+        case IDEC: {
 
             src = (src - 1) & 0xff;
             SET_SIGN(src);
@@ -469,7 +473,7 @@ int CPU::step() {
         }
 
         /* Увеличение операнда на единицу */
-        case INC: {
+        case IINC: {
 
             src = (src + 1) & 0xff;
             SET_SIGN(src);
@@ -722,7 +726,7 @@ int CPU::step() {
             SET_ZERO(src);
             if (optype == ACC) reg_A = src; else write_byte(iaddr, src);
 
-            /* AND */
+            /* IAND */
             src &= reg_A;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -740,7 +744,7 @@ int CPU::step() {
             SET_ZERO(src);
             if (optype == ACC) reg_A = src; else write_byte(iaddr, src);
 
-            /* ADC */
+            /* IADC */
             temp = src + reg_A + (reg_P & 1);
             SET_ZERO(temp & 0xff);
             SET_SIGN(temp);
@@ -771,13 +775,13 @@ int CPU::step() {
 
         case DCP: {
 
-            /* DEC */
+            /* IDEC */
             src = (src - 1) & 0xff;
             SET_SIGN(src);
             SET_ZERO(src);
             write_byte(iaddr, src);
 
-            /* CMP */
+            /* ICMP */
             src = reg_A - src;
             SET_CARRY(src >= 0);
             SET_SIGN(src);
@@ -788,7 +792,7 @@ int CPU::step() {
         // Увеличить на +1 и вычесть из A полученное значение
         case ISC: {
 
-            /* INC */
+            /* IINC */
             src = (src + 1) & 0xff;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -817,10 +821,10 @@ int CPU::step() {
 
         case AAX: write_byte(iaddr, reg_A & reg_X); break;
 
-        // AND + Carry
+        // IAND + Carry
         case AAC: {
 
-            /* AND */
+            /* IAND */
             src &= reg_A;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -833,7 +837,7 @@ int CPU::step() {
 
         case ASR: {
 
-            /* AND */
+            /* IAND */
             src &= reg_A;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -849,7 +853,7 @@ int CPU::step() {
 
         case ARR: {
 
-            /* AND */
+            /* IAND */
             src &= reg_A;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -872,7 +876,7 @@ int CPU::step() {
 
             reg_A |= 0xFF;
 
-            /* AND */
+            /* IAND */
             src &= reg_A;
             SET_SIGN(src);
             SET_ZERO(src);
@@ -919,8 +923,12 @@ int CPU::step() {
 
 // Реализовать виртуальные функции
 // ---------------------------------------------------------------------
-unsigned char  CPU::read_byte(int) { return 0; }
-void           CPU::write_byte(int, unsigned char) { }
+volatile unsigned char CPU::read_byte(unsigned int addr) {
+    return 0;
+}
+
+volatile void CPU::write_byte(unsigned int addr, unsigned char) {
+}
 // ---------------------------------------------------------------------
 
 // Шаблон
