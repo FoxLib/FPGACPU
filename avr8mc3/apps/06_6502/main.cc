@@ -1,3 +1,6 @@
+#include <avr/pgmspace.h>
+#define brk asm volatile("sleep");
+
 // Операнды
 enum EnumOperands { ___ = 0,
     NDX, // (b8,X)
@@ -34,7 +37,7 @@ enum EnumInstruction {
 };
 
 // Имена инструкции
-static int opcode_names[ 256 ] = {
+const unsigned char opcode_names[256]  PROGMEM = {
 
     /*        00  01   02   03   04   05   06   07   08   09   0A   0B   0C   0D   0E   0F */
     /* 00 */ BRK, ORA, ___, SLO, DOP, ORA, ASL, SLO, PHP, ORA, ASL, AAC, DOP, ORA, ASL, SLO,
@@ -56,7 +59,7 @@ static int opcode_names[ 256 ] = {
 };
 
 // Типы операндов для каждого опкода
-static unsigned char operand_types[256] = {
+const unsigned char operand_types[256] PROGMEM = {
 
     /*       00   01   02   03   04   05   06   07   08   09   0A   0B   0C   0D   0E   0F */
     /* 00 */ IMP, NDX, ___, NDX, ZP , ZP , ZP , ZP , IMP, IMM, ACC, IMM, ABS, ABS, ABS, ABS,
@@ -78,7 +81,7 @@ static unsigned char operand_types[256] = {
 };
 
 // Количество циклов на опкод
-static int cycles_basic[256] = {
+const unsigned char cycles_basic[256]  PROGMEM = {
 
       7, 6, 2, 8, 3, 3, 5, 5, 3, 2, 2, 2, 4, 4, 6, 6,
       2, 5, 2, 8, 4, 4, 6, 6, 2, 4, 2, 7, 4, 4, 7, 7,
@@ -114,7 +117,6 @@ public:
     CPU();
 
     virtual unsigned char  read_byte(int);
-    virtual unsigned short read_word(int);
     virtual void           write_byte(int, unsigned char);
 
     int  get_effective(int);
@@ -140,6 +142,8 @@ public:
 
     void PUSH(int x)     { write_byte(0x100 + reg_S, x & 0xff); reg_S = ((reg_S - 1) & 0xff); }
     unsigned char PULL() { reg_S = (reg_S + 1) & 0xff; return read_byte(0x100 + reg_S); }
+    unsigned short read_word(int addr) { return read_byte(addr) + (read_byte(addr) << 8); }
+
 };
 
 // Инициализация процессора
@@ -153,13 +157,6 @@ CPU::CPU() {
     reg_PC = 0xc000;
     fatal  = 0;
 }
-
-// Реализовать виртуальные функции
-// ---------------------------------------------------------------------
-unsigned char  CPU::read_byte(int) { return 0; }
-unsigned short CPU::read_word(int) { return 0; }
-void           CPU::write_byte(int, unsigned char) { }
-// ---------------------------------------------------------------------
 
 // Получение эффективного адреса
 int CPU::get_effective(int addr) {
@@ -290,8 +287,8 @@ int CPU::step() {
 
     // Прочесть информацию по опкодам
     opcode = read_byte(addr) & 0xff;
-    optype = operand_types[ opcode ];
-    opname = opcode_names [ opcode ];
+    optype = pgm_read_byte( &(operand_types[ opcode ]) );
+    opname = pgm_read_byte( &(opcode_names [ opcode ]) );
 
     // Эти инструкции НЕ ДОЛЖНЫ читать что-либо из памяти перед записью
     if (opname == STA || opname == STX || opname == STY) {
@@ -302,7 +299,7 @@ int CPU::step() {
     addr = (addr + 1) & 0xffff;
 
     // Базовые циклы + доп. циклы
-    cycles_per_instr = cycles_basic[ opcode ] + cycles_ext;
+    cycles_per_instr = pgm_read_byte(&(cycles_basic[ opcode ])) + cycles_ext;
 
     // --------------------------------
     // Чтение операнда из памяти
@@ -919,6 +916,12 @@ int CPU::step() {
 
     return cycles_per_instr;
 }
+
+// Реализовать виртуальные функции
+// ---------------------------------------------------------------------
+unsigned char  CPU::read_byte(int) { return 0; }
+void           CPU::write_byte(int, unsigned char) { }
+// ---------------------------------------------------------------------
 
 // Шаблон
 int main() {
