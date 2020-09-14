@@ -257,11 +257,12 @@ int CPU::get_effective(int addr) {
 // Перехо на новый адрес
 int CPU::do_branch(int& addr, int iaddr) {
 
-    addr = iaddr;
-
-    if ((addr & 0xff00) != (iaddr & 0xff00))
+    if ((addr & 0xff00) != (iaddr & 0xff00)) {
+        addr = iaddr;
         return 2;
+    }
 
+    addr = iaddr;
     return 1;
 }
 
