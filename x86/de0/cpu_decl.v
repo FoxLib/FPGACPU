@@ -41,18 +41,19 @@ end
 
 initial begin
 
-    we              = 1'b0;
     pmode           = 1'b0;
-    o_data          = 8'h00;
-    opcode          = 9'h000;
-    cycle           = 5'h00;
-    seg_id          = 3'h0;
+    mstate          = 1'b0;
+    cycle           = 1'b0;
+    o_data          = 1'b0;
+    opcode          = 1'b0;
+    seg_id          = 1'b0;
     seg_pre         = 1'b0;
     swi             = 1'b0;
     adsize          = 1'b0;
     opsize          = 1'b0;
     def_opsize      = 1'b0;     // 16 bit
     def_adsize      = 1'b0;     // 16 bit
+    we              = 1'b0;
 
 end
 
@@ -61,7 +62,8 @@ end
 
 reg         pmode;
 reg [ 8:0]  opcode;
-reg [ 4:0]  cycle;
+reg [ 2:0]  mstate;             // Главное состояние процессора
+reg [ 4:0]  cycle;              // Цикл выполнения инструкции
 reg         seg_pre;            // Наличие префикса в инструкции
 reg [ 2:0]  seg_id;             // Номер выбранного сегмента
 reg [31:0]  ea;                 // Эффективный адрес

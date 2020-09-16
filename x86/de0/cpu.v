@@ -14,7 +14,10 @@ module cpu
 always @* begin
 
     if (pmode) begin
+
         address = swi ? segment[seg_id][31:0] + ea : segment[SEG_CS][31:0] + ip;
+        // Проверка на ошибку доступа
+
     end else begin
         address = swi ? {s16[seg_id], 4'h0} + ea[15:0] : {s16[SEG_CS], 4'h0} + ip[15:0];
     end
@@ -24,12 +27,13 @@ end
 // Исполнительный блок
 always @(posedge clock) begin
 
-    case (cycle)
+    case (mstate)
 
         // Сброс параметров перед перезапуском инструкции
         0: begin
 
-            cycle       <= 1;
+            mstate      <= 1;
+            cycle       <= 0;
             opcode      <= 0;
             seg_id      <= SEG_DS;          // Значение сегмента по умолчанию DS:
             seg_pre     <= 1'b0;            // Наличие сегментного префикса
@@ -45,7 +49,12 @@ always @(posedge clock) begin
             casex (i_data)
 
                 // Префикс расширения
-                8'b0000_1111: begin opcode[8] <= 1'b1; cycle <= 2; end
+                8'b0000_1111: begin
+
+                    opcode[8] <= 1'b1;
+                    mstate    <= 2'h3;
+
+                 end
 
                 // Сегментные префиксы
                 8'b001x_x110: begin seg_id <= i_data[4:3]; seg_pre <= 1'b1; end
@@ -60,13 +69,26 @@ always @(posedge clock) begin
                 8'b1110_001x: begin rep <= i_data[1:0]; end
 
                 // Переход к исполнению инструкции
-                default: cycle <= 2;
+                default: begin
+
+                    mstate <= 2'h3;
+
+                end
 
             endcase
 
             opcode <= i_data;
             ip     <= ipnext;
 
+        end
+
+        // Считывание MODRM
+        2: begin
+
+        end
+
+        // Исполнение инструкции
+        3: begin
         end
 
     endcase
