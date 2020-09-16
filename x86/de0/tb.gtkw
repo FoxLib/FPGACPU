@@ -1,28 +1,34 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Sep 16 06:36:00 2020
+[*] Wed Sep 16 06:43:06 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/x86/de0/tb.vcd"
-[dumpfile_mtime] "Wed Sep 16 06:35:06 2020"
-[dumpfile_size] 42137
+[dumpfile_mtime] "Wed Sep 16 06:42:39 2020"
+[dumpfile_size] 42346
 [savefile] "/disk/fox/dev/fpgacpu/x86/de0/tb.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
 *-6.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
 [sst_width] 243
 [signals_width] 165
 [sst_expanded] 1
 [sst_vpaned_height] 300
-@29
-tb.clock
 @28
+tb.clock
 tb.clock25
+@800200
+-Main
 @22
-tb.cursor[19:0]
+tb.CPU86.address[19:0]
+@23
 tb.i_data[7:0]
+@22
 tb.o_data[7:0]
 @28
 tb.we
+@1000200
+-Main
 [pattern_trace] 1
 [pattern_trace] 0
