@@ -1,7 +1,8 @@
+# https://gcc.gnu.org/onlinedocs/gcc/AVR-Options.html
 DEVICE  = atmega32u2
 CLOCK   = 25000000
 LIBRARY = -I../../include
-AV		= ../../av/avr
+AV      = ../../av/avr
 WARNING = -Wall -Wno-unused-but-set-variable
 STACK   = 0x801fff
 HEAPEND = 0x801fff
@@ -14,12 +15,6 @@ all:
 	avr-size -C --mcu=$(DEVICE) main.elf > mem.map
 	rm main.elf
 	$(AV) main.bin
-
-build:
-#	php ../../mc3/hexer.php main.bin > ../../de0/avr.hex
-#	php ../../mc3/mifer.php main.bin > ../../de0/flash.mif
-#	cd ../../mc3 && make
-#	avr main.bin
 
 clean:
 	rm -f *.o rm *.elf *.lst *.bin *.map
