@@ -1,14 +1,17 @@
-#include <screen3.cc>
-#include <sdcard.cc>
-
-byte sector[512];
+#include <avrio.cc>
 
 int main() {
 
-    Screen3 D(0x07);
-    SDCard sd;
+    heap(vm, 0xf000);
+    videomode(2);
+    bank(1);
 
-    sd.read(0, sector);
+    for (int j = 0; j < 16; j++) {
+
+        bank(1 + j);
+        for (int i = 0; i < 4096; i++)
+            vm[i] = i;
+    }
 
     for(;;);
 }

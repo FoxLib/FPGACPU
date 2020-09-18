@@ -43,10 +43,16 @@ APP::APP() {
     spi_phase       = 0;
     spi_latch       = 0;
 
+    dram_address    = 0;
     count_per_frame = 200000;    // 10,0 mHz процессор
+
+    // Общая память
+    dynamic_ram     = (uint8_t*) malloc(64*1024*1024);
 }
 
 APP::~APP() {
+
+    free(dynamic_ram);
 }
 
 // Загрузка файла в память

@@ -47,7 +47,7 @@ void APP::instrmask() {
     flag.v = 0; flag.i = 0;
 
     // Копировать DOS палитру
-    for (i = 0; i < 16; i++) {
+    for (i = 0; i < 256; i++) {
 
         int bc = (DOS_13[i] & 0xF0) >> 4;
         int gc = (DOS_13[i] & 0xF000) >> 8;

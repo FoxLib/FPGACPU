@@ -5,14 +5,16 @@ void APP::display_update() {
 
     cls(0);
 
+    int wsize = 0;
     switch (videom) {
 
-        // Видеорежим 80x30
-        case 0: for (int i = 0; i < 4000; i++) update_byte_scr(0x10000 + i); break;
-
-        // Видеорежим 640x480x4
-        case 1: for (int i = 0; i < 150*1024; i++) update_byte_scr(0x10000 + i); break;
+        case 0: wsize = 4;   break;    // Видеорежим 80x30
+        case 1: wsize = 150; break;    // Видеорежим 640x480x4
+        case 2: wsize = 64;  break;    // Видеорежим 320x200x256
+        case 3: wsize = 128; break;    // Видеорежим 320x200x64k
     }
+
+    for (int i = 0; i < wsize*1024; i++) update_byte_scr(0x10000 + i);
 }
 
 // Видеопамять начинается с $10000 (1-я страница)
@@ -21,7 +23,7 @@ void APP::update_byte_scr(int addr) {
     // Не рендерить в дебаггере
     if (ds_debugger) return;
 
-    int x, y;
+    int x, y, gb, r, cl;
     addr -= 0x10000;
 
     switch (videom) {
@@ -34,6 +36,21 @@ void APP::update_byte_scr(int addr) {
             break;
 
         case 1: // GRAPHICS 640x480x4
+
+            break;
+
+        case 2: // GRAPHICS 320x200x8
+
+            x = addr % 320;
+            y = addr / 320;
+            cl = get_palette(sram[0x10000 + x + y*320]);
+
+            for (int i = 0; i < 16; i++)
+                pset(4*x + (i>>2), 4*y + (i&3), cl);
+
+            break;
+
+        case 3: // GRAPHICS 320x200x16
 
             break;
     }
@@ -55,16 +72,20 @@ void APP::update_text_xy(int X, int Y) {
             int cbit   = ft & (1 << (7 - x));
             int cursor = (cursor_x == X && cursor_y == Y) && (y >= 14) ? 1 : 0;
             int color  = cbit ^ (flash & cursor) ? (attr & 0x0F) : (attr >> 4);
-
-            // Вычисляется цвет из заданной палитры
-            int gb = sram[MEMORY_FONT_PAL + 2*color    ];
-            int  r = sram[MEMORY_FONT_PAL + 2*color + 1];
-            color = ((gb & 0x0F) << 4) | ((gb & 0xF0) << 8) | ((r & 0x0F) << 20);
+                color  = get_palette(color);
 
             // 2x2 Размер пикселя
             for (int k = 0; k < 4; k++) pset(2*(8*X + x) + k%2, 2*(16*Y + y) + k/2, color);
         }
     }
+}
+
+// Вычисляется цвет из заданной палитры
+int APP::get_palette(uint8_t cl) {
+
+    int gb = sram[MEMORY_FONT_PAL + 2*cl    ];
+    int  r = sram[MEMORY_FONT_PAL + 2*cl + 1];
+    return ((gb & 0x0F) << 4) | ((gb & 0xF0) << 8) | ((r & 0x0F) << 20);
 }
 
 // Если видеорежим 0, то обновить курсор

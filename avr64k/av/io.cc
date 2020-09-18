@@ -23,6 +23,8 @@ unsigned char APP::get(int addr) {
         case 0x28: dv = spi_data; break;
         case 0x29: dv = spi_cmd; break;
         case 0x2A: dv = spi_st; break; // Busy=0, Timeout=0
+        case 0x2B: dv = dynamic_ram[dram_address & 0x3FFFFFF]; break;
+        case 0x2C: dv = 0; break;
 
         // Остальная память
         default: dv = sram[addr]; break;
@@ -41,6 +43,12 @@ void APP::put(int addr, unsigned char value) {
     sram[addr] = value;
 
     switch (addr) {
+
+        // DRAM
+        case 0x20: dram_address = (dram_address & ~0x000000FF) | value;         break;
+        case 0x21: dram_address = (dram_address & ~0x0000FF00) | (value << 8);  break;
+        case 0x22: dram_address = (dram_address & ~0x00FF0000) | (value << 16); break;
+        case 0x23: dram_address = (dram_address & ~0xFF000000) | (value << 24); break;
 
         // Установка банка памяти
         case 0x24: bank = value; break;
@@ -67,6 +75,10 @@ void APP::put(int addr, unsigned char value) {
         case 0x28: spi_data = value; break;
         case 0x29: spi_cmd  = value; break;
         case 0x2A: if ((value & 1) && (spi_latch == 0)) { spi_write_cmd(value); } spi_latch = value & 1; break;
+
+        // DRAM
+        case 0x2B: dram_data = value; break;
+        case 0x2C: if (value & 1) dynamic_ram[dram_address & 0x3FFFFFF] = value; break;
 
         // Запись во флаги
         case 0x5F: byte_to_flag(value); break;
