@@ -18,7 +18,11 @@ unsigned char APP::get(int addr) {
         case 0x23: dv = timer >> 8; break;
         case 0x24: dv = bank; break;
         case 0x25: dv = videom; break;
-
+        case 0x26: dv = cursor_x; break;
+        case 0x27: dv = cursor_y; break;
+        case 0x28: dv = spi_data; break;
+        case 0x29: dv = spi_cmd; break;
+        case 0x2A: dv = spi_st; break; // Busy=0, Timeout=0
 
         // Остальная память
         default: dv = sram[addr]; break;
@@ -54,6 +58,15 @@ void APP::put(int addr, unsigned char value) {
 
             update_screen();
             break;
+
+        // Установка положения курсора
+        case 0x26: cursor_update(); cursor_x = value; cursor_update(); break;
+        case 0x27: cursor_update(); cursor_y = value; cursor_update(); break;
+
+        // SPI Data
+        case 0x28: spi_data = value; break;
+        case 0x29: spi_cmd  = value; break;
+        case 0x2A: if ((value & 1) && (spi_latch == 0)) { spi_write_cmd(value); } spi_latch = value & 1; break;
 
         // Запись во флаги
         case 0x5F: byte_to_flag(value); break;

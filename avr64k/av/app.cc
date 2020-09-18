@@ -32,7 +32,16 @@ APP::APP() {
     flash           = 0;
     flash_cnt       = 0;
     cursor_x        = 0;
-    cursor_y        = 0 ;
+    cursor_y        = 0;
+
+    // SPI
+    spi_st          = 2;         // SPI_TIMEOUT set
+    spi_cmd         = 0;
+    spi_data        = 0;
+    spi_status      = 0;
+    spi_command     = 0;
+    spi_phase       = 0;
+    spi_latch       = 0;
 
     count_per_frame = 200000;    // 10,0 mHz процессор
 }

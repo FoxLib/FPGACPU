@@ -68,7 +68,7 @@ reg  [24:0] spi_timeout   = `SPI_TIMEOUT_CNT;
 
 always @(posedge clock50) begin
 
-    // Счетчик таймаута. Дойдя для
+    // Счетчик таймаута
     if (spi_timeout < `SPI_TIMEOUT_CNT && spi_process == 0) spi_timeout <= spi_timeout + 1;
 
     case (spi_process)

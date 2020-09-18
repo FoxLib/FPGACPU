@@ -430,12 +430,26 @@ protected:
     uint8_t  bank;
     uint8_t  videom;
 
-    int      text_px, text_py;
     int      mouse_x, mouse_y, mouse_cmd;
     int      flash, flash_cnt, cursor_x, cursor_y;
 
     unsigned short timer;
     unsigned long  intr_timer, last_timer;
+
+    /** Интерфейс SPI */
+    int spi_cmd;
+    int spi_latch;
+    int spi_phase;
+    int spi_arg;
+    int spi_crc;
+    int spi_command;
+    int spi_status;
+    int spi_st;         // Статус
+    int spi_data;
+    int spi_lba;
+    int spi_resp;
+    unsigned char spi_sector[512];
+    FILE* spi_file;
 
     struct CPUFlags flag;
 
@@ -453,9 +467,10 @@ public:
     void display_update();
     void update_byte_scr(int addr);
     void update_text_xy(int X, int Y);
-    void swi_brk();
+    void cursor_update();
     int  get_mouse_x();
     int  get_mouse_y();
+    void swi_brk();
 
     // Рисование на экране
     void pset(int x, int y, uint color);
@@ -468,6 +483,9 @@ public:
     int  ds_fetch(uint& addr);
     int  ds_info(uint addr);
     void ds_update();
+
+    // SPI
+    void spi_write_cmd(unsigned char data);
 
     // Процессор
     // --------------------

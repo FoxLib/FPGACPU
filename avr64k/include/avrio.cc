@@ -21,7 +21,13 @@ enum PortsID {
     TIMER_LO        = 0x02,
     TIMER_HI        = 0x03,
     BANK_PORT       = 0x04,
-    VIDEOMODE       = 0x05
+    VIDEOMODE       = 0x05,
+    CURSOR_X        = 0x06,
+    CURSOR_Y        = 0x07,
+    SPI_DATA        = 0x08,
+    SPI_CMD         = 0x09,
+    SPI_LATCH       = 0x0A,
+    SPI_STATUS      = 0x0A
 };
 
 // Скопировано из avr.h
@@ -70,5 +76,6 @@ inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[
 #define heap(x, a) byte* x = (byte*) a
 #define bank(x) outp(BANK_PORT, x)
 #define videomode(x) outp(VIDEOMODE, x)
+#define cursor(x,y) outp(CURSOR_X, x); outp(CURSOR_Y, y)
 
 #endif

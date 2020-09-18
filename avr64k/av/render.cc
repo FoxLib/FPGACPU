@@ -65,8 +65,15 @@ void APP::update_text_xy(int X, int Y) {
             for (int k = 0; k < 4; k++) pset(2*(8*X + x) + k%2, 2*(16*Y + y) + k/2, color);
         }
     }
-
-    text_px = X;
-    text_py = Y;
 }
 
+// Если видеорежим 0, то обновить курсор
+void APP::cursor_update() {
+
+    if (videom == 0) {
+
+        int btc = 0x10000 + 2*cursor_x + cursor_y*160;
+        update_byte_scr(btc);
+        update_byte_scr(btc+1);
+    }
+}

@@ -13,3 +13,10 @@ IO  Бит
 
 06  Курсор по X
 07  Курсор по Y
+08  SPI DATA
+09  SPI Command (0-INIT, 1-COMMAND, 2-CHIPEN, 3-CHIPDIS)
+0A  SPI Status
+    R: Бит 0 - Статус готовности (=0 если готов)
+       Бит 1 - Статус таймаута (=1 если timeout)
+    W: Бит 0 - Строб записи команды из SPI Command
+

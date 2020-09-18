@@ -1,10 +1,10 @@
 #include <avrio.cc>
 
-class screen3 {
+class Screen3 {
 protected:
 public:
 
-    screen3(byte cl) { start(); cls(cl); }
+    Screen3(byte cl) { start(); cls(cl); }
 
     void start() { videomode(0); }
 
@@ -19,5 +19,7 @@ public:
             vm[i+0] = ' ';
             vm[i+1] = cl;
         }
+
+        cursor(0, 0);
     }
 };
