@@ -21,7 +21,7 @@ enum PortsID {
     TIMER_LO        = 0x02,
     TIMER_HI        = 0x03,
     BANK_PORT       = 0x04,
-    VIDEMODE        = 0x05
+    VIDEOMODE       = 0x05
 };
 
 // Скопировано из avr.h
@@ -69,5 +69,6 @@ inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[
 // Объявление указателя на память (имя x, адрес a)
 #define heap(x, a) byte* x = (byte*) a
 #define bank(x) outp(BANK_PORT, x)
+#define videomode(x) outp(VIDEOMODE, x)
 
 #endif

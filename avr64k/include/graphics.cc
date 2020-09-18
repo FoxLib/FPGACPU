@@ -2,7 +2,7 @@
 #include <ansi3.h>
 #include <numeric.cc>
 
-class screen : public Numeric {
+class graphics : public Numeric {
 protected:
 
     word cursor_x, cursor_y;
