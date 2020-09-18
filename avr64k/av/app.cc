@@ -1,24 +1,5 @@
 #include "main.h"
 
-// Обработчик кадра
-uint AVRDisplayTimer(uint interval, void *param) {
-
-    SDL_Event     event;
-    SDL_UserEvent userevent;
-
-    /* Создать новый Event */
-    userevent.type  = SDL_USEREVENT;
-    userevent.code  = 0;
-    userevent.data1 = NULL;
-    userevent.data2 = NULL;
-
-    event.type = SDL_USEREVENT;
-    event.user = userevent;
-
-    SDL_PushEvent(&event);
-    return (interval);
-}
-
 // Конструктор
 APP::APP() {
 
@@ -49,22 +30,6 @@ APP::APP() {
 }
 
 APP::~APP() {
-}
-
-void APP::window(const char* caption) {
-
-    int w = config_width;
-    int h = config_height;
-
-    width  = w;
-    height = h;
-
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);
-    SDL_EnableUNICODE(1);
-
-    sdl_screen = SDL_SetVideoMode(w, h, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-    SDL_WM_SetCaption(caption, 0);
-    SDL_AddTimer(1000 / clock_video, AVRDisplayTimer, NULL);
 }
 
 // Загрузка файла в память
