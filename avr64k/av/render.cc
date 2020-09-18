@@ -5,72 +5,70 @@ void APP::display_update() {
 
     cls(0);
 
-    // Видеорежим 320x200x4 или 256x192x1
-    for (int i = 0; i < (cpu_model == ATTINY85 ? 32000 : 6144); i++)
-        update_byte_scr(0x8000 + i);
+    switch (videom) {
 
-}
+        // Видеорежим 80x30
+        case 0: break;
 
-// 0x8000 - 0xFFFF Видеопамять
-void APP::update_byte_scr(int addr) {
-
-    int xshift = (width  - 640) / 2,
-        yshift = (height - 400) / 2;
-
-    // Область видеопамяти
-    if (!ds_debugger) {
-
-        addr -= 0x8000;
-
-        // 320x200x4 для Attiny85
-        if (cpu_model == ATTINY85) {
-
-            if (addr >= 0 && addr < 32000) {
-
-                int  X = (addr % 160) << 1;
-                int  Y = (addr / 160);
-                int  cb = sram[0x8000 + addr];
-
-                // 2 Пикселя в байте
-                for (int o = 0; o < 2; o++) {
-
-                    uint cl = o ? cb & 15 : (cb >> 4);
-                         cl = DOS_13[cl];
-
-                    if (height <= 480) {
-                        for (int m = 0; m < 4; m++) {
-                            pset((X + o)*2 + (m>>1) + xshift, Y*2 + (m&1) + yshift , cl);
-                        }
-                    } else {
-                        for (int m = 0; m < 16; m++) {
-                            pset(4*(X + o) + (m>>2), 4*Y + (m&3), cl);
-                        }
-                    }
-                }
-            }
-        }
-        // Просто модель памяти такая
-        else if (cpu_model == ATMEGA328) {
-
-            int s = (width >= 1024 && height >= 800) ? 4 : 2;
-
-            xshift = (width  - s*256) / 2,
-            yshift = (height - s*192) / 2;
-
-            if (addr >= 0 && addr < 6144) {
-
-                int  X = (addr & 0x1F);
-                int  Y = (addr >> 5);
-                int  cb = sram[0x8000 + addr];
-
-                for (int i = 0; i < 8; i++) {
-
-                    int cl = cb & (1 << (7-i)) ? DOS_13[7] : 0;
-
-                    for (int m = 0; m < s*s; m++)
-                    pset(xshift + (8*X+i)*s + (m%s), yshift + Y*s + (m/s), cl);
-                }
-            }
-        }
+        // Видеорежим 640x480x4
+        case 1: for (int i = 0; i < 150*1024; i++) update_byte_scr(0x10000 + i); break;
     }
 }
+
+// Видеопамять начинается с $10000 (1-я страница)
+void APP::update_byte_scr(int addr) {
+
+    // Не рендерить в дебаггере
+    if (ds_debugger) return;
+
+    int x, y;
+    addr -= 0x10000;
+
+    switch (videom) {
+
+        case 0: // TEXT 80x25x16
+
+            x = (addr>>1) % 80;
+            y = (addr>>1) / 80;
+            if (addr < 4000) update_text_xy(x, y);
+            break;
+
+        case 1: // GRAPHICS 640x480x4
+
+            break;
+    }
+}
+
+// Обновить текст в (X, Y)
+void APP::update_text_xy(int X, int Y) {
+
+    int k;
+    int addr = 0x10000 + 2*(X + Y*80);
+    int ch   = sram[ addr + 0 ];
+    int attr = sram[ addr + 1 ];
+
+    for (int y = 0; y < 16; y++) {
+
+        // int ft = sram[0x10000 + 16*ch + y];
+        int ft = ansi16[ch][y];
+        for (int x = 0; x < 8; x++) {
+
+            int cbit   = ft & (1 << (7 - x));
+            int cursor = (cursor_x == X && cursor_y == Y) && (y >= 14) ? 1 : 0;
+            int color  = cbit ^ (flash & cursor) ? (attr & 0x0F) : (attr >> 4);
+
+            // Вычисляется цвет из заданной палитры
+            // int gb = sram[0xFFA0 + 2*color];
+            // int  r = sram[0xFFA1 + 2*color];
+            // color = ((gb & 0x0F) << 4) | ((gb & 0xF0) << 8) | ((r & 0x0F) << 20);
+            color = DOS_13[color];
+
+            // 2x2 Размер пикселя
+            for (int k = 0; k < 4; k++) pset(2*(8*X + x) + k%2, 2*(16*Y + y) + k/2, color);
+        }
+    }
+
+    text_px = X;
+    text_py = Y;
+}
+

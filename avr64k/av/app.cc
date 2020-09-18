@@ -27,6 +27,12 @@ APP::APP() {
     max_flash       = 0x1FFF;
     bank            = 0;
 
+    // Видеорежимы
+    videom          = 0;
+    flash           = 0;
+    cursor_x        = 0;
+    cursor_y        = 0 ;
+
     count_per_frame = 200000;    // 10,0 mHz процессор
 }
 
@@ -69,7 +75,7 @@ void APP::config() {
     clock_mhz       = 10;
     clock_video     = 50;
     config_width    = 1280;
-    config_height   = 960;
+    config_height   = 800;
 
     FILE* fp = fopen("config.ini", "r");
 
@@ -77,7 +83,6 @@ void APP::config() {
 
         fscanf(fp, "%d", & clock_mhz);
         fscanf(fp, "%d", & clock_video);
-        fscanf(fp, "%d %d", & config_width, & config_height);
 
         // Инструкции за кадр
         count_per_frame = (clock_mhz * 1000000) / clock_video;

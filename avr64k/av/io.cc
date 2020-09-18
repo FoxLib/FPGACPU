@@ -17,9 +17,11 @@ unsigned char APP::get(int addr) {
         case 0x22: dv = timer & 0xFF; break;
         case 0x23: dv = timer >> 8; break;
         case 0x24: dv = bank; break;
+        case 0x25: dv = videom; break;
+
 
         // Остальная память
-        default:   dv = sram[addr]; break;
+        default: dv = sram[addr]; break;
     }
 
     return dv & 0xFF;
@@ -36,12 +38,29 @@ void APP::put(int addr, unsigned char value) {
 
     switch (addr) {
 
+        // Установка банка памяти
         case 0x24: bank = value; break;
+
+        // Изменение видеорежима
+        case 0x25:
+
+            videom = value;
+
+            if (videom == 1) { width = 2*640; height = 2*480; }
+            else             { width = 2*640; height = 2*400; }
+
+            SDL_FreeSurface(sdl_screen);
+            sdl_screen = SDL_SetVideoMode(width, height, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
+
+            update_screen();
+            break;
+
+        // Запись во флаги
         case 0x5F: byte_to_flag(value); break;
     }
 
     // Нарисовать на холсте
-    if (addr >= 0xF000) { update_byte_scr(addr); }
+    if (addr >= 0xF000) update_byte_scr(addr);
 }
 
 // Получение ASCII

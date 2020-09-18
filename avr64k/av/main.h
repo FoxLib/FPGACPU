@@ -426,9 +426,12 @@ protected:
     uint8_t  port_kb_cnt;
     uint8_t  port_keyb_xt;
     uint8_t  bank;
+    uint8_t  videom;
 
     int      text_px, text_py;
     int      mouse_x, mouse_y, mouse_cmd;
+    int      flash, cursor_x, cursor_y;
+
     unsigned short timer;
     unsigned long  intr_timer, last_timer;
 
@@ -447,6 +450,7 @@ public:
     void update_screen();
     void display_update();
     void update_byte_scr(int addr);
+    void update_text_xy(int X, int Y);
     void swi_brk();
     int  get_mouse_x();
     int  get_mouse_y();
