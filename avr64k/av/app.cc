@@ -68,7 +68,7 @@ void APP::config() {
     clock_mhz       = 10;
     clock_video     = 50;
     config_width    = 1280;
-    config_height   = 800;
+    config_height   = 960;
 
     FILE* fp = fopen("config.ini", "r");
 
