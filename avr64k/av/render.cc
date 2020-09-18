@@ -8,7 +8,7 @@ void APP::display_update() {
     switch (videom) {
 
         // Видеорежим 80x30
-        case 0: break;
+        case 0: for (int i = 0; i < 4000; i++) update_byte_scr(0x10000 + i); break;
 
         // Видеорежим 640x480x4
         case 1: for (int i = 0; i < 150*1024; i++) update_byte_scr(0x10000 + i); break;
@@ -49,8 +49,7 @@ void APP::update_text_xy(int X, int Y) {
 
     for (int y = 0; y < 16; y++) {
 
-        // int ft = sram[0x10000 + 16*ch + y];
-        int ft = ansi16[ch][y];
+        int ft = sram[MEMORY_FONT_ADDR + 16*ch + y];
         for (int x = 0; x < 8; x++) {
 
             int cbit   = ft & (1 << (7 - x));
@@ -58,10 +57,9 @@ void APP::update_text_xy(int X, int Y) {
             int color  = cbit ^ (flash & cursor) ? (attr & 0x0F) : (attr >> 4);
 
             // Вычисляется цвет из заданной палитры
-            // int gb = sram[0xFFA0 + 2*color];
-            // int  r = sram[0xFFA1 + 2*color];
-            // color = ((gb & 0x0F) << 4) | ((gb & 0xF0) << 8) | ((r & 0x0F) << 20);
-            color = DOS_13[color];
+            int gb = sram[MEMORY_FONT_PAL + 2*color    ];
+            int  r = sram[MEMORY_FONT_PAL + 2*color + 1];
+            color = ((gb & 0x0F) << 4) | ((gb & 0xF0) << 8) | ((r & 0x0F) << 20);
 
             // 2x2 Размер пикселя
             for (int k = 0; k < 4; k++) pset(2*(8*X + x) + k%2, 2*(16*Y + y) + k/2, color);

@@ -53,13 +53,13 @@ void APP::instrmask() {
         int gc = (DOS_13[i] & 0xF000) >> 8;
         int rc = (DOS_13[i] & 0xF00000) >> 20;
 
-        sram[0xFFA0 + 2*i] = bc | gc;
-        sram[0xFFA1 + 2*i] = rc;
+        sram[MEMORY_FONT_PAL + 2*i   ] = bc | gc;
+        sram[MEMORY_FONT_PAL + 2*i + 1] = rc;
     }
 
     // Скопировать FontROM (Bank 1)
     for (i = 0; i < 4096; i++) {
-        sram[0x10000 + i] = ansi16[i >> 4][i & 15];
+        sram[MEMORY_FONT_ADDR + i] = ansi16[i >> 4][i & 15];
     }
 
     // Арифметические на 2 регистра

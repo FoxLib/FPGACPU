@@ -30,6 +30,7 @@ APP::APP() {
     // Видеорежимы
     videom          = 0;
     flash           = 0;
+    flash_cnt       = 0;
     cursor_x        = 0;
     cursor_y        = 0 ;
 
@@ -384,6 +385,16 @@ void APP::infinite() {
             }
 
             require_halt = 0;
+            flash_cnt++;
+
+            // Имитация мерцания курсора
+            if (flash_cnt == 25) {
+                flash_cnt = 0;
+                flash = 1 - flash;
+
+                // Только для текстового режима
+                if (videom == 0) update_screen();
+            }
 
             flip();
         }

@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define MEMORY_FONT_PAL  0xFE000
+#define MEMORY_FONT_ADDR 0xFF000
+
 static const char* ds_brcs[4][8] = {
     {"cc", "ne", "pl", "vc", "ge", "hc", "tc", "id"},
     {"cs", "eq", "mi", "vs", "lt", "hs", "ts", "ie"},
@@ -31,8 +34,7 @@ enum AVROpcodes {
 };
 
 // Палитра для DOS 320x200 MODE 13h
-static const int DOS_13[256] =
-{
+static const int DOS_13[256] = {
   0x000000, 0x000088, 0x008800, 0x008888, 0x880000, 0x880088, 0x885500, 0xaaaaaa, // 0
   0x555555, 0x5555ff, 0x55ff55, 0x55ffff, 0xff5555, 0xff55ff, 0xffff55, 0xffffff, // 8
   0x000000, 0x141414, 0x202020, 0x2c2c2c, 0x383838, 0x454545, 0x515151, 0x616161, // 10
@@ -430,7 +432,7 @@ protected:
 
     int      text_px, text_py;
     int      mouse_x, mouse_y, mouse_cmd;
-    int      flash, cursor_x, cursor_y;
+    int      flash, flash_cnt, cursor_x, cursor_y;
 
     unsigned short timer;
     unsigned long  intr_timer, last_timer;
