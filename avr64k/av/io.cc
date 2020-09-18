@@ -4,6 +4,7 @@
 unsigned char APP::get(int addr) {
 
     addr &= 0xFFFF;
+    if (addr >= 0xF000) addr += (bank * 0x1000);
 
     unsigned char dv = 0;
 
@@ -14,7 +15,8 @@ unsigned char APP::get(int addr) {
         case 0x20: dv = port_keyb_xt; break;
         case 0x21: dv = port_kb_cnt; break;
         case 0x22: dv = timer & 0xFF; break;
-        case 0x23: dv = timer >> 8;   break;
+        case 0x23: dv = timer >> 8; break;
+        case 0x24: dv = bank; break;
 
         // Остальная память
         default:   dv = sram[addr]; break;
@@ -27,14 +29,19 @@ unsigned char APP::get(int addr) {
 void APP::put(int addr, unsigned char value) {
 
     addr &= 0xFFFF;
+    if (addr >= 0xF000) addr += (bank * 0x1000);
 
+    // Сохрание в память
     sram[addr] = value;
 
-    // Запись во флаги
-    if (addr == 0x5F) byte_to_flag(value);
+    switch (addr) {
+
+        case 0x24: bank = value; break;
+        case 0x5F: byte_to_flag(value); break;
+    }
 
     // Нарисовать на холсте
-    if (addr >= 0x8000) { update_byte_scr(addr); }
+    if (addr >= 0xF000) { update_byte_scr(addr); }
 }
 
 // Получение ASCII

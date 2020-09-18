@@ -25,6 +25,7 @@ APP::APP() {
 
     cpu_model       = ATTINY85;
     max_flash       = 0x1FFF;
+    bank            = 0;
 
     count_per_frame = 200000;    // 10,0 mHz процессор
 }

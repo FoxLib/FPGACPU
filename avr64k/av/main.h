@@ -367,7 +367,6 @@ static const unsigned char ansi16[256][16] = {
     /* $FF     */ {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}                 // Пустая символга
 };
 
-
 enum CPU_MODEL {
 
     ATTINY85        = 1,    // 0x1FFF 8k
@@ -403,32 +402,33 @@ protected:
     // Процессор
     // ---------------------------
 
-    int      cpu_model;         // Модель процессора
-    uint32_t max_flash;         // Максимальный объем памяти flash
+    int      cpu_model;             // Модель процессора
+    uint32_t max_flash;             // Максимальный объем памяти flash
+    uint8_t  program[128*1024];     // Память программы
+    uint8_t  sram   [1024*1024];    // Общая память, также включает регистры с портами (1 Mb)
+    uint8_t  pvsram [96];           // Для отладчика
+    int      map[65536];            // Карта инструкций
 
-    uint8_t program[128*1024];  // Память программы
-    uint8_t sram   [1024*1024]; // Общая память, также включает регистры с портами (1 Mb)
-    uint8_t pvsram [96];        // Для отладчика
-    int             map[65536];
+    // Состояние и конфигурация процессора
+    int      pc;
     uint16_t opcode, command;
-
-    int  pc;
-    int  cpu_halt;
-    int  require_halt;
-    uint instr_counter;
-    int  cycles;
-    int  count_per_frame;
-    int  framecycle;
-    int  clock_mhz;
-    int  clock_video;
-    int  config_width, config_height;
+    int      cpu_halt;
+    int      require_halt;
+    uint     instr_counter;
+    int      cycles;
+    int      count_per_frame;
+    int      framecycle;
+    int      clock_mhz;
+    int      clock_video;
+    int      config_width, config_height;
 
     // I/O
-    unsigned char port_kb_cnt;
-    unsigned char port_keyb_xt;
+    uint8_t  port_kb_cnt;
+    uint8_t  port_keyb_xt;
+    uint8_t  bank;
 
-    int  text_px, text_py;
-    int  mouse_x, mouse_y, mouse_cmd;
+    int      text_px, text_py;
+    int      mouse_x, mouse_y, mouse_cmd;
     unsigned short timer;
     unsigned long  intr_timer, last_timer;
 
