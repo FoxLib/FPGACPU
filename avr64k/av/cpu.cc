@@ -1,4 +1,4 @@
-#include "avr.h"
+#include "main.h"
 
 // Байт во флаги
 void APP::byte_to_flag(unsigned char f) {

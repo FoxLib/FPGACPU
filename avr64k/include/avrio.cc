@@ -3,9 +3,8 @@
 
 #include <avr/pgmspace.h>
 
-// Ссылка на пустой адрес
-#define NULL        ((void*)0)
-#define brk         asm volatile("sleep"); // break
+// Макросы
+#define brk         asm volatile("sleep");
 
 // Базовые типы данных
 #define byte        unsigned char
@@ -67,6 +66,5 @@ inline void outp(int port, unsigned char val) { ((volatile unsigned char*)0x20)[
 
 // Объявление указателя на память (имя x, адрес a)
 #define heap(x, a) byte* x = (byte*) a
-#define DISPLAY(x) byte* x = (byte*) 0x8000
 
 #endif

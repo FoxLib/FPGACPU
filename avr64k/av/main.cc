@@ -1,4 +1,4 @@
-#include "avr.h"
+#include "main.h"
 
 int main(int argc, char* argv[]) {
 
@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
 
     avr.config();
     avr.window("AVR emulator");
-    avr.assign();
+    avr.instrmask();
 
     if (argc > 1) { avr.loadfile(argv[1]); }
 

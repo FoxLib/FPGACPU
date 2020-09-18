@@ -1,4 +1,26 @@
-#include "avr.h"
+#include "main.h"
+
+// Установить или удалить brkpoint
+void APP::swi_brk() {
+
+    int dsdel = 0; // Маркер удаления из
+    for (int k = 0; k < ds_brk_cnt; k++) {
+
+        // Удалить, if has
+        if (ds_brk[k] == ds_cursor) {
+
+            ds_brk_cnt--;
+            for (int i = k; i < ds_brk_cnt; i++) {
+                ds_brk[i] = ds_brk[i+1];
+            }
+            dsdel = 1;
+            break;
+        }
+    }
+
+    // Добавить точку останова, если нет ее
+    if (dsdel == 0) ds_brk[ds_brk_cnt++] = ds_cursor;
+}
 
 // Прочесть следующий опкод
 int APP::ds_fetch(uint& addr) {

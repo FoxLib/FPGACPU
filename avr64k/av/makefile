@@ -3,13 +3,13 @@ SDL=`sdl-config --cflags --libs`
 LIBS=-lSDL
 WARN=-Wall -Wno-strict-overflow -Wno-unused-result -Wno-unused-variable -Wno-unused-but-set-variable
 CFLAGS=-Icore -I. $(SDL) -O3 $(WARN)
-OBJ=app.o disasm.o assign.o cpu.o display.o io.o avr.o
+OBJ=app.o disasm.o instrmask.o cpu.o display.o io.o main.o
 
 all: $(OBJ)
 	$(CC) $(CFLAGS) $(OBJ) $(LIBS) -o avr
 	./avr
 
-%.o: %.cc avr.h
+%.o: %.cc main.h
 	$(CC) $(CFLAGS) $(LIBS) $< -c -o $@
 
 install: avr
