@@ -22,7 +22,7 @@ altera_onchip_flash_block # (
         .IS_DUAL_BOOT           ("False"),
         .IS_ERAM_SKIP           ("True"),
         .IS_COMPRESSED_IMAGE    ("False"),
-        .INIT_FILENAME          ("demo.mif"),
+        // .INIT_FILENAME          ("firmware/demo1.mif"),
         .MIN_VALID_ADDR         (0),
         .MAX_VALID_ADDR         (3071),
         .MIN_UFM_VALID_ADDR     (0),
