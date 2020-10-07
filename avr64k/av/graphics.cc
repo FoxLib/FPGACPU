@@ -38,6 +38,7 @@ void APP::window(const char* caption) {
     sdl_screen = SDL_SetVideoMode(w, h, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
     SDL_WM_SetCaption(caption, 0);
     SDL_AddTimer(1000 / clock_video, AVRDisplayTimer, NULL);
+    SDL_EnableKeyRepeat(500, 30);
 }
 
 // Обновление экрана

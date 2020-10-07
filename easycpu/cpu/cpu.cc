@@ -7,7 +7,7 @@ static const char* cond[4] = {"NC", "C", "NZ", "Z"};
 
 CPU::CPU() {
 
-    // Инициализаровать экран
+    // Инициализировать экран
     for (int id = 0x0000; id <= 0xFFFF; id++) mem[id] = 0;
     for (int id = 0xF001; id <  0xFFA0; id += 2) mem[id] = 0x07;
 

@@ -22,7 +22,7 @@ public:
 
     // Должны быть реализованы в классе-потомке
     // -----------------------------------------------------------------
-    virtual void pset(int x, int y, char cl);
+    virtual void pset(int x, int y, byte cl);
     virtual void block(int x1, int y1, int x2, int y2, byte cl);
     // -----------------------------------------------------------------
 

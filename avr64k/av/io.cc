@@ -12,19 +12,19 @@ unsigned char APP::get(int addr) {
     switch (addr) {
 
         // Управление клавиатурой
-        case 0x20: dv = port_keyb_xt; break;
-        case 0x21: dv = port_kb_cnt; break;
-        case 0x22: dv = timer & 0xFF; break;
-        case 0x23: dv = timer >> 8; break;
-        case 0x24: dv = bank; break;
-        case 0x25: dv = videom; break;
-        case 0x26: dv = cursor_x; break;
-        case 0x27: dv = cursor_y; break;
-        case 0x28: dv = spi_data; break;
-        case 0x29: dv = spi_cmd; break;
-        case 0x2A: dv = spi_st; break; // Busy=0, Timeout=0
-        case 0x2B: dv = dynamic_ram[dram_address & 0x3FFFFFF]; break;
-        case 0x2C: dv = 0; break;
+        case 0x20: dv = spi_cmd; break;
+        case 0x21: dv = spi_st; break; // Busy=0, Timeout=0
+        case 0x22: dv = 1; break;      // DRAM Ready=1
+        case 0x2C: dv = port_keyb_xt; break;
+        case 0x2D: dv = port_kb_cnt; break;
+        case 0x2E: dv = timer & 0xFF; break;
+        case 0x2F: dv = timer >> 8; break;
+        case 0x30: dv = bank; break;
+        case 0x31: dv = videom; break;
+        case 0x32: dv = cursor_x; break;
+        case 0x33: dv = cursor_y; break;
+        case 0x3E: dv = dynamic_ram[dram_address & 0x3FFFFFF]; break;
+        case 0x4E: dv = spi_data; break;
 
         // Остальная память
         default: dv = sram[addr]; break;
@@ -45,16 +45,16 @@ void APP::put(int addr, unsigned char value) {
     switch (addr) {
 
         // DRAM
-        case 0x20: dram_address = (dram_address & ~0x000000FF) | value;         break;
-        case 0x21: dram_address = (dram_address & ~0x0000FF00) | (value << 8);  break;
-        case 0x22: dram_address = (dram_address & ~0x00FF0000) | (value << 16); break;
-        case 0x23: dram_address = (dram_address & ~0xFF000000) | (value << 24); break;
+        case 0x2C: dram_address = (dram_address & ~0x000000FF) | value;         break;
+        case 0x2D: dram_address = (dram_address & ~0x0000FF00) | (value << 8);  break;
+        case 0x2E: dram_address = (dram_address & ~0x00FF0000) | (value << 16); break;
+        case 0x2F: dram_address = (dram_address & ~0xFF000000) | (value << 24); break;
 
         // Установка банка памяти
-        case 0x24: bank = value; break;
+        case 0x30: bank = value; break;
 
         // Изменение видеорежима
-        case 0x25:
+        case 0x31:
 
             videom = value;
 
@@ -68,17 +68,17 @@ void APP::put(int addr, unsigned char value) {
             break;
 
         // Установка положения курсора
-        case 0x26: cursor_update(); cursor_x = value; cursor_update(); break;
-        case 0x27: cursor_update(); cursor_y = value; cursor_update(); break;
+        case 0x32: cursor_update(); cursor_x = value; cursor_update(); break;
+        case 0x33: cursor_update(); cursor_y = value; cursor_update(); break;
 
         // SPI Data
-        case 0x28: spi_data = value; break;
-        case 0x29: spi_cmd  = value; break;
-        case 0x2A: if ((value & 1) && (spi_latch == 0)) { spi_write_cmd(value); } spi_latch = value & 1; break;
+        case 0x4E: spi_data = value; break;
+        case 0x20: spi_cmd  = value; break;
+        case 0x21: if ((value & 1) && (spi_latch == 0)) { spi_write_cmd(value); } spi_latch = value & 1; break;
 
         // DRAM
-        case 0x2B: dram_data = value; break;
-        case 0x2C: if (value & 1) dynamic_ram[dram_address & 0x3FFFFFF] = value; break;
+        case 0x22: if (value & 1) dynamic_ram[dram_address & 0x3FFFFFF] = value; break;
+        case 0x3E: dram_data = value; break;
 
         // Запись во флаги
         case 0x5F: byte_to_flag(value); break;

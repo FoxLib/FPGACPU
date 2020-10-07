@@ -16,18 +16,23 @@
 // Описания всех портов
 enum PortsID {
 
-    KB_DATA         = 0x00,
-    KB_HIT          = 0x01,
-    TIMER_LO        = 0x02,
-    TIMER_HI        = 0x03,
-    BANK_PORT       = 0x04,
-    VIDEOMODE       = 0x05,
-    CURSOR_X        = 0x06,
-    CURSOR_Y        = 0x07,
-    SPI_DATA        = 0x08,
-    SPI_CMD         = 0x09,
-    SPI_LATCH       = 0x0A,
-    SPI_STATUS      = 0x0A
+    // KEYB
+    KB_DATA         = 0x0C,
+    KB_HIT          = 0x0D,
+    // TIME
+    TIMER_LO        = 0x0E,
+    TIMER_HI        = 0x0F,
+    // VIDEO
+    VIDEOMODE       = 0x11,
+    CURSOR_X        = 0x12,
+    CURSOR_Y        = 0x13,
+    // SPI
+    SPI_DATA        = 0x2E,
+    SPI_CMD         = 0x00,
+    SPI_LATCH       = 0x01,
+    SPI_STATUS      = 0x01,
+    // MISC
+    BANK_PORT       = 0x10,
 };
 
 // Скопировано из avr.h
