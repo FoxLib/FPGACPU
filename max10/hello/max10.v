@@ -14,7 +14,11 @@ wire arshft;
 wire arclk;
 wire drdout;
 
-// 3072 слов по 32 бита
+// Тактовая частота 12.5 Мгц
+// Cтаршим битом вперед задвигается arclk, arshft=1, ardin=адрес
+// DRSHIFT=определяет сдвигать ли данные (1) или переместить из флеш в сдвиговый регистр (0)
+
+// 3072 слов по 32 бита = 12 килобайт
 altera_onchip_flash_block # (
 
         .DEVICE_FAMILY          ("MAX 10"),
@@ -43,7 +47,7 @@ altera_onchip_flash_block # (
         .arshft     (arshft),       // 1=задвиг 0=инкремент
         .ardin      ({{22{1'b1}}, 1'b0}), // Задвигается постоянно адрес 0
         .drclk      (drclk),        // Тактовая частота 12,5 mhz для данных
-        .drshft     (drshft),
+        .drshft     (drshft),       // 1=сдвиг 0=скопировать из flash в сдвиговый регистр
         .drdin      (1'b0),
         .nprogram   (1'b1),
         .nerase     (1'b1),
