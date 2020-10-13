@@ -1,8 +1,12 @@
 parameter
-    SEG_ES = 0, REG_AX = 0, REG_SP = 4,
-    SEG_CS = 1, REG_CX = 1, REG_BP = 5,
-    SEG_SS = 2, REG_DX = 2, REG_SI = 6,
-    SEG_DS = 3, REG_BX = 3, REG_DI = 7;
+    SEG_ES = 0, REG_AX = 0, REG_SP = 4, ALU_ADD = 0, ALU_AND = 4,
+    SEG_CS = 1, REG_CX = 1, REG_BP = 5, ALU_OR  = 1, ALU_SUB = 5,
+    SEG_SS = 2, REG_DX = 2, REG_SI = 6, ALU_ADC = 2, ALU_XOR = 6,
+    SEG_DS = 3, REG_BX = 3, REG_DI = 7, ALU_SBB = 3, ALU_CMP = 7;
+
+parameter
+    CF = 0, PF = 2, AF = 4,  ZF = 6, SF = 7,
+    TF = 8, IF = 9, DF = 10, OF = 11;
 
 parameter
     START  = 0, // Инициализация инструкции
@@ -54,6 +58,7 @@ initial begin
     bus = 0;
     fn  = 0;
     s1  = 0;
+    wb  = 0;
 
 end
 
@@ -73,3 +78,8 @@ reg [15:0]  op1;                // Операнд 1
 reg [15:0]  op2;                // Операнд 2
 reg         i_dir;              // 0=rm, r; 1=r, rm
 reg         i_size;             // 0=8 bit; 1=16 bit
+reg         wb;                 // Записать в регистры (размер i_size)
+reg [15:0]  wb_data;            // Какое значение записывать
+reg [ 2:0]  wb_reg;             // Номер регистра (0..7)
+reg [ 2:0]  alu;                // Выбор АЛУ режима
+

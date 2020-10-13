@@ -18,7 +18,6 @@ wire        _strob_ = fn == 1;
 // Выбор текущего адреса
 assign address = bus ? {seg[segment_id], 4'h0} + ea : {seg[SEG_CS], 4'h0} + ip;
 
-
 // Исполнительный блок
 always @(posedge clock) begin
 
@@ -33,11 +32,14 @@ always @(posedge clock) begin
             segment_px  <= 1'b0;    // Наличие сегментного префикса
             rep    <= 2'b0;     // Нет префикса REP:
             ea     <= 0;        // Эффективный адрес
-            fn     <= 1;        // Номер главной фунции
+            fn     <= LOAD;     // Номер главной фунции
             s1     <= 0;        // Вспомогательный
             we     <= 0;        // Разрешение записи
             i_dir  <= 0;        // Ширина операнда 0=8, 1=16
             i_size <= 0;        // Направление 0=[rm,r], 1=[r,rm]
+            wb     <= 0;
+            wb_data <= 0;
+            wb_reg  <= 0;
 
         end
 
@@ -47,14 +49,13 @@ always @(posedge clock) begin
 
             casex (i_data)
 
-                8'b0000_1111: begin fn <= 4; end // Префикс расширения
+                8'b0000_1111: begin fn <= EXTEND; end // Префикс расширения
                 8'b001x_x110: begin segment_id <= i_data[4:3]; segment_px <= 1; end // Сегментные префиксы
                 8'b1110_001x: begin rep <= i_data[1:0]; end // REPNZ, REPZ
                 8'b0110_010x, // FS, GS
                 8'b0110_011x, // opsize, adsize
                 8'b1110_0000: begin /* ничего не делать */ end
                 default: begin // Переход к исполнению инструкции
-
 
                     // Параметры по умолчанию
                     i_size <= i_data[0];
@@ -66,8 +67,16 @@ always @(posedge clock) begin
 
                         8'b00xxx0xx, 8'b1000xxxx, 8'b1100000x, 8'b110001xx,
                         8'b110100xx, 8'b11011xxx, 8'b1111x11x, 8'b0110001x,
-                        8'b011010x1: fn <= 2;
-                        default: fn <= 3;
+                        8'b011010x1: fn <= MODRM;
+                        default:     fn <= INSTR;
+
+                    endcase
+
+                    // Заранее подготовить к исполнению инструкции
+                    casex (i_data)
+
+                        8'b00xxx0xx, // ALU rm | ALU a,imm
+                        8'b00xxx10x: alu <= i_data[5:3];
 
                     endcase
 
@@ -211,6 +220,72 @@ always @(posedge clock) begin
         end
 
     endcase
+
+end
+
+// Запись в регистры
+always @(negedge clock) begin
+
+    // Запись wb_data резрешена в регистр wb_reg
+    if (wb) begin
+
+        if (i_size) r16[ wb_reg ] <= wb_data; // 16 bit
+        else if (wb_reg[2])
+             r16[ wb_reg[1:0] ][15:8] <= wb_data[7:0]; // HI8
+        else r16[ wb_reg[1:0] ][ 7:0] <= wb_data[7:0]; // LO8
+
+    end
+
+end
+
+// ---------------------------------------------------------------------
+// Арифметико-логическое устройство
+// ---------------------------------------------------------------------
+
+reg [15:0] alu_r; // Результат выполнения op1 <alu> op2
+reg [11:0] alu_f; // Результирующие флаги
+reg [16:0] alu_t; // Временный результат
+wire [3:0] alu_top = i_size ? 15 : 7;
+
+always @* begin
+
+    alu_f = flags;
+
+    // Вычисление результата
+    case (alu)
+
+        ALU_ADD: alu_t = op1 + op2;
+        ALU_ADC: alu_t = op1 + op2 + flags[CF];
+        ALU_SBB: alu_t = op1 - op2 - flags[CF];
+        ALU_SUB,
+        ALU_CMP: alu_t = op1 - op2;
+        ALU_XOR: alu_t = op1 ^ op2;
+        ALU_OR:  alu_t = op1 | op2;
+        ALU_AND: alu_t = op1 & op2;
+
+    endcase
+
+    // Общая схема переносов
+    alu_f[CF] = alu_t[ alu_top + 1 ];
+    alu_f[AF] = op1[4] ^ op2[4] ^ alu_t[4];
+
+    // Вычисление флага OF
+    case (alu)
+
+        ALU_ADD,
+        ALU_ADC: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 1) & (op1[alu_top] ^ alu_t[alu_top]);
+        ALU_SUB,
+        ALU_SBB,
+        ALU_CMP: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 0) & (op1[alu_top] ^ alu_t[alu_top]);
+        // Логические сбрасывают OF, CF, AF
+        default: begin alu_f[OF] = 0; alu_f[CF] = 0; alu_f[AF] = alu_t[4]; end
+
+    endcase
+
+    // SZP устанавливаются для всех одинаково
+    alu_f[SF] = alu_t[alu_top];
+    alu_f[ZF] = (i_size ? alu_t[15:0] : alu_t[7:0]) == 0;
+    alu_f[PF] = ~^alu_t[7:0];
 
 end
 
