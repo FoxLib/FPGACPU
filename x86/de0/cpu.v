@@ -9,7 +9,7 @@ module cpu
 );
 
 // ------------------------------ ОТЛАДКА
-wire [15:0] _debug_ = seg[SEG_CS];
+wire [15:0] _debug_ = r16[REG_AX];
 wire        _strob_ = fn == 1;
 // ------------------------------
 
@@ -21,7 +21,8 @@ assign address = bus ? {seg[segment_id], 4'h0} + ea : {seg[SEG_CS], 4'h0} + ip;
 // Исполнительный блок
 always @(posedge clock) begin
 
-    wb <= 0;
+    wb <= 0; // Запись в регистр
+    wf <= 0; // Запись флагов
 
     case (fn)
 
@@ -30,18 +31,21 @@ always @(posedge clock) begin
         START: begin
 
             opcode      <= 0;
+            bus         <= 0;       // address = CS:IP
             segment_id  <= SEG_DS;  // Значение сегмента по умолчанию DS:
             segment_px  <= 1'b0;    // Наличие сегментного префикса
-            rep    <= 2'b0;     // Нет префикса REP:
-            ea     <= 0;        // Эффективный адрес
-            fn     <= LOAD;     // Номер главной фунции
-            we     <= 0;        // Разрешение записи
-            i_dir  <= 0;        // Ширина операнда 0=8, 1=16
-            i_size <= 0;        // Направление 0=[rm,r], 1=[r,rm]
-            wb_data <= 0;
-            wb_reg <= 0;
-            s1     <= 0;
-            s2     <= 0;
+            rep         <= 2'b0;    // Нет префикса REP:
+            ea          <= 0;       // Эффективный адрес
+            fn          <= LOAD;    // Номер главной фунции
+            fnext       <= START;   // Возврат по умолчанию
+            we          <= 0;       // Разрешение записи
+            i_dir       <= 0;       // Ширина операнда 0=8, 1=16
+            i_size      <= 0;       // Направление 0=[rm,r], 1=[r,rm]
+            wb_data     <= 0;       // Данные на запись (modrm | reg)
+            wb_reg      <= 0;       // Номер регистра на запись
+            s1          <= 0;
+            s2          <= 0;
+            s3          <= 0;
 
         end
 
@@ -101,8 +105,8 @@ always @(posedge clock) begin
                 modrm <= i_data;
                 ip    <= ip + 1;
 
-                // Первый операнд (i_dir=1 будет выбрана rm-часть)
-                case (i_dir ? i_data[2:0] : i_data[5:3])
+                // Первый операнд (i_dir=1 будет выбрана reg-часть)
+                case (i_dir ? i_data[5:3] : i_data[2:0])
 
                     3'b000: op1 <= i_size ? r16[REG_AX] : r16[REG_AX][ 7:0];
                     3'b001: op1 <= i_size ? r16[REG_CX] : r16[REG_CX][ 7:0];
@@ -115,8 +119,8 @@ always @(posedge clock) begin
 
                 endcase
 
-                // Второй операнд (i_dir=1 будет выбрана reg-часть)
-                case (i_dir ? i_data[5:3] : i_data[2:0])
+                // Второй операнд (i_dir=1 будет выбрана rm-часть)
+                case (i_dir ? i_data[2:0] : i_data[5:3])
 
                     3'b000: op2 <= i_size ? r16[REG_AX] : r16[REG_AX][ 7:0];
                     3'b001: op2 <= i_size ? r16[REG_CX] : r16[REG_CX][ 7:0];
@@ -193,8 +197,49 @@ always @(posedge clock) begin
 
         // Исполнение инструкции
         // -------------------------------------------------------------
-        INSTR: begin
-        end
+        INSTR: casex (opcode)
+
+            // <alu> rm
+            8'b00xxx0xx: begin
+
+                wb_data <= alu_r;
+                wb_flag <= alu_f;
+                wf <= 1;
+                fn <= (alu != ALU_CMP) ? WBACK : START;
+
+            end
+
+            // <alu> a, imm
+            8'b00xxx10x: case (s3)
+
+                // Инициализация
+                0: begin
+
+                    op1 <= i_size ? r16[REG_AX] : r16[REG_AX][7:0];
+                    op2 <= i_data;
+                    s3  <= i_size ? 1 : 2;
+                    ip  <= ip + 1;
+
+                end
+
+                // Считывание старшего байта
+                1: begin s3 <= 2; op2[15:8] <= i_data; ip <= ip + 1; end
+
+                // Запись в регистр и выход из процедуры
+                2: begin
+
+                    fn      <= START;
+                    wb_flag <= alu_f;
+                    wb_data <= alu_r;
+                    wb_reg  <= REG_AX;
+                    wb      <= (alu != ALU_CMP);
+                    wf      <= 1;
+
+                end
+
+            endcase
+
+        endcase
 
         // Расширенные инструции
         // -------------------------------------------------------------
@@ -210,6 +255,7 @@ always @(posedge clock) begin
         // -------------------------------------------------------------
         WBACK: case (s2)
 
+            // Выбор - регистр или память
             0: begin
 
                 // reg-часть или rm:reg
@@ -269,16 +315,17 @@ always @(negedge clock) begin
 
     end
 
+    if (wf) flags <= alu_f;
+
 end
 
 // ---------------------------------------------------------------------
 // Арифметико-логическое устройство
 // ---------------------------------------------------------------------
 
-reg [15:0] alu_r; // Результат выполнения op1 <alu> op2
-reg [11:0] alu_f; // Результирующие флаги
-reg [16:0] alu_t; // Временный результат
-wire [3:0] alu_top = i_size ? 15 : 7;
+reg  [11:0] alu_f; // Результирующие флаги
+reg  [16:0] alu_r; // Результат выполнения op1 <alu> op2
+wire [ 3:0] alu_top = i_size ? 15 : 7;
 
 always @* begin
 
@@ -287,38 +334,38 @@ always @* begin
     // Вычисление результата
     case (alu)
 
-        ALU_ADD: alu_t = op1 + op2;
-        ALU_ADC: alu_t = op1 + op2 + flags[CF];
-        ALU_SBB: alu_t = op1 - op2 - flags[CF];
+        ALU_ADD: alu_r = op1 + op2;
+        ALU_ADC: alu_r = op1 + op2 + flags[CF];
+        ALU_SBB: alu_r = op1 - op2 - flags[CF];
         ALU_SUB,
-        ALU_CMP: alu_t = op1 - op2;
-        ALU_XOR: alu_t = op1 ^ op2;
-        ALU_OR:  alu_t = op1 | op2;
-        ALU_AND: alu_t = op1 & op2;
+        ALU_CMP: alu_r = op1 - op2;
+        ALU_XOR: alu_r = op1 ^ op2;
+        ALU_OR:  alu_r = op1 | op2;
+        ALU_AND: alu_r = op1 & op2;
 
     endcase
 
     // Общая схема переносов
-    alu_f[CF] = alu_t[ alu_top + 1 ];
-    alu_f[AF] = op1[4] ^ op2[4] ^ alu_t[4];
+    alu_f[CF] = alu_r[ alu_top + 1 ];
+    alu_f[AF] = op1[4] ^ op2[4] ^ alu_r[4];
 
     // Вычисление флага OF
     case (alu)
 
         ALU_ADD,
-        ALU_ADC: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 1) & (op1[alu_top] ^ alu_t[alu_top]);
+        ALU_ADC: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 1) & (op1[alu_top] ^ alu_r[alu_top]);
         ALU_SUB,
         ALU_SBB,
-        ALU_CMP: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 0) & (op1[alu_top] ^ alu_t[alu_top]);
+        ALU_CMP: alu_f[OF] = (op1[alu_top] ^ op2[alu_top] ^ 0) & (op1[alu_top] ^ alu_r[alu_top]);
         // Логические сбрасывают OF, CF, AF
-        default: begin alu_f[OF] = 0; alu_f[CF] = 0; alu_f[AF] = alu_t[4]; end
+        default: begin alu_f[OF] = 0; alu_f[CF] = 0; alu_f[AF] = alu_r[4]; end
 
     endcase
 
     // SZP устанавливаются для всех одинаково
-    alu_f[SF] = alu_t[alu_top];
-    alu_f[ZF] = (i_size ? alu_t[15:0] : alu_t[7:0]) == 0;
-    alu_f[PF] = ~^alu_t[7:0];
+    alu_f[SF] = alu_r[alu_top];
+    alu_f[ZF] = (i_size ? alu_r[15:0] : alu_r[7:0]) == 0;
+    alu_f[PF] = ~^alu_r[7:0];
 
 end
 
