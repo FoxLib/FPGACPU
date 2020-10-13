@@ -1,37 +1,114 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Tue Oct 13 04:25:08 2020
+[*] Tue Oct 13 10:09:14 2020
 [*]
-[dumpfile] "/home/lis/dev/fpga/x86/de0/tb.vcd"
-[dumpfile_mtime] "Tue Oct 13 04:24:32 2020"
-[dumpfile_size] 42962
-[savefile] "/home/lis/dev/fpga/x86/de0/tb.gtkw"
+[dumpfile] "/disk/fox/dev/fpgacpu/x86/de0/tb.vcd"
+[dumpfile_mtime] "Tue Oct 13 10:03:31 2020"
+[dumpfile_size] 43138
+[savefile] "/disk/fox/dev/fpgacpu/x86/de0/tb.gtkw"
 [timestart] 0
-[size] 1920 1031
+[size] 1920 1029
 [pos] -1 -1
-*-6.000000 135 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 75 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [sst_width] 254
-[signals_width] 215
+[signals_width] 242
 [sst_expanded] 1
-[sst_vpaned_height] 295
+[sst_vpaned_height] 297
 @28
 [color] 3
 tb.clock
-[color] 2
+[color] 4
 tb.clock25
-@22
-tb.CPU86.fn[3:0]
+@c00022
 [color] 6
 tb.CPU86._debug_[15:0]
-tb.CPU86.address[19:0]
-tb.CPU86.opcode[8:0]
-tb.CPU86.i_data[7:0]
 @28
+[color] 6
+(0)tb.CPU86._debug_[15:0]
+[color] 6
+(1)tb.CPU86._debug_[15:0]
+[color] 6
+(2)tb.CPU86._debug_[15:0]
+[color] 6
+(3)tb.CPU86._debug_[15:0]
+[color] 6
+(4)tb.CPU86._debug_[15:0]
+[color] 6
+(5)tb.CPU86._debug_[15:0]
+[color] 6
+(6)tb.CPU86._debug_[15:0]
+[color] 6
+(7)tb.CPU86._debug_[15:0]
+[color] 6
+(8)tb.CPU86._debug_[15:0]
+[color] 6
+(9)tb.CPU86._debug_[15:0]
+[color] 6
+(10)tb.CPU86._debug_[15:0]
+[color] 6
+(11)tb.CPU86._debug_[15:0]
+[color] 6
+(12)tb.CPU86._debug_[15:0]
+[color] 6
+(13)tb.CPU86._debug_[15:0]
+[color] 6
+(14)tb.CPU86._debug_[15:0]
+[color] 6
+(15)tb.CPU86._debug_[15:0]
+@1401200
+-group_end
+@28
+[color] 4
+tb.CPU86._strob_
+@800200
+-Address
+@28
+[color] 2
 tb.CPU86.bus
 @22
+[color] 6
+tb.CPU86.address[19:0]
+@28
+[color] 6
+tb.CPU86.segment_id[2:0]
+@22
+[color] 6
+tb.CPU86.ea[15:0]
+[color] 6
+tb.CPU86.i_data[7:0]
+[color] 6
 tb.CPU86.o_data[7:0]
 @28
 tb.CPU86.we
+@1000200
+-Address
+@800200
+-Subroutines
+@22
+[color] 5
+tb.CPU86.fn[3:0]
+[color] 5
+tb.CPU86.s1[3:0]
+@1000200
+-Subroutines
+@800200
+-Opcode
+@22
+tb.CPU86.opcode[8:0]
+tb.CPU86.modrm[7:0]
+@28
+tb.CPU86.i_dir
+@29
+tb.CPU86.i_size
+@1000200
+-Opcode
+@800200
+-ALU
+@22
+tb.CPU86.op1[15:0]
+tb.CPU86.op2[15:0]
+@1000200
+-ALU
 [pattern_trace] 1
 [pattern_trace] 0

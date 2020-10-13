@@ -8,12 +8,16 @@ module cpu
     output  reg         we
 );
 
+// ------------------------------ ОТЛАДКА
 wire [15:0] _debug_ = seg[SEG_CS];
+wire        _strob_ = fn == 1;
+// ------------------------------
 
 `include "cpu_decl.v"
 
 // Выбор текущего адреса
 assign address = bus ? {seg[segment_id], 4'h0} + ea : {seg[SEG_CS], 4'h0} + ip;
+
 
 // Исполнительный блок
 always @(posedge clock) begin
@@ -21,43 +25,41 @@ always @(posedge clock) begin
     case (fn)
 
         // Сброс перед запуском инструкции
-        0: begin
+        // -------------------------------------------------------------
+        START: begin
 
             opcode      <= 0;
-            segment_id  <= SEG_DS;          // Значение сегмента по умолчанию DS:
-            segment_px  <= 1'b0;            // Наличие сегментного префикса
-            rep  <= 2'b0;   // Нет префикса REP:
-            fn   <= 1;      // Номер главной фунции
-            cn   <= 0;      // Вспомогательные
-            i_dir  <= 0;    // Ширина операнда
-            i_size <= 0;    // Направление
-
-            // Пропуск 32-х битных префиксов
-            casex (i_data)
-
-                8'b0110_010x, // FS, GS
-                8'b0110_011x, // opsize, adsize
-                8'b1110_0000: begin fn <= 0; ip <= ip + 1; end
-
-            endcase
+            segment_id  <= SEG_DS;  // Значение сегмента по умолчанию DS:
+            segment_px  <= 1'b0;    // Наличие сегментного префикса
+            rep    <= 2'b0;     // Нет префикса REP:
+            ea     <= 0;        // Эффективный адрес
+            fn     <= 1;        // Номер главной фунции
+            s1     <= 0;        // Вспомогательный
+            we     <= 0;        // Разрешение записи
+            i_dir  <= 0;        // Ширина операнда 0=8, 1=16
+            i_size <= 0;        // Направление 0=[rm,r], 1=[r,rm]
 
         end
 
         // Распознание опкода
-        1: begin
+        // -------------------------------------------------------------
+        LOAD: begin
 
             casex (i_data)
 
-                8'b0000_1111: begin opcode[8] <= 1'b1; fn <= 2'h3; end // Префикс расширения
-                8'b001x_x110: begin segment_id <= i_data[4:3]; segment_px <= 1'b1; end // Сегментные префиксы
+                8'b0000_1111: begin fn <= 4; end // Префикс расширения
+                8'b001x_x110: begin segment_id <= i_data[4:3]; segment_px <= 1; end // Сегментные префиксы
                 8'b1110_001x: begin rep <= i_data[1:0]; end // REPNZ, REPZ
+                8'b0110_010x, // FS, GS
+                8'b0110_011x, // opsize, adsize
+                8'b1110_0000: begin /* ничего не делать */ end
                 default: begin // Переход к исполнению инструкции
 
-                    opcode <= i_data;
 
                     // Параметры по умолчанию
-                    i_size <= opcode[0];
-                    i_dir  <= opcode[1];
+                    i_size <= i_data[0];
+                    i_dir  <= i_data[1];
+                    opcode <= i_data;
 
                     // Определить наличие байта ModRM для опкода
                     casex (i_data)
@@ -78,10 +80,15 @@ always @(posedge clock) begin
         end
 
         // Считывание MODRM
-        2: case (cn)
+        // -------------------------------------------------------------
+        MODRM: case (s1)
 
             // Считывание адреса или регистров
             0: begin
+
+                s1    <= 1;
+                modrm <= i_data;
+                ip    <= ip + 1;
 
                 // Первый операнд (i_dir=1 будет выбрана rm-часть)
                 case (i_dir ? i_data[2:0] : i_data[5:3])
@@ -125,18 +132,85 @@ always @(posedge clock) begin
 
                 endcase
 
-                modrm <= i_data;
+                // Выбор сегмента SS: для BP
+                if (!segment_px)
+                casex (i_data)
+                    8'bxx_xxx_01x, // [bp+si|di]
+                    8'b01_xxx_110, // [bp+d8|d16]
+                    8'b10_xxx_110: segment_id <= SEG_SS;
+                endcase
+
+                // Переход сразу к исполнению инструкции: операнды уже получены
+                casex (i_data)
+
+                    8'b00_xxx_110: begin s1 <= 2; end // +disp16
+                    8'b00_xxx_xxx: begin s1 <= 4; bus <= 1; end // Читать операнд из памяти
+                    8'b01_xxx_xxx: begin s1 <= 1; end // +disp8
+                    8'b10_xxx_xxx: begin s1 <= 2; end // +disp16
+                    8'b11_xxx_xxx: begin fn <= INSTR; end // Перейти к исполению
+
+                endcase
+
+            end
+
+            // Чтение 8 битного signed disp
+            1: begin s1 <= 4; ip <= ip + 1; ea <= ea + {{8{i_data[7]}}, i_data}; bus <= 1; end
+
+            // Чтение 16 битного unsigned disp16
+            2: begin s1 <= 3; ip <= ip + 1; ea <= ea + i_data; end
+            3: begin s1 <= 4; ip <= ip + 1; ea[15:8] <= ea[15:8] + i_data; bus <= 1; end
+
+            // Чтение операнда из памяти 8 bit
+            4: begin
+
+                if (i_dir) op2 <= i_data; else op1 <= i_data;
+                if (i_size) begin s1 <= 5; ea <= ea + 1; end else fn <= INSTR;
+
+            end
+
+            // Операнд 16 bit
+            5: begin
+
+                if (i_dir) op2[15:8] <= i_data; else op1[15:8] <= i_data;
+
+                ea <= ea - 1;
+                fn <= INSTR;
 
             end
 
         endcase
 
         // Исполнение инструкции
-        3: begin
+        // -------------------------------------------------------------
+        INSTR: begin
+        end
+
+        // Расширенные инструции
+        // -------------------------------------------------------------
+        EXTEND: begin
+        end
+
+        // Прерывание
+        // -------------------------------------------------------------
+        INTR: begin
+        end
+
+        // Сохранение результата ModRM
+        // -------------------------------------------------------------
+        WBACK: begin
+        end
+
+        // Запись в стек
+        // -------------------------------------------------------------
+        PUSH: begin
+        end
+
+        // Чтение из стека
+        // -------------------------------------------------------------
+        POP: begin
         end
 
     endcase
-
 
 end
 
