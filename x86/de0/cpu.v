@@ -21,6 +21,8 @@ assign address = bus ? {seg[segment_id], 4'h0} + ea : {seg[SEG_CS], 4'h0} + ip;
 // Исполнительный блок
 always @(posedge clock) begin
 
+    wb <= 0;
+
     case (fn)
 
         // Сброс перед запуском инструкции
@@ -33,13 +35,13 @@ always @(posedge clock) begin
             rep    <= 2'b0;     // Нет префикса REP:
             ea     <= 0;        // Эффективный адрес
             fn     <= LOAD;     // Номер главной фунции
-            s1     <= 0;        // Вспомогательный
             we     <= 0;        // Разрешение записи
             i_dir  <= 0;        // Ширина операнда 0=8, 1=16
             i_size <= 0;        // Направление 0=[rm,r], 1=[r,rm]
-            wb     <= 0;
             wb_data <= 0;
-            wb_reg  <= 0;
+            wb_reg <= 0;
+            s1     <= 0;
+            s2     <= 0;
 
         end
 
@@ -204,10 +206,41 @@ always @(posedge clock) begin
         INTR: begin
         end
 
-        // Сохранение результата ModRM
+        // Сохранение данных [wb_data, i_size, i_dir] в ModRM
         // -------------------------------------------------------------
-        WBACK: begin
-        end
+        WBACK: case (s2)
+
+            0: begin
+
+                // reg-часть или rm:reg
+                if (i_dir || modrm[7:6] == 2'b11) begin
+
+                    wb_reg  <= i_dir ? modrm[5:3] : modrm[2:0];
+                    wb      <= 1;
+                    bus     <= 0;
+                    fn      <= fnext;
+
+                end
+                // Если modrm указывает на память, записать первые 8 бит
+                else begin o_data <= wb_data[7:0]; we <= 1; s2 <= 1; end
+
+            end
+
+            // Запись 16 бит?
+            1: if (i_size) begin
+
+                ea     <= ea + 1;
+                o_data <= wb_data[15:8];
+                s2     <= 2;
+
+            end
+            // Завершение записи 8 бит
+            else begin we <= 0; bus <= 0; fn <= fnext; end
+
+            // Запись 16 бит закончена
+            2: begin   we <= 0; bus <= 0; fn <= fnext; end
+
+        endcase
 
         // Запись в стек
         // -------------------------------------------------------------
