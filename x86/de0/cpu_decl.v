@@ -1,38 +1,36 @@
 parameter
-    SEG_ES = 0, SEG_CS = 1, SEG_SS = 2, SEG_DS = 3, SEG_FS = 4, SEG_GS = 5;
+    SEG_ES = 0, REG_AX = 0, REG_SP = 4,
+    SEG_CS = 1, REG_CX = 1, REG_BP = 5,
+    SEG_SS = 2, REG_DX = 2, REG_SI = 6,
+    SEG_DS = 3, REG_BX = 3, REG_DI = 7;
 
 // Инициализация регистров
 // ---------------------------------------------------------------------
 
-reg [31:0] r32[8];
-reg [15:0] s16[6];
-reg [31:0] ip;
-reg [32:0] eflags;
-reg [63:0] segment[6];       // Сегментные регистры для p-mode
+reg [15:0] r16[8];
+reg [15:0] seg[6];
+reg [11:0] flags;
+reg [15:0] ip;
 
 initial begin
 
-    r32[0] = 32'h00_00_00_00; // EAX
-    r32[1] = 32'h00_00_00_00; // ECX
-    r32[2] = 32'h00_00_00_00; // EDX
-    r32[3] = 32'h00_00_00_00; // EBX
-    r32[4] = 32'h00_00_00_00; // ESP
-    r32[5] = 32'h00_00_00_00; // EBP
-    r32[6] = 32'h00_00_00_00; // ESI
-    r32[7] = 32'h00_00_00_00; // EDI
+    r16[REG_AX] = 16'h0000;
+    r16[REG_CX] = 16'h0000;
+    r16[REG_DX] = 16'h0000;
+    r16[REG_BX] = 16'h0000;
+    r16[REG_SP] = 16'h0000;
+    r16[REG_BP] = 16'h0000;
+    r16[REG_SI] = 16'h0000;
+    r16[REG_DI] = 16'h0000;
 
-    s16[0] = 16'h0000; // ES
-    s16[1] = 16'h0000; // CS
-    s16[2] = 16'h0000; // SS
-    s16[3] = 16'h0000; // DS
-    s16[4] = 16'h0000; // FS
-    s16[5] = 16'h0000; // GS
+    seg[SEG_ES] = 16'h0000;
+    seg[SEG_CS] = 16'h0000;
+    seg[SEG_SS] = 16'h0000;
+    seg[SEG_DS] = 16'h0000;
 
-    ip     = 32'h0000_0000;
-
-    //                       IV V     NIO
-    //                       DP FAVR 0TPL ODIT SZ0A 0P1C
-    eflags = 32'b0000_0000_0010_0000_0000_0000_0000_0010;
+    ip     = 16'h0000;
+    flags  = 16'b0000_0000_0010;
+    //           ODIT SZ-A -P-C
 
 end
 
@@ -41,42 +39,26 @@ end
 
 initial begin
 
-    pmode           = 1'b0;
-    mstate          = 1'b0;
-    cycle           = 1'b0;
-    o_data          = 1'b0;
-    opcode          = 1'b0;
-    seg_id          = 1'b0;
-    seg_pre         = 1'b0;
-    swi             = 1'b0;
-    adsize          = 1'b0;
-    opsize          = 1'b0;
-    def_opsize      = 1'b0;     // 16 bit
-    def_adsize      = 1'b0;     // 16 bit
-    we              = 1'b0;
+    segment_id = SEG_DS;
+    bus = 0;
+    fn  = 0;
+    cn  = 0;
 
 end
 
 // Состояние процессора в данный момент
 // ---------------------------------------------------------------------
 
-reg         pmode;
 reg [ 8:0]  opcode;
-reg [ 2:0]  mstate;             // Главное состояние процессора
-reg [ 4:0]  cycle;              // Цикл выполнения инструкции
-reg         seg_pre;            // Наличие префикса в инструкции
-reg [ 2:0]  seg_id;             // Номер выбранного сегмента
-reg [31:0]  ea;                 // Эффективный адрес
-reg         swi;                // 0 => CS:EIP, 1 => seg:ea
+reg [ 3:0]  fn;                 // Главное состояние процессора
+reg [ 3:0]  cn;                 // Номер такта процедуры
+reg         segment_px;         // Наличие префикса в инструкции
+reg [ 2:0]  segment_id;         // Номер выбранного сегмента
+reg [15:0]  ea;                 // Эффективный адрес
+reg         bus;                // 0 => CS:IP, 1 => segment_id:ea
 reg [ 1:0]  rep;                // REP[0] = NZ|Z; REP[1] = наличие префикса
-reg         opsize;
-reg         adsize;
-reg         def_opsize;         // operand size (16/23)
-reg         def_adsize;         // address size (16/23)
-
-// Различные вычисления
-// ---------------------------------------------------------------------
-
-// IP меняется в зависимости от режима работы процессора в данный момент
-wire [31:0] ipnext = ip + 1;
-
+reg [ 7:0]  modrm;              // Сохраненный байт modrm
+reg [15:0]  op1;                // Операнд 1
+reg [15:0]  op2;                // Операнд 2
+reg         i_dir;              // 0=rm, r; 1=r, rm
+reg         i_size;             // 0=8 bit; 1=16 bit

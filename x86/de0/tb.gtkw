@@ -1,53 +1,37 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Sep 16 10:38:23 2020
+[*] Tue Oct 13 04:25:08 2020
 [*]
-[dumpfile] "/disk/fox/dev/fpgacpu/x86/de0/tb.vcd"
-[dumpfile_mtime] "Wed Sep 16 10:37:57 2020"
-[dumpfile_size] 43419
-[savefile] "/disk/fox/dev/fpgacpu/x86/de0/tb.gtkw"
+[dumpfile] "/home/lis/dev/fpga/x86/de0/tb.vcd"
+[dumpfile_mtime] "Tue Oct 13 04:24:32 2020"
+[dumpfile_size] 42962
+[savefile] "/home/lis/dev/fpga/x86/de0/tb.gtkw"
 [timestart] 0
-[size] 1920 1029
+[size] 1920 1031
 [pos] -1 -1
-*-6.000000 284 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 135 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
-[sst_width] 243
-[signals_width] 165
+[sst_width] 254
+[signals_width] 215
 [sst_expanded] 1
-[sst_vpaned_height] 303
+[sst_vpaned_height] 295
 @28
-tb.clock
-@29
 [color] 3
+tb.clock
+[color] 2
 tb.clock25
-@28
-[color] 2
-tb.CPU86.mstate[2:0]
 @22
-[color] 2
-tb.CPU86.cycle[4:0]
-tb.CPU86.opcode[8:0]
-@800200
--Main
-@22
+tb.CPU86.fn[3:0]
+[color] 6
+tb.CPU86._debug_[15:0]
 tb.CPU86.address[19:0]
-tb.i_data[7:0]
-tb.o_data[7:0]
+tb.CPU86.opcode[8:0]
+tb.CPU86.i_data[7:0]
 @28
-tb.we
-tb.CPU86.pmode
-@1000200
--Main
-@800200
--PREFIX
+tb.CPU86.bus
+@22
+tb.CPU86.o_data[7:0]
 @28
-tb.CPU86.adsize
-tb.CPU86.opsize
-tb.CPU86.pmode
-tb.CPU86.rep[1:0]
-tb.CPU86.seg_id[2:0]
-tb.CPU86.seg_pre
-@1000200
--PREFIX
+tb.CPU86.we
 [pattern_trace] 1
 [pattern_trace] 0

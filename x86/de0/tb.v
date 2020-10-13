@@ -9,7 +9,7 @@ reg clock25;
 always #0.5 clock   = ~clock;
 always #1.5 clock25 = ~clock25;
 
-initial begin clock = 1; clock25 = 0; #2000 $finish; end
+initial begin clock = 0; clock25 = 0; #2000 $finish; end
 initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
 // ---------------------------------------------------------------------
 
