@@ -4,9 +4,9 @@ static const char* display[25] = {
 
 //             1         2         3         4         5         6         7
 //   01234567890123456789012345678901234567890123456789012345678901234567890123456789
-    "FxCorp. The BIOS Input Output PtMax                                             ", /*  0 */
-    "                                                                                ", /*  1 */
-    "                                                                                ", /*  2 */
+    "> Welcome to National Electronix Stepping Family                                ", /*  0 */
+    "| Intel Inside                                                                  ", /*  1 */
+    "| Idiot Outside                                                                 ", /*  2 */
     "                                                                                ", /*  3 */
     "                                                                                ", /*  4 */
     "                                                                                ", /*  5 */
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     screen app(1280, 800);
 
     uint8_t fnt[4096];
-    FILE* fp = fopen("font-2.fnt", "rb");
+    FILE* fp = fopen("font.fnt", "rb");
     fread(fnt, 1, 4096, fp);
     fclose(fp);
 
