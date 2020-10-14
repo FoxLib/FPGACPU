@@ -95,6 +95,7 @@ pll PLL(
 
 wire [12:0] cga_address;
 wire [ 7:0] cga_data;
+reg  [10:0] cga_cursor;
 
 cga CGA
 (
@@ -106,6 +107,7 @@ cga CGA
     // Память
     .address    (cga_address),
     .data       (cga_data),
+    .cursor     (cga_cursor),
 );
 
 cgamem CGAMEM
@@ -114,6 +116,25 @@ cgamem CGAMEM
     .address_a  (cga_address),
     .q_a        (cga_data),
 );
+
+// ---------------------------------------------------------------------
+
+wire [7:0] ps2_data;
+wire       ps2_hit;
+
+// Контроллер клавиатуры
+keyboard KEYBOARD
+(
+    .CLOCK_50           (clock_50),    // Тактовый генератор на 50 Мгц
+    .PS2_CLK            (PS2_CLK),     // Таймингс PS/2
+    .PS2_DAT            (PS2_DAT),     // Данные с PS/2
+    .received_data      (ps2_data),    // Принятые данные
+    .received_data_en   (ps2_hit),     // Нажата клавиша
+);
+
+always @(posedge clock_50)
+    if (ps2_hit)
+        cga_cursor <= cga_cursor + 1;
 
 endmodule
 
@@ -207,3 +228,7 @@ altera_pll_i (
 );
 
 endmodule
+
+// Модуль процессора
+`include "../cpu.v"
+
