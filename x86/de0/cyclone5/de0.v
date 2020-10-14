@@ -100,8 +100,9 @@ cga CGA
 (
     .clock_25 (clock_25),
     // Интерфейс
-    .R  (VGA_R),  .G  (VGA_G),  .B (VGA_B),
-    .HS (VGA_HS), .VS (VGA_VS),
+    .R (VGA_R), .HS (VGA_HS),
+    .G (VGA_G), .VS (VGA_VS),
+    .B (VGA_B),
     // Память
     .address    (cga_address),
     .data       (cga_data),

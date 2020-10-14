@@ -1,4 +1,7 @@
 all:
+	quartus_cdb de0 -c de0 --update_mif
+	quartus_asm --read_settings_files=on --write_settings_files=off de0 -c de0
+
 clean:
 	rm -f main.qqq
 	rm -rf db incremental_db simulation timing
