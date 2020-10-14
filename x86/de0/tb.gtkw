@@ -1,62 +1,33 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Tue Oct 13 16:40:25 2020
+[*] Wed Oct 14 02:50:53 2020
 [*]
-[dumpfile] "/disk/fox/dev/fpgacpu/x86/de0/tb.vcd"
-[dumpfile_mtime] "Tue Oct 13 16:39:11 2020"
-[dumpfile_size] 44034
-[savefile] "/disk/fox/dev/fpgacpu/x86/de0/tb.gtkw"
+[dumpfile] "/disk/dev/fpga/x86/de0/tb.vcd"
+[dumpfile_mtime] "Wed Oct 14 02:50:26 2020"
+[dumpfile_size] 43905
+[savefile] "/disk/dev/fpga/x86/de0/tb.gtkw"
 [timestart] 0
-[size] 1920 1029
+[size] 1920 1031
 [pos] -1 -1
-*-6.000000 165 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 135 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [sst_width] 254
 [signals_width] 242
 [sst_expanded] 1
-[sst_vpaned_height] 299
+[sst_vpaned_height] 300
 @28
 [color] 3
 tb.clock
 [color] 4
 tb.clock25
-@c00022
-[color] 6
-tb.CPU86._debug_[15:0]
-@28
-[color] 6
-(0)tb.CPU86._debug_[15:0]
-[color] 6
-(1)tb.CPU86._debug_[15:0]
-[color] 6
-(2)tb.CPU86._debug_[15:0]
-[color] 6
-(3)tb.CPU86._debug_[15:0]
-[color] 6
-(4)tb.CPU86._debug_[15:0]
-[color] 6
-(5)tb.CPU86._debug_[15:0]
-[color] 6
-(6)tb.CPU86._debug_[15:0]
-[color] 6
-(7)tb.CPU86._debug_[15:0]
-[color] 6
-(8)tb.CPU86._debug_[15:0]
-[color] 6
-(9)tb.CPU86._debug_[15:0]
-[color] 6
-(10)tb.CPU86._debug_[15:0]
-[color] 6
-(11)tb.CPU86._debug_[15:0]
-[color] 6
-(12)tb.CPU86._debug_[15:0]
-[color] 6
-(13)tb.CPU86._debug_[15:0]
-[color] 6
-(14)tb.CPU86._debug_[15:0]
-[color] 6
-(15)tb.CPU86._debug_[15:0]
-@1401200
+@800200
+-tb.CPU86._debug_
+@23
+[color] 5
+tb.CPU86._debug1[15:0]
+[color] 5
+tb.CPU86._debug2[15:0]
+@1000200
 -group_end
 @28
 [color] 4
@@ -79,7 +50,7 @@ tb.CPU86.ea[15:0]
 tb.CPU86.i_data[7:0]
 [color] 6
 tb.CPU86.o_data[7:0]
-@29
+@28
 tb.CPU86.we
 @1000200
 -Address
@@ -142,6 +113,10 @@ tb.CPU86.wb_flag[11:0]
 @28
 [color] 6
 tb.CPU86.wb_reg[2:0]
+[color] 7
+tb.CPU86.i_size
+[color] 7
+tb.CPU86.i_dir
 @1000200
 -WB
 [pattern_trace] 1

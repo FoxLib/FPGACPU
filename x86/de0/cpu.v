@@ -9,7 +9,8 @@ module cpu
 );
 
 // ------------------------------ ОТЛАДКА
-wire [15:0] _debug_ = r16[REG_AX];
+wire [15:0] _debug1 = r16[REG_AX];
+wire [15:0] _debug2 = r16[REG_CX];
 wire        _strob_ = fn == 1;
 // ------------------------------
 
@@ -32,6 +33,7 @@ always @(posedge clock) begin
 
             opcode      <= 0;
             bus         <= 0;       // address = CS:IP
+            busen       <= 1;       // Считывать из памяти modrm rm-часть
             segment_id  <= SEG_DS;  // Значение сегмента по умолчанию DS:
             segment_px  <= 1'b0;    // Наличие сегментного префикса
             rep         <= 2'b0;    // Нет префикса REP:
@@ -83,6 +85,8 @@ always @(posedge clock) begin
 
                         8'b00xxx0xx, // ALU rm | ALU a,imm
                         8'b00xxx10x: alu <= i_data[5:3];
+                        8'b1100011x,
+                        8'b10001101: busen <= 0;
 
                     endcase
 
@@ -159,7 +163,7 @@ always @(posedge clock) begin
                 casex (i_data)
 
                     8'b00_xxx_110: begin s1 <= 2; end // +disp16
-                    8'b00_xxx_xxx: begin s1 <= 4; bus <= 1; end // Читать операнд из памяти
+                    8'b00_xxx_xxx: begin s1 <= 4; bus <= busen; if (!busen) fn <= INSTR; end // Читать операнд из памяти
                     8'b01_xxx_xxx: begin s1 <= 1; end // +disp8
                     8'b10_xxx_xxx: begin s1 <= 2; end // +disp16
                     8'b11_xxx_xxx: begin fn <= INSTR; end // Перейти к исполению
@@ -169,11 +173,11 @@ always @(posedge clock) begin
             end
 
             // Чтение 8 битного signed disp
-            1: begin s1 <= 4; ip <= ip + 1; ea <= ea + {{8{i_data[7]}}, i_data}; bus <= 1; end
+            1: begin s1 <= 4; ip <= ip + 1; ea <= ea + {{8{i_data[7]}}, i_data}; bus <= busen; if (!busen) fn <= INSTR; end
 
             // Чтение 16 битного unsigned disp16
             2: begin s1 <= 3; ip <= ip + 1; ea <= ea + i_data; end
-            3: begin s1 <= 4; ip <= ip + 1; ea[15:8] <= ea[15:8] + i_data; bus <= 1; end
+            3: begin s1 <= 4; ip <= ip + 1; ea[15:8] <= ea[15:8] + i_data; bus <= busen; if (!busen) fn <= INSTR; end
 
             // Чтение операнда из памяти 8 bit
             4: begin
@@ -239,6 +243,59 @@ always @(posedge clock) begin
 
             endcase
 
+            // MOV r, i
+            8'b1011xxxx: case (s3)
+
+                // 8 bit
+                0: begin
+
+                    wb_data <= i_data;
+                    wb_reg  <= opcode[2:0];
+                    wb      <= ~opcode[3];
+                    i_size  <= opcode[3];
+                    fn      <= opcode[3] ? fn : START;
+                    s3      <= 1;
+                    ip      <= ip + 1;
+
+                end
+
+                // 16 bit
+                1: begin
+
+                    wb_data[15:8] <= i_data;
+                    wb <= 1;
+                    fn <= START;
+
+                end
+
+            endcase
+
+            // MOV rm
+            8'b100010xx: begin wb_data <= op2; fn <= WBACK; end
+
+            // MOV rm, i
+            8'b1100011x: case (s3)
+
+                // 8 bit
+                0: begin
+
+                    i_dir   <= 0;
+                    wb_data <= i_data;
+                    ip  <= ip + 1;
+                    s3  <= 1;
+
+                    if (i_size == 0) begin fn <= WBACK; bus <= 1; end
+
+                end
+
+                // 16 bit
+                1: begin wb_data[15:8] <= i_data; ip <= ip + 1; bus <= 1; fn <= WBACK; end
+
+            endcase
+
+            // LEA r16, m
+            8'b10001101: begin wb_data <= ea; wb_reg <= modrm[5:3]; wb <= 1; fn <= START; end
+
         endcase
 
         // Расширенные инструции
@@ -251,7 +308,7 @@ always @(posedge clock) begin
         INTR: begin
         end
 
-        // Сохранение данных [wb_data, i_size, i_dir] в ModRM
+        // Сохранение данных [wb_data, i_size, i_dir, modrm]
         // -------------------------------------------------------------
         WBACK: case (s2)
 

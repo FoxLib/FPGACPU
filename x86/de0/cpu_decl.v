@@ -29,13 +29,13 @@ reg [15:0] ip;
 
 initial begin
 
-    r16[REG_AX] = 16'h0052;
-    r16[REG_CX] = 16'h0000;
+    r16[REG_AX] = 16'h3452;
+    r16[REG_CX] = 16'h0102;
     r16[REG_DX] = 16'h0000;
-    r16[REG_BX] = 16'h0000;
+    r16[REG_BX] = 16'h0001;
     r16[REG_SP] = 16'h0000;
     r16[REG_BP] = 16'h0000;
-    r16[REG_SI] = 16'h0000;
+    r16[REG_SI] = 16'h0001;
     r16[REG_DI] = 16'h0000;
 
     seg[SEG_ES] = 16'h0000;
@@ -56,7 +56,7 @@ initial begin
 
     segment_id = SEG_DS;
 
-    bus = 0; modrm   = 0;
+    bus = 0; modrm   = 0; busen = 0;
     fn  = 0; i_size  = 0;
     s1  = 0; i_dir   = 0;
     wb  = 0; wf      = 0;
@@ -80,6 +80,7 @@ reg         segment_px;         // Наличие префикса в инстр
 reg [ 2:0]  segment_id;         // Номер выбранного сегмента
 reg [15:0]  ea;                 // Эффективный адрес
 reg         bus;                // 0 => CS:IP, 1 => segment_id:ea
+reg         busen;              // Использовать ли bus для modrm
 reg [ 1:0]  rep;                // REP[0] = NZ|Z; REP[1] = наличие префикса
 reg [ 7:0]  modrm;              // Сохраненный байт modrm
 reg [15:0]  op1;                // Операнд 1
