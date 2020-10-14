@@ -93,11 +93,25 @@ pll PLL(
 );
 // -----------------------------------------------------------------------
 
+wire [12:0] cga_address;
+wire [ 7:0] cga_data;
+
 cga CGA
 (
     .clock_25 (clock_25),
+    // Интерфейс
     .R  (VGA_R),  .G  (VGA_G),  .B (VGA_B),
     .HS (VGA_HS), .VS (VGA_VS),
+    // Память
+    .address    (cga_address),
+    .data       (cga_data),
+);
+
+cgamem CGAMEM
+(
+    .clock      (clock_100),
+    .address_a  (cga_address),
+    .q_a        (cga_data),
 );
 
 endmodule
