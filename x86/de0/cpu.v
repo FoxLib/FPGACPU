@@ -279,10 +279,10 @@ always @(posedge clock) begin
                 // 8 bit
                 0: begin
 
-                    i_dir   <= 0;
                     wb_data <= i_data;
-                    ip  <= ip + 1;
-                    s3  <= 1;
+                    ip      <= ip + 1;
+                    i_dir   <= 0;
+                    s3      <= 1;
 
                     if (i_size == 0) begin fn <= WBACK; bus <= 1; end
 
@@ -359,10 +359,10 @@ always @(posedge clock) begin
 
 end
 
-// Запись в регистры
+// wb=запись wb_data резрешена в регистр wb_reg
+// [wb, wb_data, wb_reg, i_size]
 always @(negedge clock) begin
 
-    // Запись wb_data резрешена в регистр wb_reg
     if (wb) begin
 
         if (i_size) r16[ wb_reg ] <= wb_data; // 16 bit
