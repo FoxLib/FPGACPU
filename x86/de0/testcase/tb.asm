@@ -1,2 +1,5 @@
 
-        mov [bx-1], ax
+        xchg    ax, bx
+        jne     a
+        mov     ax, $1234
+a:      mov     cx, $ffee

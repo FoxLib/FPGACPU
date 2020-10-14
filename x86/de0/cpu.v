@@ -19,6 +19,16 @@ wire        _strob_ = fn == 1;
 // Выбор текущего адреса
 assign address = bus ? {seg[segment_id], 4'h0} + ea : {seg[SEG_CS], 4'h0} + ip;
 
+// Вычисление условий
+wire [7:0] branches =
+{
+    (flags[SF] ^ flags[OF]) | flags[ZF], // 7: (ZF=1) OR (SF!=OF)
+    (flags[SF] ^ flags[OF]),             // 6: SF!=OF
+    flags[PF], flags[SF],                // 5: PF; 4: SF
+    flags[CF] | flags[OF],               // 3: CF != OF
+    flags[ZF], flags[CF], flags[OF]      // 2: OF; 1: CF; 0: ZF
+};
+
 // Исполнительный блок
 always @(posedge clock) begin
 
@@ -87,6 +97,21 @@ always @(posedge clock) begin
                         8'b00xxx10x: alu <= i_data[5:3];
                         8'b1100011x,
                         8'b10001101: busen <= 0;
+                        8'b0100xxxx: begin // INC|DEC
+
+                            alu <= i_data[3] ? ALU_SUB : ALU_ADD;
+                            op1 <= r16[i_data[2:0]];
+                            op2 <= 1;
+                            i_size <= 1;
+
+                        end
+                        8'b10010xxx: begin // XCHG r16
+
+                            op1 <= r16[REG_AX];
+                            op2 <= r16[i_data[2:0]];
+                            i_size <= 1;
+
+                        end
 
                     endcase
 
@@ -296,6 +321,38 @@ always @(posedge clock) begin
             // LEA r16, m
             8'b10001101: begin wb_data <= ea; wb_reg <= modrm[5:3]; wb <= 1; fn <= START; end
 
+            // Jccc
+            8'b0111xxxx: begin
+
+                if (branches[ opcode[3:1] ] ^ opcode[0])
+                    ip <= ip + 1 + {{8{i_data[7]}}, i_data[7:0]};
+                else
+                    ip <= ip + 1;
+
+                fn <= START;
+
+            end
+
+            // INC | DEC r16
+            8'b0100xxxx: begin
+
+                wb_data <= alu_r;
+                wb_flag <= {alu_f[11:1], flags[CF]};
+                wb_reg  <= opcode[2:0];
+                wb <= 1;
+                wf <= 1;
+                fn <= START;
+
+            end
+
+            // XCHG ax, r16
+            8'b10010xxx: case (s3)
+
+                0: begin s3 <= 1;     wb_data <= op2; wb <= 1; wb_reg <= REG_AX; end
+                1: begin fn <= START; wb_data <= op1; wb <= 1; wb_reg <= opcode[2:0]; end
+
+            endcase
+
         endcase
 
         // Расширенные инструции
@@ -372,7 +429,7 @@ always @(negedge clock) begin
 
     end
 
-    if (wf) flags <= alu_f;
+    if (wf) flags <= wb_flag;
 
 end
 

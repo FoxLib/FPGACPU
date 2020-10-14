@@ -1,39 +1,38 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Oct 14 14:51:26 2020
+[*] Wed Oct 14 16:43:37 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/x86/de0/tb.vcd"
-[dumpfile_mtime] "Wed Oct 14 14:50:24 2020"
-[dumpfile_size] 44163
+[dumpfile_mtime] "Wed Oct 14 16:42:20 2020"
+[dumpfile_size] 44386
 [savefile] "/disk/fox/dev/fpgacpu/x86/de0/tb.gtkw"
 [timestart] 0
 [size] 1920 1029
 [pos] -1 -1
-*-6.000000 288 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-6.000000 104 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] tb.
 [sst_width] 254
 [signals_width] 242
 [sst_expanded] 1
-[sst_vpaned_height] 303
+[sst_vpaned_height] 306
 @28
 [color] 3
 tb.clock
 [color] 4
 tb.clock25
-@800200
+@800201
 -tb.CPU86._debug_
-@22
-[color] 5
-tb.CPU86._debug1[15:0]
 @23
 [color] 5
+tb.CPU86._debug1[15:0]
+[color] 5
 tb.CPU86._debug2[15:0]
-@1000200
+@1000201
 -group_end
 @28
 [color] 4
 tb.CPU86._strob_
-@800200
+@c00200
 -Address
 @28
 [color] 2
@@ -53,9 +52,9 @@ tb.CPU86.i_data[7:0]
 tb.CPU86.o_data[7:0]
 @28
 tb.CPU86.we
-@1000200
+@1401200
 -Address
-@800200
+@c00200
 -Subroutines
 @22
 [color] 5
@@ -67,7 +66,7 @@ tb.CPU86.s1[2:0]
 tb.CPU86.s2[2:0]
 [color] 5
 tb.CPU86.s3[2:0]
-@1000200
+@1401200
 -Subroutines
 @c00200
 -Opcode
@@ -79,7 +78,7 @@ tb.CPU86.i_dir
 tb.CPU86.i_size
 @1401200
 -Opcode
-@800200
+@c00200
 -ALU
 @28
 [color] 7
@@ -95,11 +94,38 @@ tb.CPU86.alu_f[11:0]
 tb.CPU86.alu_top[3:0]
 [color] 7
 tb.CPU86.alu_r[16:0]
+@c00022
 [color] 7
 tb.CPU86.flags[11:0]
-@1000200
+@28
+[color] 7
+(0)tb.CPU86.flags[11:0]
+[color] 7
+(1)tb.CPU86.flags[11:0]
+[color] 7
+(2)tb.CPU86.flags[11:0]
+[color] 7
+(3)tb.CPU86.flags[11:0]
+[color] 7
+(4)tb.CPU86.flags[11:0]
+[color] 7
+(5)tb.CPU86.flags[11:0]
+[color] 7
+(6)tb.CPU86.flags[11:0]
+[color] 7
+(7)tb.CPU86.flags[11:0]
+[color] 7
+(8)tb.CPU86.flags[11:0]
+[color] 7
+(9)tb.CPU86.flags[11:0]
+[color] 7
+(10)tb.CPU86.flags[11:0]
+[color] 7
+(11)tb.CPU86.flags[11:0]
+@1401200
+-group_end
 -ALU
-@800200
+@c00200
 -WB
 @28
 [color] 2
@@ -118,7 +144,7 @@ tb.CPU86.wb_reg[2:0]
 tb.CPU86.i_size
 [color] 7
 tb.CPU86.i_dir
-@1000200
+@1401200
 -WB
 [pattern_trace] 1
 [pattern_trace] 0
