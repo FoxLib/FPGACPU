@@ -20,5 +20,6 @@ timing
 *.pof
 *.txt
 *.sld
+*.bin
 undo_redo.txt
 PLLJ_PLLSPE_INFO.txt
