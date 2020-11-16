@@ -527,6 +527,4 @@ set_global_assignment -name ACTIVE_SERIAL_CLOCK FREQ_100MHZ
 set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (Verilog)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT "VERILOG HDL" -section_id eda_simulation
 
-set_global_assignment -name HEX_FILE de0.hex
-set_global_assignment -name MIF_FILE de0.mif
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top

@@ -1,7 +1,7 @@
 <?php
 
 // 16 bit
-$gif = imagecreatefromgif("main.gif");
+$gif = imagecreatefromgif($argv[1]);
 
 ob_start();
 echo "WIDTH=8;\nDEPTH=153600;\nADDRESS_RADIX=HEX;\nDATA_RADIX=HEX;\n";

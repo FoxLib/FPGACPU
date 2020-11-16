@@ -1,2 +1,2 @@
 all:
-	php gif2mif.php
+	php gif2mif.php wall2.gif

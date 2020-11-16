@@ -1,6 +1,6 @@
 all:
-	iverilog -g2005-sv -DICARUS=1 -o tb.qqq tb.v
-	vvp tb.qqq >> /dev/null
+	quartus_cdb de0 -c de0 --update_mif
+	quartus_asm --read_settings_files=on --write_settings_files=off de0 -c de0
 vcd:
 	gtkwave tb.vcd
 wave:
