@@ -4,7 +4,7 @@
 $gif = imagecreatefromgif("main.gif");
 
 ob_start();
-echo "WIDTH=8;\nDEPTH=256;\nADDRESS_RADIX=HEX;\nDATA_RADIX=HEX;\n";
+echo "WIDTH=8;\nDEPTH=153600;\nADDRESS_RADIX=HEX;\nDATA_RADIX=HEX;\n";
 echo "CONTENT BEGIN\n";
 
 $address = 0;
@@ -19,4 +19,4 @@ for ($x = 0; $x < 640; $x += 2) {
 }
 
 echo "END\n";
-file_put_contents("vram.mif", ob_get_clean());
+file_put_contents("../vram.mif", ob_get_clean());

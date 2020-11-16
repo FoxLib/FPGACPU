@@ -93,14 +93,26 @@ pll u0(
 );
 // -----------------------------------------------------------------------
 
+wire [17:0] vram_ad;
+wire [ 7:0] vram_qa;
+
+vram VRAM(
+
+    .clock     (clock_100),
+    .address_a (vram_ad),
+    .q_a       (vram_qa),
+);
+
 cga CGA
 (
-    .clock_25 (clock_25),
-    .R  (VGA_R),
-    .G  (VGA_G),
-    .B  (VGA_B),
-    .HS (VGA_HS),
-    .VS (VGA_VS),
+    .clock_25   (clock_25),
+    .R          (VGA_R),
+    .G          (VGA_G),
+    .B          (VGA_B),
+    .HS         (VGA_HS),
+    .VS         (VGA_VS),
+    .data       (vram_qa),
+    .address    (vram_ad),
 );
 
 endmodule
