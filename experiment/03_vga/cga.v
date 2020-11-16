@@ -39,7 +39,24 @@ wire [ 9:0] Y    = y - vt_back;     // Y=[0..399]
 
 // Цветовая компонента
 reg  [7:0] current;
-wire [3:0] color = X[0] ? current[7:4] : current[3:0];
+wire [3:0] color = X[0] ? current[3:0] : current[7:4];
+reg [11:0] rgb;
+
+// Трансляция индекса в цвет
+always @* begin
+
+    case (color)
+    4'b0000: rgb = 12'h111; 4'b0001: rgb = 12'h008;
+    4'b0010: rgb = 12'h080; 4'b0011: rgb = 12'h088;
+    4'b0100: rgb = 12'h800; 4'b0101: rgb = 12'h808;
+    4'b0110: rgb = 12'h880; 4'b0111: rgb = 12'hccc;
+    4'b1000: rgb = 12'h888; 4'b1001: rgb = 12'h00f;
+    4'b1010: rgb = 12'h0f0; 4'b1011: rgb = 12'h0ff;
+    4'b1100: rgb = 12'hf00; 4'b1101: rgb = 12'hf0f;
+    4'b1110: rgb = 12'hff0; 4'b1111: rgb = 12'hfff;
+    endcase
+
+end
 
 always @(posedge clock_25) begin
 
@@ -51,7 +68,7 @@ always @(posedge clock_25) begin
     if (x >= hz_back && x < hz_visible + hz_back &&
         y >= vt_back && y < vt_visible + vt_back)
     begin
-         {R, G, B} <= {color, color, color};
+         {R, G, B} <= rgb;
     end
     else {R, G, B} <= 12'h000;
 
