@@ -1,0 +1,14 @@
+all:
+	iverilog -g2005-sv -DICARUS=1 -o tb.qqq tb.v
+	vvp tb.qqq >> /dev/null
+vcd:
+	gtkwave tb.vcd
+wave:
+	gtkwave tb.gtkw
+clean:
+	rm -f main.qqq
+	rm -rf db incremental_db simulation timing
+	rm -f *.jdi *.pof *.sld *.rpt *.summary *.sof *.done *.pin *.qws *.bak *.smsg *.qws *.vcd *.qqq *.jic *.map *.qqq
+	rm -f greybox_tmp undo_redo.txt PLLJ_PLLSPE_INFO.txt c5_pin_model_dump.txt
+	rm -rf .qsys_edit *.o *.bin *.elf
+
