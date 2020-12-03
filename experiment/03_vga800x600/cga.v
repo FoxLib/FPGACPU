@@ -68,7 +68,7 @@ always @(posedge clock_50) begin
     if (x >= hz_back && x < hz_visible + hz_back &&
         y >= vt_back && y < vt_visible + vt_back)
     begin
-         {R, G, B} <= rgb;
+         {R, G, B} <= X ^ Y; // rgb;
     end
     else {R, G, B} <= 12'h000;
 

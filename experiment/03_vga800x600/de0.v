@@ -105,7 +105,7 @@ vram VRAM(
 
 cga CGA
 (
-    .clock_25   (clock_50),
+    .clock_50   (clock_50),
     .R          (VGA_R),
     .G          (VGA_G),
     .B          (VGA_B),
