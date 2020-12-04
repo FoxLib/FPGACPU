@@ -1,22 +1,68 @@
-int main() {
+#include <math.h>
 
-    char* m = (char*) 0x10000;
+unsigned long __udivmodsi4(unsigned long num, unsigned long den, int modwanted) {
 
-    int i, pc = 0, ext = 0, sg = 0, rn = 1;
+    unsigned long bit = 1;
+    unsigned long res = 0;
 
-    while (rn) {
-	
-	switch (m[pc++]) {
+    while (den < num && bit && !(den & (1L<<31))) {
 
-	    case 0x0F: ext = 1; break;
-	    case 0x2e: sg = 1; break;
-	    default: rn = 0; break;
-
-	}
+        den <<= 1;
+        bit <<= 1;
     }
 
-    m[1] = ext;
-    m[2] = sg;
+    while (bit) {
+
+        if (num >= den) {
+            num -= den;
+            res |= bit;
+        }
+
+        bit >>=1;
+        den >>=1;
+    }
+
+    return (modwanted) ? num : res;
+}
+
+/*
+ * 32-bit signed integer divide.
+ */
+signed int __aeabi_idiv(signed int num, signed int den)
+{
+    signed int minus = 0;
+    signed int v;
+
+    if (num < 0){
+        num = -num;
+        minus = 1;
+    }
+
+    if (den < 0){
+        den = -den;
+        minus ^= 1;
+    }
+
+    v = __udivmodsi4(num, den, 0);
+    if (minus)
+        v = -v;
+
+    return v;
+}
+
+void output(int a, int b) {
+
+    char* m = (char*) 0x100000;
+    for (int i = a; i < b; i++)
+        m[i] = i / a;
+}
+
+int main() {
+
+
+
+    output(0, 50);
+    output(20, 40);
 
     return 0;
 }
