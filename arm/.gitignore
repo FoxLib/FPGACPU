@@ -1,4 +1,4 @@
 *.elf
 *.o
 *.lst
-/main
+main

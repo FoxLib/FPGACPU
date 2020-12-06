@@ -1,6 +1,6 @@
 <?php
 
-$bin = file_get_contents("main");
+$bin = file_get_contents($argv[1]);
 $prg = unpack("V*", $bin);
 
 $condition = ["eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "", "???"];
