@@ -100,6 +100,3 @@ ABX+1: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; bus <= 1'b1;   r
 // ---------------------------------------------------------------------
 ABY:   begin cstate <= cpunext; tmp    <= i_data_y[7:0];        pc  <= pc + 1; cout <= i_data_y[8]; end
 ABY+1: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en; wren <= ~read_en;  end
-
-// Задержка для симуляции тактов в 6502
-LAT:   begin cstate <= EXE; wren <= 1'b0; end

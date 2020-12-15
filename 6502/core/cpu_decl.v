@@ -22,11 +22,11 @@ parameter
 
     // Декодирование адреса
     INI  = 0,  NDX  = 1,  NDY  = 4,  ZP   = 7,  ZPX  = 8,  ZPY  = 9,
-    ABS  = 10, ABX  = 12, ABY  = 14, LAT  = 16,
+    ABS  = 10, ABX  = 12, ABY  = 14,
 
     // Исполнение кодов
-    EXE  = 17, EXE2 = 18, EXE3 = 19, EXE4 = 20, EXE5 = 21, EXE6 = 22,
-    REL  = 23;
+    EXE  = 16, EXE2 = 17, EXE3 = 18, EXE4 = 19, EXE5 = 20, EXE6 = 21,
+    REL  = 22;
 
 parameter
 
@@ -82,9 +82,4 @@ reg         cout;   // Сохранение переноса
 
 wire [ 8:0] i_data_x  = i_data + X; // Для преиндексной адресации
 wire [ 8:0] i_data_y  = i_data + Y; // Для постиндексной адресации
-
-// Признак того, что сейчас выполняется последний цикл считывания
-wire        sta_en = (cstate == NDX+2) | (cstate == NDY+2)
-                   | (cstate == ABS+1) | (cstate == ABX+1) | (cstate == ABY+1)
-                   | (cstate == ZP)    | (cstate == ZPX)   | (cstate == ZPY);
 
