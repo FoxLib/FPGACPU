@@ -50,11 +50,11 @@ $colors = [
     " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 14
     " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 15
     " AAAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAA", // 16
-    " 33                    8                 8                 8                    ", // 17
-    " 33                    8                 8                 8                    ", // 18
-    " 33                    8                 8                 8                    ", // 19
-    " 33                    8                 8 CC              8                    ", // 20
-    " 33                    8                 8                 8             CC     ", // 21
+    " 33                    8                 8                 8                8888", // 17
+    " 33                    8                 8                 8                8888", // 18
+    " 33                    8                 8                 8                8888", // 19
+    " 33                    8                 8 CC              8                8888", // 20
+    " 33                    8                 8                 8             CC 8888", // 21
     " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 22
     " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCAAAAAA", // 23
     "                                                                          222222", // 24
