@@ -14,20 +14,17 @@ initial begin $dumpfile("tb.vcd"); $dumpvars(0, tb); end
 // ---------------------------------------------------------------------
 
 reg  [ 7:0] memory[65536];
-reg  [ 7:0] i_data;
+wire [ 7:0] i_data = memory[ o_address ];
 wire [15:0] o_address;
 wire [ 7:0] o_data;
 wire        wren;
 
 // Традиционно загрузка сюда ROM
-initial $readmemh("rom.hex", memory, 16'h8000);
+initial $readmemh("rom.hex", memory, 16'h0000);
 
 /* Формируется логика чтения и записи в память */
 always @(posedge clock) begin
-
-    i_data <= memory[ o_address ];
     if (wren) memory[ o_address ] <= o_data;
-
 end
 
 // ---------------------------------------------------------------------

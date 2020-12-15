@@ -38,10 +38,10 @@ parameter
 
 parameter
 
-    srcdin      = 0, dsta = 0,
-    srcx        = 1, dstx = 1,
-    srcy        = 2, dsty = 2,
-    srcz        = 3, dsts = 3;
+    SRCDIN = 0, DSTA = 0,
+    SRCX   = 1, DSTX = 1,
+    SRCY   = 2, DSTY = 2,
+    SRCZ   = 3, DSTS = 3;
 
 // ---------------------------------------------------------------------
 // Регистры

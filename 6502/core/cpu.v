@@ -25,6 +25,7 @@ always @(posedge clock) begin
 
             read <= 1'b0;       // Сброс такта чтения адреса
             bus  <= 1'b0;       // Переключить снова на PC
+            cstate <= 0;
 
             casex (opcode)
 

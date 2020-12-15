@@ -4,10 +4,11 @@ INI: begin
     opcode  <= i_data;  // Записать опкод
     implied <= 1'b0;    // Операнд не Implied по умолчанию
     cstate  <= EXE;     // По умолчанию следующий статус EXE
-    src_id  <= srcdin;  // Источник операнда - память
+    src_id  <= SRCDIN;  // Источник операнда - память
     wren    <= 1'b0;    // Отключение записи в память
     read_en <= 1'b1;    // Читать все из памяти (кроме STA|STX|STY)
     o_data  <= 0;       // Ничего не писать
+    pc      <= pc + 1;  // К следующему адресу
 
     // Разобрать метод адресации
     casex (i_data)
@@ -41,6 +42,7 @@ INI: begin
 
 end
 
+// ---------------------------------------------------------------------
 // INDIRECT, X ($00,X)
 // ---------------------------------------------------------------------
 // Вначале рассчитывается 8-битный адрес + регистр X, и из полученного
@@ -48,20 +50,75 @@ end
 // ($55,X) считается $55 + X, из полученного адреса считывается 16-бит
 // адрес, который указывает на операнд в памяти.
 // ---------------------------------------------------------------------
-NDX:   begin cstate <= cpunext; cursor <= i_data_x[7:0];   bus  <= 1'b1;    end
-NDX+1: begin cstate <= cpunext; cursor <= nextcursor[7:0]; tmp  <= i_data;  end
-NDX+2: begin cstate <= EXE;     cursor <= {i_data, tmp};   read <= read_en; wren <= ~read_en; end
 
+NDX:
+begin
+
+    cstate  <= cpunext;
+    cursor  <= i_data_x[7:0];   // Immediate + X
+    bus     <= 1'b1;            // Указатель на LOW
+    pc      <= pc + 1;
+
+end
+
+NDX+1:
+begin
+
+    cstate  <= cpunext;
+    cursor  <= nextcursor[7:0]; // Указатель на HIGH
+    tmp     <= i_data;          // Чтение LOW
+
+end
+
+NDX+2:
+begin
+
+    cstate  <= EXE;
+    cursor  <= {i_data, tmp};   // Чтение HIGH, получен полный адрес
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+// ---------------------------------------------------------------------
 // INDIRECT, Y ($00),Y
 // ---------------------------------------------------------------------
 // Здесь вначале получаем адрес, из которого из ZeroPage области
 // извлекается 16-битный адрес, после чего добавляется Y, и по этому
 // адресу уже извлекается операнд
 // ---------------------------------------------------------------------
-NDY:   begin cstate <= cpunext; cursor <= i_data;               bus  <= 1'b1; end
-NDY+1: begin cstate <= cpunext; cursor <= nextcursor[7:0];      tmp  <= i_data_y[7:0]; cout <= i_data_y[8]; end
-NDY+2: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; read <= read_en;       wren <= ~read_en; end
 
+NDY:
+begin
+
+    cstate  <= cpunext;
+    cursor  <= i_data;
+    pc      <= pc + 1;
+    bus     <= 1'b1;
+
+end
+
+NDY+1:
+begin
+
+    cstate  <= cpunext;
+    cursor  <= nextcursor[7:0];
+    tmp     <= i_data_y[7:0];
+    cout    <= i_data_y[8];
+
+end
+
+NDY+2:
+begin
+
+    cstate  <= EXE;
+    cursor  <= {i_data + cout, tmp};
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+// ---------------------------------------------------------------------
 // ZP, ZPX, ZPY
 // ---------------------------------------------------------------------
 // Из указанного ZP, ZP+X или ZP+Y адреса получаем из ZeroPage, первых
@@ -71,10 +128,44 @@ NDY+2: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; read <= read_en;
 //  uint8* m = (uint8*) 0
 //  uint8  o = m[(адрес + 0|X|Y) & 255]
 // ---------------------------------------------------------------------
-ZP:    begin cstate <= EXE; cursor <= i_data;        bus <= 1'b1; read <= read_en; wren <= ~read_en; end
-ZPX:   begin cstate <= EXE; cursor <= i_data_x[7:0]; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
-ZPY:   begin cstate <= EXE; cursor <= i_data_y[7:0]; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
 
+ZP:
+begin
+
+    cstate  <= EXE;
+    pc      <= pc + 1;
+    cursor  <= i_data;
+    bus     <= 1'b1;
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+ZPX:
+begin
+
+    cstate  <= EXE;
+    pc      <= pc + 1;
+    cursor  <= i_data_x[7:0];
+    bus     <= 1'b1;
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+ZPY:
+begin
+
+    cstate  <= EXE;
+    pc      <= pc + 1;
+    cursor  <= i_data_y[7:0];
+    bus     <= 1'b1;
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+// ---------------------------------------------------------------------
 // ABSOLUTE
 // ---------------------------------------------------------------------
 // Аналогично ZP,ZPX,ZPY, но только меняется то, что теперь указывается
@@ -82,21 +173,88 @@ ZPY:   begin cstate <= EXE; cursor <= i_data_y[7:0]; bus <= 1'b1; read <= read_e
 //
 //  uint8 op8 = mem[ (адрес + 0|X|Y) & 65535 ]
 // ---------------------------------------------------------------------
-ABS:   begin cstate <= cpunext; tmp <= i_data; pc <= pc + 1;  end
-ABS+1: begin // Либо отправляется на jmp (abs), либо используется как опкод
 
-    if (opcode == JMP_ABS)
-         begin cstate <= INI; pc     <= {i_data, tmp}; end
-    else begin cstate <= EXE; cursor <= {i_data, tmp}; bus <= 1'b1; read <= read_en; wren <= ~read_en; end
+ABS:
+begin
+
+    cstate  <= cpunext;
+    tmp     <= i_data;
+    pc      <= pc + 1;
 
 end
 
+ABS+1:
+begin // Либо отправляется на jmp (abs), либо используется как опкод
+
+    if (opcode == JMP_ABS)
+    begin
+
+        cstate  <= INI;
+        pc      <= {i_data, tmp};
+
+    end
+    else
+    begin
+
+        cstate  <= EXE;
+        cursor  <= {i_data, tmp};
+        pc      <= pc + 1;
+        bus     <= 1'b1;
+        read    <= read_en;
+        wren    <= ~read_en;
+
+    end
+
+end
+
+// ---------------------------------------------------------------------
 // ABSOLUTE,X
 // ---------------------------------------------------------------------
-ABX:   begin cstate <= cpunext; tmp    <= i_data_x[7:0];        pc  <= pc + 1; cout <= i_data_x[8]; end
-ABX+1: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en; wren <= ~read_en;  end
 
+ABX:
+begin
+
+    cstate  <= cpunext;
+    tmp     <= i_data_x[7:0];
+    pc      <= pc + 1;
+    cout    <= i_data_x[8];
+
+end
+
+ABX+1:
+begin
+
+    cstate  <= EXE;
+    cursor  <= {i_data + cout, tmp};
+    pc      <= pc + 1;
+    bus     <= 1'b1;
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end
+
+// ---------------------------------------------------------------------
 // ABSOLUTE,Y
 // ---------------------------------------------------------------------
-ABY:   begin cstate <= cpunext; tmp    <= i_data_y[7:0];        pc  <= pc + 1; cout <= i_data_y[8]; end
-ABY+1: begin cstate <= EXE;     cursor <= {i_data + cout, tmp}; bus <= 1'b1;   read <= read_en; wren <= ~read_en;  end
+
+ABY:
+begin
+
+    cstate  <= cpunext;
+    tmp     <= i_data_y[7:0];
+    cout    <= i_data_y[8];
+    pc      <= pc + 1;
+
+end
+
+ABY+1:
+begin
+
+    cstate  <= EXE;
+    cursor  <= {i_data + cout, tmp};
+    pc      <= pc + 1;
+    bus     <= 1'b1;
+    read    <= read_en;
+    wren    <= ~read_en;
+
+end

@@ -1,0 +1,64 @@
+[*]
+[*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
+[*] Tue Dec 15 18:35:27 2020
+[*]
+[dumpfile] "/disk/fox/dev/fpgacpu/6502/core/tb.vcd"
+[dumpfile_mtime] "Tue Dec 15 18:33:13 2020"
+[dumpfile_size] 77235
+[savefile] "/disk/fox/dev/fpgacpu/6502/core/main.gtkw"
+[timestart] 0
+[size] 1920 1029
+[pos] -1 -1
+*-5.000000 75 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[sst_width] 248
+[signals_width] 239
+[sst_expanded] 1
+[sst_vpaned_height] 300
+@28
+tb.clock
+tb.CPU6502.clock
+@22
+tb.CPU6502.cstate[4:0]
+@c00201
+-REG
+@22
+[color] 5
+tb.CPU6502.A[7:0]
+[color] 5
+tb.CPU6502.P[7:0]
+[color] 5
+tb.CPU6502.S[7:0]
+[color] 5
+tb.CPU6502.X[7:0]
+[color] 5
+tb.CPU6502.Y[7:0]
+@1401201
+-REG
+@800200
+-IFACE
+@28
+[color] 2
+tb.CPU6502.bus
+@22
+tb.CPU6502.address[15:0]
+tb.CPU6502.pc[15:0]
+tb.CPU6502.cursor[15:0]
+tb.CPU6502.i_data[7:0]
+tb.CPU6502.o_data[7:0]
+@28
+tb.wren
+@1000200
+-IFACE
+@800200
+-ALU
+@22
+tb.CPU6502.alu[3:0]
+tb.CPU6502.alu_flag[7:0]
+tb.CPU6502.alu_res[8:0]
+tb.CPU6502.src[7:0]
+tb.CPU6502.dst[7:0]
+@1000200
+-ALU
+[pattern_trace] 1
+[pattern_trace] 0
