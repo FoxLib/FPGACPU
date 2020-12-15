@@ -93,4 +93,30 @@ de0pll u0(
 );
 // -----------------------------------------------------------------------
 
+wire [12:0] cga_address;
+wire [ 7:0] cga_data;
+
+cga CGA
+(
+    .clock_25 (clock_25),
+
+    // Интерфейс
+    .R (VGA_R), .HS (VGA_HS),
+    .G (VGA_G), .VS (VGA_VS),
+    .B (VGA_B),
+
+    // Память
+    .address    (cga_address),
+    .data       (cga_data),
+);
+
+cga8k CGASTORE
+(
+    .clock      (clock_100),
+    .address_a  (cga_address),
+    .q_a        (cga_data),
+);
+
+// -----------------------------------------------------------------------
+
 endmodule
