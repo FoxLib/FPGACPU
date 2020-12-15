@@ -33,30 +33,30 @@ $screen = [
 $colors = [
 //             1         2         3         4         5         6         7
 //   01234567890123456789012345678901234567890123456789012345678901234567890123456789
-    " 0AAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAA", //  0
-    "    CC CC              8          CC     8    CC           8                    ", //  1
-    "    CC CC              8          CC     8                 8                    ", //  2
-    "    CC CC              8                 8                 8                    ", //  3
-    "    CC CC              8                 8                 8                    ", //  4
-    "    CC CC              8                 8                 8                    ", //  5
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCC  CCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", //  6
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", //  7
+    "00AAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAA", //  0
+    " 33 CC CC              8          CC     8    CC           8                    ", //  1
+    " 33 CC CC              8          CC     8                 8                    ", //  2
+    " 33 CC CC              8                 8                 8                    ", //  3
+    " 33 CC CC              8                 8                 8                    ", //  4
+    " 33 CC CC              8                 8                 8                    ", //  5
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCC  CCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", //  6
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", //  7
     " AAAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAA", //  8
-    "       CC CC           8       CC        8                 8                    ", //  9
-    "                       8                 8                 8                    ", // 10
-    "                       8                 8                 8                    ", // 11
-    "                       8                 8                 8                    ", // 12
-    "                       8                 8                 8                    ", // 13
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 14
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 15
+    " 33    CC CC           8       CC        8                 8                    ", //  9
+    " 33                    8                 8                 8                    ", // 10
+    " 33                    8                 8                 8                    ", // 11
+    " 33                    8                 8                 8                    ", // 12
+    " 33                    8                 8                 8                    ", // 13
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 14
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 15
     " AAAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAA", // 16
-    "                       8                 8                 8                    ", // 17
-    "                       8                 8                 8                    ", // 18
-    "                       8                 8                 8                    ", // 19
-    "                       8                 8 CC              8                    ", // 20
-    "                       8                 8                 8             CC     ", // 21
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 22
-    " CCCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCAAAAAA", // 23
+    " 33                    8                 8                 8                    ", // 17
+    " 33                    8                 8                 8                    ", // 18
+    " 33                    8                 8                 8                    ", // 19
+    " 33                    8                 8 CC              8                    ", // 20
+    " 33                    8                 8                 8             CC     ", // 21
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCCCCC", // 22
+    " BBCCCCCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCCCC8CCCCCCCCCCCCCCAAAAAA", // 23
     "                                                                          222222", // 24
 ];
 
