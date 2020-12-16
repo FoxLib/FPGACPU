@@ -1,9 +1,22 @@
 .org        $3000
 
+; -------------------------------- очистка экрана
+            ldy #$00
+            sty <$00
+            lda #$20
+            sta <$01
+L3
             lda #$41
-            sta $2000
-            lda #$07
-            sta $2001
+            sta ($00),y
+            iny
+            lda #$17
+            sta ($00),y
+            iny
+            bne L3
+            inc <$01
+            lda <$01
+            cmp #$30
+            bne L3
 L2
             jmp L2
 

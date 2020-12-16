@@ -37,7 +37,7 @@ class app extends nescpu {
         this.load("font.rom", 0x1000, function() {
 
             // Потом загрузить тестовую программу
-            this.load("app1/main.bin", 0x3000, function() {
+            this.load("app1/main.bin?v=" + Math.random(), 0x3000, function() {
 
                 this.pc = 0x3000;
                 this.started = 1;
@@ -133,11 +133,37 @@ class app extends nescpu {
         }.bind(this)
     }
 
+    debug() {
+
+        console.log("A:  $" + this.reg.a.toString(16));
+        console.log("X:  $" + this.reg.x.toString(16));
+        console.log("Y:  $" + this.reg.y.toString(16));
+        console.log("S:  $" + this.reg.s.toString(16));
+        console.log("P:  $" + this.reg.p.toString(16));
+        console.log("PC: $" + this.pc.toString(16));
+    }
+
     frame() {
 
         let time = (new Date()).getTime();
         let cycles = 0;
-        while (cycles < 29780) { cycles += this.step(); }
+
+        if (this.started) {
+
+            while (cycles < 29780) {
+
+                /* BRK */
+                if (this.ram[this.pc] == 0x00) {
+
+                    this.started = 0;
+                    this.debug();
+                    break;
+                }
+
+                cycles += this.step();
+            }
+        }
+
         time = (new Date()).getTime() - time;
         time = (time < 25) ? 25 - time : 1;
 
