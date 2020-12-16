@@ -33,6 +33,8 @@ class app extends nescpu {
             0xff0000, 0xff00ff, 0xffff00, 0xffffff,
         ];
 
+        this.request_flush = 1;
+
         // Сначала загрузить FONT.ROM
         this.load("font.rom", 0x1000, function() {
 
@@ -108,6 +110,8 @@ class app extends nescpu {
                 this.pset(8*x + j, 16*y + i, px);
             }
         }
+
+        this.request_flush = true;
     }
 
     // Загрузка бинарных данных
@@ -141,6 +145,15 @@ class app extends nescpu {
         console.log("S:  $" + this.reg.s.toString(16));
         console.log("P:  $" + this.reg.p.toString(16));
         console.log("PC: $" + this.pc.toString(16));
+
+        let d = '';
+        for (let i = 0; i < 16; i++) {
+            let v = this.ram[i].toString(16);
+            if (v.length == 1) v = '0' + v;
+            d += v + " ";
+        }
+
+        console.log(d);
     }
 
     frame() {
@@ -167,7 +180,8 @@ class app extends nescpu {
         time = (new Date()).getTime() - time;
         time = (time < 25) ? 25 - time : 1;
 
-        this.flush();
+        if (this.request_flush) { this.flush(); this.request_flush = 0; }
+
         setTimeout(function() { this.frame(); }.bind(this), time);
     }
 }

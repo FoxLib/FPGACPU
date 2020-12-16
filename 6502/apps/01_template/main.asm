@@ -1,6 +1,6 @@
 
-            lda <L1     ; Нижний байт L1
-            lda >L1     ; Старший байт L1
+            lda #<L1    ; Нижний байт L1
+            lda #>L1    ; Старший байт L1
             lda #$12    ; Immediate
             lda <$22    ; ZeroPage
             sta $1234   ; Absolute
