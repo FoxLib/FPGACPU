@@ -1,9 +1,11 @@
+.org        $3000
 
-            lda <L1     ; Нижний байт L1
-            lda >L1     ; Старший байт L1
-            lda #$12    ; Immediate
-            lda <$22    ; ZeroPage
-            sta $1234   ; Absolute
+            lda #$41
+            sta $2000
+            lda #$07
+            sta $2001
+L2
+            jmp L2
 
 ; Список меток LittleEndian
 .leshort    L1
