@@ -2,12 +2,12 @@
 INI: begin
 
     opcode  <= i_data;  // Записать опкод
-    implied <= 1'b0;    // Операнд не Implied по умолчанию
     cstate  <= EXE;     // По умолчанию следующий статус EXE
     src_id  <= SRCDIN;  // Источник операнда - память
     wren    <= 1'b0;    // Отключение записи в память
     read_en <= 1'b1;    // Читать все из памяти (кроме STA|STX|STY)
     o_data  <= 0;       // Ничего не писать
+    alu     <= alu_lda; // По умолчанию АЛУ настроен на LDA
     pc      <= pc + 1;  // К следующему адресу
 
     // Разобрать метод адресации
@@ -26,17 +26,18 @@ INI: begin
         8'b10x_111_1x: cstate <= ABY;
         8'bxxx_111_xx: cstate <= ABX;
         8'bxxx_100_00: cstate <= REL;
-        default:       implied <= 1'b1; // ACC, IMP
 
     endcase
 
     // Подготовка цикла исполнения опкода
     casex (i_data)
 
-        8'b100_xx_100: /* STY */ begin read_en <= 1'b0; o_data <= Y; end
-        8'b100_xx_110: /* STX */ begin read_en <= 1'b0; o_data <= X; end
-        8'b100_xxx_01: /* STA */ begin read_en <= 1'b0; o_data <= A; end
-        8'bxxx_xxx_01: /* ALU */ begin alu     <= i_data[7:5]; end
+        8'b100x_x100: /* STY */ begin read_en <= 1'b0; o_data <= Y; end
+        8'b100x_x110: /* STX */ begin read_en <= 1'b0; o_data <= X; end
+        8'b100x_xx01: /* STA */ begin read_en <= 1'b0; o_data <= A; end
+        8'b1010_1010: /* TAX */ begin src_id  <= SRCI; src_data <= A; end
+        8'b1011_1010: /* TSX */ begin src_id  <= SRCI; src_data <= S; end
+        8'bxxxx_xx01: /* ALU */ begin alu     <= i_data[7:5]; end
 
     endcase
 

@@ -27,12 +27,18 @@ always @(posedge clock) begin
             bus  <= 1'b0;       // Переключить снова на PC
             cstate <= 0;
 
+            // Получен IMM
+            casex (opcode) 8'bxxx_010_x1, 8'b1xx_000_x0: pc <= pc + 1; endcase
+
+            // Исполнение первого такта опкода
             casex (opcode)
 
-                // Арифметико-логические операции базовые
-                8'b100_xxx_01: /* STA */ begin wren <= 1'b0;     end
-                8'b110_xxx_01: /* CMP */ begin P    <= alu_flag; end
-                8'bxxx_xxx_01: /* ALU */ begin P    <= alu_flag; A <= alu_res[7:0]; end
+                8'b100x_xx01: /* STx */ begin wren <= 1'b0;  end
+                8'b110x_xx01: /* CMP */ begin P <= alu_flag; end
+                8'b101x_1010: /* TAX, TSX */ begin P <= alu_flag; X <= alu_res[7:0]; end
+                8'b1010_0010, /* LDX */
+                8'b101x_x110: /* LDX */ begin P <= alu_flag; X <= alu_res[7:0]; end
+                8'bxxxx_xx01: /* ALU */ begin P <= alu_flag; A <= alu_res[7:0]; end
 
             endcase
 

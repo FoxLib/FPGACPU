@@ -1,5 +1,6 @@
 // Запрос и результат
 reg  [ 3:0] alu = 4'h0;
+reg  [ 7:0] src_data = 8'h00; // Для SCRI
 wire [ 7:0] dst; // Обычно аккумулятор
 wire [ 7:0] src; // Данные
 
@@ -14,7 +15,7 @@ assign dst = dst_id == DSTA ? A :
 // Источник операндов
 assign src = src_id == SRCDIN ? i_data :
              src_id == SRCX   ? X :
-             src_id == SRCY   ? Y : 8'hFF;
+             src_id == SRCY   ? Y : src_data;
 
 // ---------------------------------------------------------------------
 
