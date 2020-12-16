@@ -1,10 +1,10 @@
 [*]
 [*] GTKWave Analyzer v3.3.86 (w)1999-2017 BSI
-[*] Wed Dec 16 04:29:54 2020
+[*] Wed Dec 16 05:11:01 2020
 [*]
 [dumpfile] "/disk/fox/dev/fpgacpu/6502/core/tb.vcd"
-[dumpfile_mtime] "Wed Dec 16 04:29:19 2020"
-[dumpfile_size] 76971
+[dumpfile_mtime] "Wed Dec 16 04:56:00 2020"
+[dumpfile_size] 78858
 [savefile] "/disk/fox/dev/fpgacpu/6502/core/tb.gtkw"
 [timestart] 0
 [size] 1920 1029
@@ -48,6 +48,7 @@ tb.CPU6502.pc[15:0]
 tb.CPU6502.cursor[15:0]
 tb.CPU6502.i_data[7:0]
 tb.CPU6502.o_data[7:0]
+tb.CPU6502.opcode[7:0]
 @28
 tb.wren
 @1000200
