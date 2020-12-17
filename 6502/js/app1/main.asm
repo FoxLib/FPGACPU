@@ -35,7 +35,7 @@ PRN
             lda ($00),y
             sta <$03
             ldy #$00
-            lda CURSORL     ; ADDR = 0x3000 | CURSOR
+            lda CURSORL     ; ADDR = 0x2000 | CURSOR
             sta <$00
             lda CURSORH
             ora #$20
