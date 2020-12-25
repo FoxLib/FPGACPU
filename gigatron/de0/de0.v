@@ -119,15 +119,15 @@ gigatron TTL
     .clock      (clock_625),
     .rst_n      (1'b1),
     .pc         (pc),
-    .ir         (ir),
+    .rom_i      (ir),
 
     // Интерфейс памяти
-    .r_addr     (r_addr),
-    .w_addr     (w_addr),
-    .i_data     (i_data),
-    .o_data     (o_data),
-    .o_we       (o_we),
-    
+    .addr_r     (r_addr),
+    .addr_w     (w_addr),
+    .data_i     (i_data),
+    .data_o     (o_data),
+    .we         (o_we),
+
     // Порты ввода-вывода
     .inreg      (inreg),
     .vga        ({VGA_VS, VGA_HS, VGA_R[3:2], VGA_G[3:2], VGA_B[3:2]}),
@@ -148,10 +148,10 @@ ram UnitRAM
 (
     .clock      (clock_100),
     .address_a  (r_addr),
+    .q_a        (i_data)
     .address_b  (w_addr),
     .data_b     (o_data),
     .wren_b     (o_we),
-    .q_a        (i_data)
 );
 
 endmodule
@@ -162,17 +162,17 @@ endmodule
 
 module  pll(
 
-	input wire clkin,
-	input wire rst,
+    input wire clkin,
+    input wire rst,
 
-	output wire m625,
-	output wire m25,
-	output wire m50,
-	output wire m75,
-	output wire m100,
-	output wire m106,
+    output wire m625,
+    output wire m25,
+    output wire m50,
+    output wire m75,
+    output wire m100,
+    output wire m106,
 
-	output wire locked
+    output wire locked
 );
 
 altera_pll #(
@@ -238,12 +238,12 @@ altera_pll #(
     .pll_subtype("General")
 )
 altera_pll_i (
-    .rst	(rst),
-    .outclk	({m625, m75, m106, m50, m100, m25}),
-    .locked	(locked),
+    .rst    (rst),
+    .outclk ({m625, m75, m106, m50, m100, m25}),
+    .locked (locked),
     .fboutclk ( ),
-    .fbclk	(1'b0),
-    .refclk	(clkin)
+    .fbclk  (1'b0),
+    .refclk (clkin)
 );
 
 endmodule

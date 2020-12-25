@@ -8,16 +8,14 @@ module gigatron
     input   wire        clock,
     input   wire        rst_n,
     output  reg  [15:0] pc,
-    input   wire [15:0] ir,
+    input   wire [15:0] rom_i,
 
-    // Адрес для чтения
-    output  reg  [15:0] r_addr,
-    input   wire [ 7:0] i_data,
-
-    // Адрес для записи
-    output  reg  [15:0] w_addr,
-    output  reg  [ 7:0] o_data,
-    output  reg         o_we,
+    // Чтение и запись
+    output  reg  [15:0] addr_r,
+    output  reg  [15:0] addr_w,
+    input   wire [ 7:0] data_i,
+    output  reg  [ 7:0] data_o,
+    output  reg         we,
 
     // Порты ввода-вывода
     input   wire [ 7:0] inreg,
@@ -38,12 +36,32 @@ module gigatron
 );
 
 // Регистры
-reg  [ 7:0] ac      = 0;
-reg  [ 7:0] x       = 0;
-reg  [ 7:0] y       = 0;
-reg  [15:0] nextpc  = 1;
+reg  [ 7:0] ac  = 0;
+reg  [ 7:0] x   = 0;
+reg  [ 7:0] y   = 0;
+reg  [15:0] ir  = 0;
 
-initial begin pc = 0; vga = 0; outx = 0; ctrl = 0; o_we = 0; w_addr = 0; o_data = 0; end
+initial begin
+
+    pc      = 0;
+    we      = 0;
+    addr_r  = 0;
+    addr_w  = 0;
+    data_o  = 0;
+    vga     = 0;
+    outx    = 0;
+    ctrl    = 0;
+
+end
+
+// Декодирование IR
+// ---------------------------------------------------------------------
+wire [ 7:0] op      = ir[15:13]; // 3
+wire [ 7:0] mode    = ir[12:10]; // 3
+wire [ 7:0] bus     = ir[ 9:8];  // 2
+wire [ 7:0] d       = ir[ 7:0];  // 8
+wire [ 7:0] zac     = {~ac[7], ac[6:0]};
+wire [15:0] pcinc   = pc + 1;
 
 // Вычисления
 // ---------------------------------------------------------------------
@@ -59,14 +77,14 @@ always @* begin
     base = pcinc[15:8];
 
     // Режим ZeroPage для branchOp
-    if (op == 7) r_addr = d;
+    if (op == 7) addr_r = d;
     else case (mode)
 
         0, 4, 5, 6:
-              r_addr = d;
-        1:    r_addr = x;
-        2:    r_addr = {y, d};
-        3, 7: r_addr = {y, x}; // bus=1, mode=7 => X++
+              addr_r = d;
+        1:    addr_r = x;
+        2:    addr_r = {y, d};
+        3, 7: addr_r = {y, x}; // bus=1, mode=7 => X++
 
     endcase
 
@@ -74,7 +92,7 @@ always @* begin
     case (bus)
 
         /* IMM */ 2'b00: b = d;
-        /* MEM */ 2'b01: b = i_data;
+        /* MEM */ 2'b01: b = data_i;
         /* ACC */ 2'b10: b = ac;
         /* INP */ 2'b11: b = inreg;
 
@@ -108,31 +126,24 @@ always @* begin
 
 end
 
-// Декодирование IR
-// ---------------------------------------------------------------------
-wire [ 7:0] op      = ir[15:13]; // 3
-wire [ 7:0] mode    = ir[12:10]; // 3
-wire [ 7:0] bus     = ir[ 9:8];  // 2
-wire [ 7:0] d       = ir[ 7:0];  // 8
-wire [ 7:0] zac     = {~ac[7], ac[6:0]};
-wire [15:0] pcinc   = nextpc + 1;
+reg [15:0] ir2;
 
 // Основная логика
 // ---------------------------------------------------------------------
 always @(posedge clock) begin
 
-    pc     <= nextpc;   // Переходим к следующему PC
-    nextpc <= pcinc;    // Инкремент (задержка 1 такт, конвейер)
-    o_we   <= 0;
+    ir <= rom_i;
+    pc <= pcinc;
+    we <= 0;
 
     case (op)
 
         // storeOp
         6: begin
 
-            w_addr <= r_addr;
-            o_data <= b;
-            o_we   <= 1'b1;
+            addr_w <= addr_r;
+            data_o <= b;
+            we     <= 1;
 
             case (mode)
 
@@ -148,7 +159,7 @@ always @(posedge clock) begin
         end
 
         // brancOp
-        7: if (cond) nextpc <= {base, b};
+        7: if (cond) pc <= {base, b};
 
         // aluOp (0-5)
         default: case (mode)

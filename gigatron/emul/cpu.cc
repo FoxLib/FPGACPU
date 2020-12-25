@@ -60,8 +60,8 @@ void Gigatron::tick() {
     uint16_t ir   = rom[ let_pc ];
     uint8_t  op   = (ir >> 13) & 0x0007;
     uint8_t  mode = (ir >> 10) & 0x0007;
-    uint8_t  bus  = (ir >> 8) & 0x0003;
-    uint8_t  d    = (ir >> 0) & 0x00ff;
+    uint8_t  bus  = (ir >>  8) & 0x0003;
+    uint8_t  d    = (ir >>  0) & 0x00ff;
 
     switch (op) {
         case 0:
