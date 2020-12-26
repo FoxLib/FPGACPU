@@ -43,6 +43,7 @@ Gigatron::Gigatron(int w, int h, const char* caption) {
     press_alt    = 0;
 
     SDL_AddTimer(10, WindowTimer, NULL);
+    SDL_EnableKeyRepeat(500, 30);
 }
 
 // Первый старт

@@ -135,8 +135,10 @@ foreach ($rows as $line => $row) {
         // bus=0
         else {
 
+            $regex = '~\by\s*,~i';
+
             // JMP должен быть только с Y,<data>
-            if ($mode == 0 && !preg_match($regex = '~\by\s*,~i', $c[2])) {
+            if ($mode == 0 && !preg_match($regex, $c[2])) {
                 $mode = -1;
             }
 

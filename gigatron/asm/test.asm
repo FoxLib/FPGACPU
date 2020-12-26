@@ -1,4 +1,26 @@
         ab  = l3
+
+        ; back porch 48
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+        st  $c0,[y,x++]
+
+        ; sync
+
+
+        st  $ff,[y,x++]
+
+        or  out,[y,x++]
+        ble l1
         st  ac, [y,x]
         st  ac, [y,x++]
         st  ac, [$44],x
