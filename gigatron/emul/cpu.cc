@@ -1,40 +1,5 @@
 #include "gigatron.h"
 
-#include <cstdlib>
-#include <ctime>
-
-// Первый старт
-void Gigatron::procstart() {
-
-    reset();
-
-    ramMask = 0xffff;
-    started = 1;
-
-    disasm_cursor = 0;
-    disasm_start  = 0;
-
-    srand( static_cast<unsigned int> (time(0)) );
-    for (int i = 0; i < 65536; i++) {
-        ram[i] = rand() % 256;
-    }
-
-    // Загрузка ROM
-    FILE* fp = fopen("gigatron.rom", "rb");
-    if (fp) {
-
-        fread(rom, 2, 65536, fp);
-        for (int i = 0; i < 65536; i++)
-            rom[i] = (rom[i] >> 8) | (rom[i] << 8);
-
-        fclose(fp);
-
-    } else {
-        printf("gigatron.rom not found");
-        exit(1);
-    }
-}
-
 /** reset registers to power-on state */
 void Gigatron::reset() {
 

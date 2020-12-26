@@ -75,7 +75,7 @@ public:
     // Инициализация
     void    start();
     void    reset();
-    void    procstart();
+    void    procstart(int, char**);
 
     // CPU
     void     run();

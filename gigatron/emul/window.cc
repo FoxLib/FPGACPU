@@ -1,4 +1,6 @@
 #include "gigatron.h"
+#include <cstdlib>
+#include <ctime>
 
 // Обработчик кадра
 uint WindowTimer(uint interval, void *param) {
@@ -32,7 +34,6 @@ Gigatron::Gigatron(int w, int h, const char* caption) {
     SDL_WM_SetCaption(caption, 0);
 
     // Инициализация процессора
-    procstart();
     vga_init();
     audio_init();
 
@@ -40,8 +41,42 @@ Gigatron::Gigatron(int w, int h, const char* caption) {
     press_shift  = 0;
     press_ctrl   = 0;
     press_alt    = 0;
-    
+
     SDL_AddTimer(10, WindowTimer, NULL);
+}
+
+// Первый старт
+void Gigatron::procstart(int argc, char* argv[]) {
+
+    reset();
+
+    ramMask = 0xffff;
+    started = 1;
+
+    disasm_cursor = 0;
+    disasm_start  = 0;
+
+    srand( static_cast<unsigned int> (time(0)) );
+    for (int i = 0; i < 65536; i++) {
+        ram[i] = rand() % 256;
+    }
+
+    // Загрузка ROM
+    FILE* fp = fopen(argc > 1 ? argv[1] : "gigatron.rom", "rb");
+    if (fp) {
+
+        fread(rom, 2, 65536, fp);
+
+        // BigEndian
+        for (int i = 0; i < 65536; i++) rom[i] = (rom[i] >> 8) | (rom[i] << 8);
+
+        fclose(fp);
+
+    } else {
+
+        printf("ROM not found");
+        exit(1);
+    }
 }
 
 // Эмулятор 1 тика процессора
